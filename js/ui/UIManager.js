@@ -179,19 +179,19 @@ export default class UIManager {
 
         document.getElementById('btn-buy-gems-1').addEventListener('click', () => {
             this.game.economySystem.buyGems(1);
-            alert('Purchased 1 Gem!');
+            console.log('Purchased 1 Gem!');
         });
 
         document.getElementById('btn-buy-gems-10').addEventListener('click', () => {
             this.game.economySystem.buyGems(10);
-            alert('Purchased 10 Gems!');
+            console.log('Purchased 10 Gems!');
         });
 
         document.getElementById('btn-summon').addEventListener('click', () => {
             if (this.game.economySystem.spendResource('gems', 5)) {
-                alert('Summoned a new Unit! (Placeholder)');
+                console.log('Summoned a new Unit! (Placeholder)');
             } else {
-                alert('Not enough Gems!');
+                console.log('Not enough Gems!');
             }
         });
 
@@ -218,5 +218,71 @@ export default class UIManager {
         } else if (screenId === this.screens.QUEST_SELECT) {
             this.updateQuestList();
         }
+    }
+    updateBattleInfo(text) {
+        const info = document.getElementById('battle-info');
+        if (info) info.textContent = text;
+    }
+
+    showDamageNumber(x, y, amount, color = 'white') {
+        const el = document.createElement('div');
+        el.textContent = amount;
+        el.style.position = 'absolute';
+        el.style.left = `${x + 20}px`;
+        el.style.top = `${y}px`;
+        el.style.color = color;
+        el.style.fontSize = '24px';
+        el.style.fontWeight = 'bold';
+        el.style.textShadow = '2px 2px 0 #000';
+        el.style.pointerEvents = 'none';
+        el.style.animation = 'floatUp 1s ease-out forwards';
+
+        // Add keyframes if not exists (hacky, better in CSS)
+        if (!document.getElementById('anim-style')) {
+            const style = document.createElement('style');
+            style.id = 'anim-style';
+            style.textContent = `
+                @keyframes floatUp {
+                    0% { transform: translateY(0); opacity: 1; }
+                    100% { transform: translateY(-50px); opacity: 0; }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        this.uiLayer.appendChild(el);
+        setTimeout(() => el.remove(), 1000);
+    }
+
+    showBattleMessage(text) {
+        const el = document.createElement('div');
+        el.textContent = text;
+        el.style.position = 'absolute';
+        el.style.top = '20%';
+        el.style.width = '100%';
+        el.style.textAlign = 'center';
+        el.style.color = 'gold';
+        el.style.fontSize = '30px';
+        el.style.fontWeight = 'bold';
+        el.style.textShadow = '0 0 10px black';
+        el.style.pointerEvents = 'none';
+        el.style.animation = 'fadeOut 2s forwards';
+
+        // Add keyframes if not exists
+        if (!document.getElementById('msg-anim-style')) {
+            const style = document.createElement('style');
+            style.id = 'msg-anim-style';
+            style.textContent = `
+                @keyframes fadeOut {
+                    0% { opacity: 1; transform: scale(1); }
+                    80% { opacity: 1; transform: scale(1.1); }
+                    100% { opacity: 0; transform: scale(1.2); }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        this.uiLayer.appendChild(el);
+        setTimeout(() => el.remove(), 2000);
     }
 }

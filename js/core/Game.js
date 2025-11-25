@@ -15,6 +15,17 @@ export default class Game {
         this.state = 'MENU'; // MENU, BATTLE
 
         this.input = new InputHandler(this);
+
+        // Forward clicks to BattleSystem if in battle
+        this.canvas.addEventListener('click', (e) => {
+            if (this.state === 'BATTLE') {
+                const rect = this.canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                this.battleSystem.handleInput(x, y);
+            }
+        });
+
         this.economySystem = new EconomySystem(this); // Init economy first
         this.lootManager = new LootManager(this);
         this.questSystem = new QuestSystem(this);
