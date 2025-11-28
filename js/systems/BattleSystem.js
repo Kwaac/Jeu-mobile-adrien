@@ -1,5 +1,51 @@
 import Unit from '../entities/Unit.js';
 
+// Animation class for attack movements
+class AttackAnimation {
+    constructor(attacker, target, onComplete) {
+        this.attacker = attacker;
+        this.target = target;
+        this.onComplete = onComplete;
+
+        this.startX = attacker.x;
+        this.startY = attacker.y;
+        this.progress = 0;
+        this.duration = 400; // 400ms total
+        this.phase = 'moving'; // 'moving' or 'returning'
+    }
+
+    update(deltaTime) {
+        this.progress += deltaTime / this.duration;
+
+        if (this.phase === 'moving') {
+            if (this.progress >= 0.5) {
+                // Halfway point - execute attack
+                this.phase = 'returning';
+                this.progress = 0;
+                if (this.onComplete) this.onComplete();
+            } else {
+                // Move towards target (70% of the way)
+                const t = this.progress * 2; // 0 to 1
+                this.attacker.x = this.startX + (this.target.x - this.startX) * t * 0.7;
+                this.attacker.y = this.startY + (this.target.y - this.startY) * t * 0.7;
+            }
+        } else {
+            if (this.progress >= 1) {
+                // Animation complete - restore position
+                this.attacker.x = this.startX;
+                this.attacker.y = this.startY;
+                return true; // Animation finished
+            } else {
+                // Return to start
+                const t = 1 - this.progress;
+                this.attacker.x = this.startX + (this.target.x - this.startX) * t * 0.7;
+                this.attacker.y = this.startY + (this.target.y - this.startY) * t * 0.7;
+            }
+        }
+        return false; // Animation not finished
+    }
+}
+
 export default class BattleSystem {
     constructor(game) {
         this.game = game;
@@ -10,6 +56,7 @@ export default class BattleSystem {
         this.actionQueue = []; // For handling simultaneous attacks/animations
         this.selectedUnit = null; // Unit selected to attack
         this.hoveredEnemy = null; // Enemy currently hovered (for future mouse support)
+        this.animations = []; // Active animations
     }
 
     initTestBattle() {
@@ -46,6 +93,9 @@ export default class BattleSystem {
     }
 
     update(deltaTime) {
+        // Update animations
+        this.animations = this.animations.filter(anim => !anim.update(deltaTime));
+
         // Update all units (animations, etc.)
         [...this.playerUnits, ...this.enemyUnits].forEach(unit => {
             // unit.update(deltaTime); // If Unit has update method
@@ -110,18 +160,23 @@ export default class BattleSystem {
             return;
         }
 
-        // Normal Attack on selected target
+        // Normal Attack on selected target with animation
         if (target && !target.isDead()) {
             unit.hasActed = true;
             console.log(`${unit.name} attaque ${target.name} !`);
 
-            const damage = unit.attack(target);
-            this.game.uiManager.showDamageNumber(target.x, target.y, damage);
+            // Create attack animation
+            const animation = new AttackAnimation(unit, target, () => {
+                // This callback is executed at the midpoint of the animation
+                const damage = unit.attack(target);
+                this.game.uiManager.showDamageNumber(target.x, target.y, damage);
+                this.generateBattleCrystals(damage);
+            });
 
-            // Generate Battle Crystals (BC)
-            this.generateBattleCrystals(damage);
+            this.animations.push(animation);
 
-            this.checkTurnEnd();
+            // Check turn end after animation completes
+            setTimeout(() => this.checkTurnEnd(), 500);
         }
     }
 
