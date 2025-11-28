@@ -1,4 +1,3 @@
-import InputHandler from './InputHandler.js';
 import BattleSystem from '../systems/BattleSystem.js';
 import EconomySystem from '../systems/EconomySystem.js';
 import QuestSystem from '../systems/QuestSystem.js';
@@ -14,8 +13,6 @@ export default class Game {
         this.height = 0;
         this.lastTime = 0;
         this.state = 'MENU'; // MENU, BATTLE
-
-        this.input = new InputHandler(this);
 
         // Forward clicks to BattleSystem if in battle
         this.canvas.addEventListener('click', (e) => {

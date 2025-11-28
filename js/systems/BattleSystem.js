@@ -8,6 +8,8 @@ export default class BattleSystem {
         this.waveIndex = 0;
         this.turnState = 'PLAYER_PHASE'; // PLAYER_PHASE, ENEMY_PHASE, VICTORY, DEFEAT
         this.actionQueue = []; // For handling simultaneous attacks/animations
+        this.selectedUnit = null; // Unit selected to attack
+        this.hoveredEnemy = null; // Enemy currently hovered (for future mouse support)
     }
 
     initTestBattle() {
@@ -39,7 +41,7 @@ export default class BattleSystem {
         });
 
         this.turnState = 'PLAYER_PHASE';
-        this.game.uiManager.updateBattleInfo('Phase Joueur - Tapez sur vos unités pour attaquer !');
+        this.game.uiManager.updateBattleInfo('Phase Joueur - Choisissez une unité');
         console.log("Vague commencée", this.enemyUnits);
     }
 
@@ -68,27 +70,48 @@ export default class BattleSystem {
     handleInput(x, y) {
         if (this.turnState !== 'PLAYER_PHASE') return;
 
+        // If a unit is already selected, check if clicking on an enemy
+        if (this.selectedUnit) {
+            const clickedEnemy = this.enemyUnits.find(enemy =>
+                x >= enemy.x && x <= enemy.x + enemy.width &&
+                y >= enemy.y && y <= enemy.y + enemy.height
+            );
+
+            if (clickedEnemy) {
+                console.log(`${this.selectedUnit.name} targeting ${clickedEnemy.name}`);
+                this.executePlayerAttack(this.selectedUnit, clickedEnemy);
+                this.selectedUnit = null;
+                this.game.uiManager.updateBattleInfo('Phase Joueur - Choisissez une unité');
+                return;
+            }
+
+            // If clicking elsewhere, deselect
+            this.selectedUnit = null;
+            this.game.uiManager.updateBattleInfo('Sélection annulée - Choisissez une unité');
+        }
+
         // Check if a player unit was clicked
         this.playerUnits.forEach(unit => {
             if (!unit.hasActed &&
                 x >= unit.x && x <= unit.x + unit.width &&
                 y >= unit.y && y <= unit.y + unit.height) {
 
-                this.executePlayerAttack(unit);
+                this.selectedUnit = unit;
+                console.log(`${unit.name} selected - Click on an enemy to attack`);
+                this.game.uiManager.updateBattleInfo(`${unit.name} sélectionné - Choisissez une cible`);
             }
         });
     }
 
-    executePlayerAttack(unit) {
+    executePlayerAttack(unit, target) {
         // Check if BB is ready and used
         if (unit.isBbReady()) {
             this.executePlayerBB(unit);
             return;
         }
 
-        // Normal Attack
-        const target = this.enemyUnits[0];
-        if (target) {
+        // Normal Attack on selected target
+        if (target && !target.isDead()) {
             unit.hasActed = true;
             console.log(`${unit.name} attaque ${target.name} !`);
 
@@ -156,7 +179,7 @@ export default class BattleSystem {
 
         // Back to Player Phase
         this.turnState = 'PLAYER_PHASE';
-        this.game.uiManager.updateBattleInfo('Phase Joueur');
+        this.game.uiManager.updateBattleInfo('Phase Joueur - Choisissez une unité');
     }
 
     handleWaveClear() {
@@ -194,5 +217,33 @@ export default class BattleSystem {
                 ctx.fillRect(unit.x, unit.y, unit.width, unit.height);
             }
         });
+
+        // Draw selection indicator on selected unit
+        if (this.selectedUnit) {
+            ctx.strokeStyle = '#FFD700'; // Gold
+            ctx.lineWidth = 4;
+            ctx.setLineDash([5, 5]);
+            ctx.strokeRect(
+                this.selectedUnit.x - 5,
+                this.selectedUnit.y - 5,
+                this.selectedUnit.width + 10,
+                this.selectedUnit.height + 10
+            );
+            ctx.setLineDash([]); // Reset dash
+
+            // Draw targeting indicators on enemies
+            this.enemyUnits.forEach(enemy => {
+                if (!enemy.isDead()) {
+                    ctx.strokeStyle = 'rgba(255, 0, 0, 0.5)';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(
+                        enemy.x - 2,
+                        enemy.y - 2,
+                        enemy.width + 4,
+                        enemy.height + 4
+                    );
+                }
+            });
+        }
     }
 }
