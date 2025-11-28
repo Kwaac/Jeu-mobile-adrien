@@ -14,6 +14,28 @@ export default class Unit {
         this.bbGauge = 0;
         this.maxBbGauge = this.maxBbGauge || 100;
 
+        // Progression system
+        this.level = stats.level || 1;
+        this.xp = stats.xp || 0;
+        this.xpToNextLevel = this.calculateXpToNextLevel();
+
+        // Store base stats for level scaling
+        this.baseAtk = this.atk;
+        this.baseDef = this.def;
+        this.baseMaxHp = this.maxHp;
+
+        // Unit properties
+        this.element = this.element || 'none';
+        this.rarity = this.rarity || 3;
+        this.description = this.description || '';
+
+        // Equipment system
+        this.equipment = {
+            weapon: null,
+            armor: null,
+            accessory: null
+        };
+
         // Battle state
         this.hasActed = false;
         this.isDeadState = false;
@@ -38,6 +60,41 @@ export default class Unit {
             }
         }
         return base + bonus;
+    }
+
+    calculateXpToNextLevel() {
+        // Formula: 100 * level^1.5
+        return Math.floor(100 * Math.pow(this.level, 1.5));
+    }
+
+    gainXp(amount) {
+        this.xp += amount;
+        console.log(`${this.name} gagne ${amount} XP (${this.xp}/${this.xpToNextLevel})`);
+
+        // Check for level up
+        while (this.xp >= this.xpToNextLevel) {
+            this.levelUp();
+        }
+    }
+
+    levelUp() {
+        this.xp -= this.xpToNextLevel;
+        this.level++;
+
+        // Increase stats (10% per level)
+        const atkIncrease = Math.ceil(this.baseAtk * 0.1);
+        const defIncrease = Math.ceil(this.baseDef * 0.1);
+        const hpIncrease = Math.ceil(this.baseMaxHp * 0.1);
+
+        this.atk += atkIncrease;
+        this.def += defIncrease;
+        this.maxHp += hpIncrease;
+        this.hp = this.maxHp; // Full heal on level up
+
+        this.xpToNextLevel = this.calculateXpToNextLevel();
+
+        console.log(`🎉 ${this.name} monte au niveau ${this.level} !`);
+        console.log(`ATK +${atkIncrease}, DEF +${defIncrease}, HP +${hpIncrease}`);
     }
 
     attack(target) {
@@ -65,9 +122,51 @@ export default class Unit {
         return this.bbGauge >= this.maxBbGauge;
     }
 
+    equipItem(item) {
+        if (!item || !item.slot) {
+            console.log('Objet invalide');
+            return false;
+        }
+
+        const slot = item.slot;
+        if (!this.equipment.hasOwnProperty(slot)) {
+            console.log(`Slot invalide : ${slot}`);
+            return false;
+        }
+
+        // Déséquiper l'objet actuel si présent
+        if (this.equipment[slot]) {
+            console.log(`Déséquipement de ${this.equipment[slot].name}`);
+        }
+
+        this.equipment[slot] = item;
+        console.log(`${this.name} équipe ${item.name}`);
+        return true;
+    }
+
+    unequipItem(slot) {
+        if (!this.equipment.hasOwnProperty(slot)) {
+            console.log(`Slot invalide : ${slot}`);
+            return null;
+        }
+
+        const item = this.equipment[slot];
+        this.equipment[slot] = null;
+
+        if (item) {
+            console.log(`${this.name} déséquipe ${item.name}`);
+        }
+
+        return item;
+    }
+
+    getEquipment() {
+        return this.equipment;
+    }
+
     executeBB(targets) {
         // Basic BB: AOE Attack
-        console.log(`${this.name} uses BRAVE BURST!`);
+        console.log(`${this.name} utilise son BRAVE BURST !`);
         this.bbGauge = 0;
 
         let totalDamage = 0;

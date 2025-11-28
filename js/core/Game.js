@@ -3,6 +3,7 @@ import BattleSystem from '../systems/BattleSystem.js';
 import EconomySystem from '../systems/EconomySystem.js';
 import QuestSystem from '../systems/QuestSystem.js';
 import LootManager from '../systems/LootManager.js';
+import PartyManager from '../systems/PartyManager.js';
 import UIManager from '../ui/UIManager.js';
 
 export default class Game {
@@ -27,6 +28,7 @@ export default class Game {
         });
 
         this.economySystem = new EconomySystem(this); // Init economy first
+        this.partyManager = new PartyManager(this); // Init party manager
         this.lootManager = new LootManager(this);
         this.questSystem = new QuestSystem(this);
         this.battleSystem = new BattleSystem(this);
@@ -46,10 +48,10 @@ export default class Game {
         this.state = 'MENU';
         if (victory) {
             // Show Victory Screen (to be implemented in UIManager)
-            alert("Victory! Quest Complete.");
+            alert("Victoire ! Quête terminée.");
             this.lootManager.collectLoot();
         } else {
-            alert("Defeat...");
+            alert("Défaite...");
             this.lootManager.clearLoot();
         }
         this.uiManager.showScreen(this.uiManager.screens.MAIN_MENU);
@@ -64,7 +66,7 @@ export default class Game {
     }
 
     start() {
-        console.log('Game Loop Started');
+        console.log('Boucle de jeu démarrée');
         this.lastTime = performance.now();
         requestAnimationFrame(this.loop.bind(this));
     }

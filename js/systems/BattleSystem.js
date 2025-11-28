@@ -26,9 +26,9 @@ export default class BattleSystem {
 
         // Setup Player Units (if not already set, usually persistent)
         if (this.playerUnits.length === 0) {
-            // Temporary: Create a default hero if none exists
-            const hero = new Unit('Vargas', true, { hp: 100, atk: 15, def: 5, maxBbGauge: 20 });
-            this.playerUnits.push(hero);
+            // Utiliser l'équipe du PartyManager
+            this.playerUnits = this.game.partyManager.getParty().slice(); // Clone pour éviter les références
+            console.log(`Équipe de combat chargée : ${this.playerUnits.length} unités`);
         }
 
         // Position Player Units
@@ -38,8 +38,8 @@ export default class BattleSystem {
         });
 
         this.turnState = 'PLAYER_PHASE';
-        this.game.uiManager.updateBattleInfo('Player Phase - Tap units to attack!');
-        console.log("Wave Started", this.enemyUnits);
+        this.game.uiManager.updateBattleInfo('Phase Joueur - Tapez sur vos unités pour attaquer !');
+        console.log("Vague commencée", this.enemyUnits);
     }
 
     update(deltaTime) {
@@ -89,7 +89,7 @@ export default class BattleSystem {
         const target = this.enemyUnits[0];
         if (target) {
             unit.hasActed = true;
-            console.log(`${unit.name} attacks ${target.name}!`);
+            console.log(`${unit.name} attaque ${target.name} !`);
 
             const damage = unit.attack(target);
             this.game.uiManager.showDamageNumber(target.x, target.y, damage);
@@ -103,7 +103,7 @@ export default class BattleSystem {
 
     executePlayerBB(unit) {
         unit.hasActed = true;
-        this.game.uiManager.showBattleMessage(`${unit.name} used BB!`);
+        this.game.uiManager.showBattleMessage(`${unit.name} utilise son BB !`);
 
         // BB hits all enemies
         const damageTotal = unit.executeBB(this.enemyUnits);
@@ -139,7 +139,7 @@ export default class BattleSystem {
 
     startEnemyTurn() {
         this.turnState = 'ENEMY_PHASE';
-        this.game.uiManager.updateBattleInfo('Enemy Phase');
+        this.game.uiManager.updateBattleInfo('Phase Ennemie');
     }
 
     handleEnemyTurn() {
@@ -148,7 +148,7 @@ export default class BattleSystem {
             const target = this.playerUnits[Math.floor(Math.random() * this.playerUnits.length)];
             if (target && !target.isDead()) {
                 const damage = enemy.attack(target);
-                console.log(`${enemy.name} attacks ${target.name} for ${damage}`);
+                console.log(`${enemy.name} attaque ${target.name} pour ${damage} dégâts`);
                 this.game.uiManager.showDamageNumber(target.x, target.y, damage, 'red');
             }
         });
@@ -158,12 +158,23 @@ export default class BattleSystem {
 
         // Back to Player Phase
         this.turnState = 'PLAYER_PHASE';
-        this.game.uiManager.updateBattleInfo('Player Phase');
+        this.game.uiManager.updateBattleInfo('Phase Joueur');
     }
 
     handleWaveClear() {
         this.turnState = 'VICTORY'; // Temporary state before next wave
-        console.log("Wave Cleared!");
+        console.log("Vague terminée !");
+
+        // Award XP to surviving players
+        const xpPerEnemy = 50; // Base XP per enemy
+        const totalXp = this.enemyUnits.length * xpPerEnemy;
+
+        this.playerUnits.forEach(unit => {
+            if (!unit.isDead()) {
+                unit.gainXp(totalXp);
+            }
+        });
+
         setTimeout(() => {
             this.game.questSystem.nextWave();
         }, 1500);
