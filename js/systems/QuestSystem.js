@@ -33,12 +33,15 @@ export default class QuestSystem {
     }
 
     startQuest(questId) {
+        console.log(`QuestSystem.startQuest called with ${questId}`);
         const quest = this.quests.find(q => q.id === questId);
         if (quest) {
             this.activeQuest = quest;
             this.currentWave = 0;
             console.log(`Début de la quête : ${quest.name}`);
             this.game.battleSystem.startWave(this.activeQuest.waves[0]);
+        } else {
+            console.error(`Quête non trouvée : ${questId}`);
         }
     }
 

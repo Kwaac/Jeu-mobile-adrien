@@ -15,26 +15,27 @@ export default class BattleSystem {
     }
 
     startWave(enemyDataArray) {
+        console.log("BattleSystem.startWave called", enemyDataArray);
         this.enemyUnits = enemyDataArray.map((data, index) => {
             const unit = new Unit(data.name, false, data);
-            // Position enemies on the left/top or right/top depending on design
-            // Brave Frontier: Enemies top-right/center, Players bottom-left
-            unit.x = this.game.width * 0.6 + (index % 2) * 60;
-            unit.y = this.game.height * 0.2 + Math.floor(index / 2) * 80;
+            unit.x = this.game.width * 0.6 + (index % 2) * 110;
+            unit.y = this.game.height * 0.15 + Math.floor(index / 2) * 130;
             return unit;
         });
 
-        // Setup Player Units (if not already set, usually persistent)
+        // Setup Player Units
         if (this.playerUnits.length === 0) {
-            // Utiliser l'équipe du PartyManager
-            this.playerUnits = this.game.partyManager.getParty().slice(); // Clone pour éviter les références
+            this.playerUnits = this.game.partyManager.getParty().slice();
             console.log(`Équipe de combat chargée : ${this.playerUnits.length} unités`);
+        } else {
+            console.log(`Équipe de combat existante : ${this.playerUnits.length} unités`);
         }
 
         // Position Player Units
         this.playerUnits.forEach((unit, index) => {
-            unit.x = this.game.width * 0.2 + (index % 2) * 60;
-            unit.y = this.game.height * 0.6 + Math.floor(index / 2) * 80;
+            unit.x = this.game.width * 0.2 + (index % 2) * 110;
+            unit.y = this.game.height * 0.45 + Math.floor(index / 2) * 130;
+            console.log(`Positionnement joueur ${unit.name} à ${unit.x}, ${unit.y}`);
         });
 
         this.turnState = 'PLAYER_PHASE';
@@ -110,8 +111,6 @@ export default class BattleSystem {
 
         // Show damage on all enemies
         this.enemyUnits.forEach(enemy => {
-            // We don't have exact damage per enemy from executeBB yet, simplifying for visual
-            // In a real app, executeBB should return a map of damage
             this.game.uiManager.showDamageNumber(enemy.x, enemy.y, "BB!", "gold");
         });
 
@@ -120,7 +119,6 @@ export default class BattleSystem {
 
     generateBattleCrystals(damage) {
         // Simple logic: 1 BC per hit (or based on damage)
-        // Distribute BC to random units
         const bcCount = Math.max(1, Math.floor(damage / 5)); // 1 BC per 5 damage
 
         for (let i = 0; i < bcCount; i++) {
@@ -162,11 +160,11 @@ export default class BattleSystem {
     }
 
     handleWaveClear() {
-        this.turnState = 'VICTORY'; // Temporary state before next wave
+        this.turnState = 'VICTORY';
         console.log("Vague terminée !");
 
         // Award XP to surviving players
-        const xpPerEnemy = 50; // Base XP per enemy
+        const xpPerEnemy = 50;
         const totalXp = this.enemyUnits.length * xpPerEnemy;
 
         this.playerUnits.forEach(unit => {
@@ -189,6 +187,7 @@ export default class BattleSystem {
         // Draw Units
         [...this.enemyUnits, ...this.playerUnits].forEach(unit => {
             unit.draw(ctx);
+
             // Draw "Done" indicator if acted
             if (unit.hasActed) {
                 ctx.fillStyle = 'rgba(0,0,0,0.5)';

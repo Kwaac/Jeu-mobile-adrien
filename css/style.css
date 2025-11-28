@@ -34,14 +34,21 @@ canvas {
     display: block;
     width: 100%;
     height: 100%;
-    left: 10px;
-    background: rgba(0, 0, 0, 0.5);
-    padding: 5px 10px;
-    border-radius: 4px;
-    font-size: 12px;
+    background: #2c3e50;
+    z-index: 0;
+    pointer-events: auto;
+    /* Allow clicks! */
+}
+
+#ui-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     pointer-events: none;
-    color: white;
-    z-index: 1000;
+    /* Let clicks pass through to canvas */
+    z-index: 10;
 }
 
 .screen {
@@ -57,6 +64,25 @@ canvas {
     background: rgba(0, 0, 0, 0.7);
     color: white;
     pointer-events: auto;
+}
+
+/* Battle HUD specific overrides */
+#battle-hud {
+    background: transparent;
+    pointer-events: none;
+    justify-content: space-between;
+    padding: 20px;
+}
+
+#battle-hud>* {
+    pointer-events: auto;
+}
+
+#battle-info {
+    background: rgba(0, 0, 0, 0.5);
+    padding: 10px 20px;
+    border-radius: 20px;
+    margin-top: 20px;
 }
 
 button {

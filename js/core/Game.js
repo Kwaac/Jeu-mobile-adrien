@@ -21,14 +21,18 @@ export default class Game {
         this.canvas.addEventListener('click', (e) => {
             if (this.state === 'BATTLE') {
                 const rect = this.canvas.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
+                const scaleX = this.canvas.width / rect.width;
+                const scaleY = this.canvas.height / rect.height;
+
+                const x = (e.clientX - rect.left) * scaleX;
+                const y = (e.clientY - rect.top) * scaleY;
+
                 this.battleSystem.handleInput(x, y);
             }
         });
 
-        this.economySystem = new EconomySystem(this); // Init economy first
-        this.partyManager = new PartyManager(this); // Init party manager
+        this.economySystem = new EconomySystem(this);
+        this.partyManager = new PartyManager(this);
         this.lootManager = new LootManager(this);
         this.questSystem = new QuestSystem(this);
         this.battleSystem = new BattleSystem(this);
@@ -41,13 +45,11 @@ export default class Game {
     startBattle() {
         this.state = 'BATTLE';
         this.uiManager.showScreen(this.uiManager.screens.BATTLE_HUD);
-        // this.battleSystem.initTestBattle(); // Removed, now controlled by QuestSystem
     }
 
     endBattle(victory = false) {
         this.state = 'MENU';
         if (victory) {
-            // Show Victory Screen (to be implemented in UIManager)
             alert("Victoire ! Quête terminée.");
             this.lootManager.collectLoot();
         } else {
@@ -62,7 +64,7 @@ export default class Game {
         this.height = window.innerHeight;
         this.canvas.width = this.width;
         this.canvas.height = this.height;
-        this.ctx.imageSmoothingEnabled = false; // Pixel art style preference
+        this.ctx.imageSmoothingEnabled = false;
     }
 
     start() {
@@ -97,10 +99,5 @@ export default class Game {
         if (this.state === 'BATTLE') {
             this.battleSystem.draw(this.ctx);
         }
-
-        // Debug Info
-        // this.ctx.fillStyle = 'white';
-        // this.ctx.font = '16px Arial';
-        // this.ctx.fillText(`State: ${this.state}`, 10, 20);
     }
 }

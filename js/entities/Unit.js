@@ -43,8 +43,8 @@ export default class Unit {
         // Visual properties (placeholder)
         this.x = 0;
         this.y = 0;
-        this.width = 50;
-        this.height = 50;
+        this.width = 100; // Increased from 50 for better visibility and easier clicking
+        this.height = 100; // Increased from 50
         this.color = isPlayer ? '#3498db' : '#e74c3c';
     }
 

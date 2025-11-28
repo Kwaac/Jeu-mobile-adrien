@@ -380,6 +380,7 @@ export default class UIManager {
             `;
 
             el.querySelector('button').addEventListener('click', () => {
+                console.log(`Clic sur commencer la quête : ${quest.name}`);
                 this.game.startBattle();
                 this.game.questSystem.startQuest(quest.id);
             });
