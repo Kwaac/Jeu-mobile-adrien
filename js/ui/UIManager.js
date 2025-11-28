@@ -28,21 +28,81 @@ export default class UIManager {
         mainMenu.className = 'screen';
         mainMenu.innerHTML = `
             <h1>Brave RPG</h1>
-            <button id="btn-battle">Battle</button>
-            <button id="btn-equip">Equipment</button>
-            <button id="btn-shop">Shop</button>
+            <button id="btn-battle">Combat</button>
+            <button id="btn-equip">Équipement</button>
+            <button id="btn-shop">Boutique</button>
         `;
         mainMenu.style.display = 'none';
         this.uiLayer.appendChild(mainMenu);
 
-        // Create Equipment Screen
+        // Create Equipment Screen - NOUVELLE VERSION COMPLÈTE
         const equipScreen = document.createElement('div');
         equipScreen.id = this.screens.EQUIPMENT;
-        equipScreen.className = 'screen';
+        equipScreen.className = 'screen equipment-screen';
         equipScreen.innerHTML = `
-            <h2>Equipment</h2>
-            <div id="equipment-list" style="overflow-y: auto; max-height: 60%; width: 80%; background: rgba(255,255,255,0.1); padding: 10px;"></div>
-            <button id="btn-back-menu">Back</button>
+            <div class="equipment-container">
+                <div class="character-list">
+                    <div class="party-section">
+                        <h3>⚔️ Équipe de Combat</h3>
+                        <div id="party-list" class="unit-list"></div>
+                    </div>
+                    <hr class="separator">
+                    <div class="owned-section">
+                        <h3>📦 Personnages Possédés</h3>
+                        <div id="owned-list" class="unit-list"></div>
+                    </div>
+                </div>
+                <div class="character-detail">
+                    <div id="no-selection" class="no-selection">
+                        <p>👈 Sélectionnez un personnage</p>
+                    </div>
+                    <div id="character-info" class="character-info" style="display: none;">
+                        <div class="character-display">
+                            <div class="character-sprite" id="char-sprite"></div>
+                            <div class="character-header">
+                                <h2 id="char-name">-</h2>
+                                <div class="character-meta">
+                                    <span id="char-element" class="element-badge">-</span>
+                                    <span id="char-rarity" class="rarity-badge">-</span>
+                                </div>
+                                <p id="char-description" class="description">-</p>
+                            </div>
+                        </div>
+                        <div class="character-stats">
+                            <h3>📊 Statistiques</h3>
+                            <div id="stats-display" class="stats-grid"></div>
+                        </div>
+                        <div class="character-equipment">
+                            <h3>🎒 Équipement</h3>
+                            <div class="equipment-slots">
+                                <div class="equipment-slot" data-slot="weapon">
+                                    <span class="slot-label">⚔️ Arme :</span>
+                                    <div id="slot-weapon" class="slot-content">Vide</div>
+                                    <button class="btn-unequip" data-slot="weapon" style="display: none;">✖</button>
+                                </div>
+                                <div class="equipment-slot" data-slot="armor">
+                                    <span class="slot-label">🛡️ Armure :</span>
+                                    <div id="slot-armor" class="slot-content">Vide</div>
+                                    <button class="btn-unequip" data-slot="armor" style="display: none;">✖</button>
+                                </div>
+                                <div class="equipment-slot" data-slot="accessory">
+                                    <span class="slot-label">💍 Accessoire :</span>
+                                    <div id="slot-accessory" class="slot-content">Vide</div>
+                                    <button class="btn-unequip" data-slot="accessory" style="display: none;">✖</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="inventory-section">
+                            <h3>🎁 Inventaire</h3>
+                            <div id="inventory-items" class="inventory-grid"></div>
+                        </div>
+                        <div class="party-actions">
+                            <button id="btn-toggle-party" class="btn-party-toggle">Ajouter à l'équipe</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button id="btn-back-equip" class="btn-back">← Retour</button>
         `;
         equipScreen.style.display = 'none';
         this.uiLayer.appendChild(equipScreen);
@@ -52,8 +112,8 @@ export default class UIManager {
         battleHud.id = this.screens.BATTLE_HUD;
         battleHud.className = 'screen';
         battleHud.innerHTML = `
-            <div id="battle-info">Battle Start!</div>
-            <button id="btn-flee">Flee</button>
+            <div id="battle-info">Début du combat !</div>
+            <button id="btn-flee">Fuir</button>
         `;
         battleHud.style.display = 'none';
         this.uiLayer.appendChild(battleHud);
@@ -63,19 +123,19 @@ export default class UIManager {
         shopScreen.id = this.screens.SHOP;
         shopScreen.className = 'screen';
         shopScreen.innerHTML = `
-            <h2>Shop</h2>
+            <h2>Boutique</h2>
             <div style="display: flex; gap: 20px;">
                 <div style="border: 1px solid white; padding: 10px;">
-                    <h3>Gems Shop (Real Money)</h3>
-                    <button id="btn-buy-gems-1">Buy 1 Gem ($0.99)</button>
-                    <button id="btn-buy-gems-10">Buy 10 Gems ($8.99)</button>
+                    <h3>Boutique de Gemmes (Argent Réel)</h3>
+                    <button id="btn-buy-gems-1">Acheter 1 Gemme (0,99€)</button>
+                    <button id="btn-buy-gems-10">Acheter 10 Gemmes (8,99€)</button>
                 </div>
                 <div style="border: 1px solid white; padding: 10px;">
-                    <h3>Summon Gate</h3>
-                    <button id="btn-summon">Summon Unit (5 Gems)</button>
+                    <h3>Portail d'Invocation</h3>
+                    <button id="btn-summon">Invoquer une Unité (5 Gemmes)</button>
                 </div>
             </div>
-            <button id="btn-back-shop">Back</button>
+            <button id="btn-back-shop">Retour</button>
         `;
         shopScreen.style.display = 'none';
         this.uiLayer.appendChild(shopScreen);
@@ -85,9 +145,9 @@ export default class UIManager {
         questScreen.id = this.screens.QUEST_SELECT;
         questScreen.className = 'screen';
         questScreen.innerHTML = `
-            <h2>Select Quest</h2>
+            <h2>Sélectionner une Quête</h2>
             <div id="quest-list" style="overflow-y: auto; max-height: 60%; width: 80%; background: rgba(255,255,255,0.1); padding: 10px;"></div>
-            <button id="btn-back-quest">Back</button>
+            <button id="btn-back-quest">Retour</button>
         `;
         questScreen.style.display = 'none';
         this.uiLayer.appendChild(questScreen);
@@ -95,31 +155,73 @@ export default class UIManager {
         this.bindEvents();
     }
 
-    updateEquipmentList() {
-        const list = document.getElementById('equipment-list');
-        list.innerHTML = '';
+    updateEquipmentScreen() {
+        this.updateCharacterList();
+        // Select first unit in party by default if none selected
+        const party = this.game.partyManager.getParty();
+        if (party.length > 0 && !this.game.partyManager.getSelectedUnit()) {
+            this.selectCharacter(party[0]);
+        }
+    }
 
-        this.game.economySystem.inventory.forEach(item => {
-            const itemEl = document.createElement('div');
-            itemEl.style.padding = '10px';
-            itemEl.style.borderBottom = '1px solid #eee';
-            itemEl.style.display = 'flex';
-            itemEl.style.justifyContent = 'space-between';
+    updateCharacterList() {
+        const partyList = document.getElementById('party-list');
+        const ownedList = document.getElementById('owned-list');
 
-            itemEl.innerHTML = `
-                <span>${item.name} (${item.type})</span>
-                <button style="padding: 5px 10px; font-size: 12px;">Equip</button>
-            `;
+        if (!partyList || !ownedList) return;
 
-            itemEl.querySelector('button').addEventListener('click', () => {
-                if (this.game.battleSystem.playerUnits.length > 0) {
-                    this.game.battleSystem.playerUnits[0].equipment[item.slot] = item;
-                    alert(`Equipped ${item.name} to ${this.game.battleSystem.playerUnits[0].name}`);
-                }
-            });
+        partyList.innerHTML = '';
+        ownedList.innerHTML = '';
 
-            list.appendChild(itemEl);
+        const party = this.game.partyManager.getParty();
+        const notInParty = this.game.partyManager.getUnitsNotInParty();
+        const selected = this.game.partyManager.getSelectedUnit();
+
+        party.forEach(unit => {
+            const card = this.createCharacterCard(unit, true, selected === unit);
+            partyList.appendChild(card);
         });
+
+        notInParty.forEach(unit => {
+            const card = this.createCharacterCard(unit, false, selected === unit);
+            ownedList.appendChild(card);
+        });
+    }
+
+    createCharacterCard(unit, inParty, isSelected) {
+        const card = document.createElement('div');
+        card.className = 'character-card';
+        if (inParty) card.classList.add('in-party');
+        if (isSelected) card.classList.add('selected');
+
+        card.innerHTML = `
+            <div class="char-name">${unit.name}</div>
+            <div class="char-element">${unit.element}</div>
+        `;
+
+        card.addEventListener('click', () => {
+            this.selectCharacter(unit);
+        });
+
+        return card;
+    }
+
+    selectCharacter(unit) {
+        this.game.partyManager.selectUnit(unit);
+
+        document.getElementById('no-selection').style.display = 'none';
+        document.getElementById('character-info').style.display = 'block';
+
+        this.updateCharacterDetail(unit);
+        this.updateCharacterList();
+    }
+
+    updateCharacterDetail(unit) {
+        // Placeholder - sera complété en Phase 3
+        document.getElementById('char-name').textContent = unit.name;
+        document.getElementById('char-element').textContent = unit.element.toUpperCase();
+        document.getElementById('char-rarity').textContent = '⭐'.repeat(unit.rarity);
+        document.getElementById('char-description').textContent = unit.description || 'Aucune description';
     }
 
     updateQuestList() {
@@ -139,11 +241,11 @@ export default class UIManager {
                     <h3>${quest.name}</h3>
                     <p>${quest.description}</p>
                 </div>
-                <button>Start (${quest.energyCost} Energy)</button>
+                <button>Commencer (${quest.energyCost} Énergie)</button>
             `;
 
             el.querySelector('button').addEventListener('click', () => {
-                this.game.startBattle(); // Switch state
+                this.game.startBattle();
                 this.game.questSystem.startQuest(quest.id);
             });
 
@@ -160,7 +262,7 @@ export default class UIManager {
             this.showScreen(this.screens.EQUIPMENT);
         });
 
-        document.getElementById('btn-back-menu').addEventListener('click', () => {
+        document.getElementById('btn-back-equip').addEventListener('click', () => {
             this.showScreen(this.screens.MAIN_MENU);
         });
 
@@ -214,11 +316,12 @@ export default class UIManager {
         this.currentScreen = screenId;
 
         if (screenId === this.screens.EQUIPMENT) {
-            this.updateEquipmentList();
+            this.updateEquipmentScreen();
         } else if (screenId === this.screens.QUEST_SELECT) {
             this.updateQuestList();
         }
     }
+
     updateBattleInfo(text) {
         const info = document.getElementById('battle-info');
         if (info) info.textContent = text;
@@ -237,7 +340,7 @@ export default class UIManager {
         el.style.pointerEvents = 'none';
         el.style.animation = 'floatUp 1s ease-out forwards';
 
-        // Add keyframes if not exists (hacky, better in CSS)
+        // Add keyframes if not exists
         if (!document.getElementById('anim-style')) {
             const style = document.createElement('style');
             style.id = 'anim-style';
