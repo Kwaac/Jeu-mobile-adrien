@@ -57,6 +57,7 @@ export default class BattleSystem {
         this.selectedUnit = null; // Unit selected to attack
         this.hoveredEnemy = null; // Enemy currently hovered (for future mouse support)
         this.animations = []; // Active animations
+        this.bbMode = false; // BB mode activated
     }
 
     initTestBattle() {
@@ -120,8 +121,30 @@ export default class BattleSystem {
     handleInput(x, y) {
         if (this.turnState !== 'PLAYER_PHASE') return;
 
-        // If a unit is already selected, check if clicking on an enemy
+        // If BB mode is active, clicking anywhere triggers the BB
+        if (this.bbMode && this.selectedUnit) {
+            this.executePlayerBB(this.selectedUnit);
+            this.bbMode = false;
+            this.selectedUnit = null;
+            this.game.uiManager.updateBattleInfo('Phase Joueur - Choisissez une unité');
+            return;
+        }
+
+        // If a unit is already selected, check if clicking on an enemy or same unit
         if (this.selectedUnit) {
+            // Check if clicking on the same unit (to activate BB)
+            const clickedSameUnit =
+                x >= this.selectedUnit.x && x <= this.selectedUnit.x + this.selectedUnit.width &&
+                y >= this.selectedUnit.y && y <= this.selectedUnit.y + this.selectedUnit.height;
+
+            if (clickedSameUnit && this.selectedUnit.isBbReady()) {
+                // Activate BB mode
+                this.bbMode = true;
+                this.game.uiManager.updateBattleInfo(`${this.selectedUnit.name} - Mode BB ! Cliquez pour lancer`);
+                return;
+            }
+
+            // Check if clicking on an enemy
             const clickedEnemy = this.enemyUnits.find(enemy =>
                 x >= enemy.x && x <= enemy.x + enemy.width &&
                 y >= enemy.y && y <= enemy.y + enemy.height
@@ -147,8 +170,12 @@ export default class BattleSystem {
                 y >= unit.y && y <= unit.y + unit.height) {
 
                 this.selectedUnit = unit;
-                console.log(`${unit.name} selected - Click on an enemy to attack`);
-                this.game.uiManager.updateBattleInfo(`${unit.name} sélectionné - Choisissez une cible`);
+                console.log(`${unit.name} selected`);
+                if (unit.isBbReady()) {
+                    this.game.uiManager.updateBattleInfo(`${unit.name} - BB prêt ! Cliquez à nouveau pour activer`);
+                } else {
+                    this.game.uiManager.updateBattleInfo(`${unit.name} sélectionné - Choisissez une cible`);
+                }
             }
         });
     }
@@ -286,19 +313,42 @@ export default class BattleSystem {
             );
             ctx.setLineDash([]); // Reset dash
 
-            // Draw targeting indicators on enemies
-            this.enemyUnits.forEach(enemy => {
-                if (!enemy.isDead()) {
-                    ctx.strokeStyle = 'rgba(255, 0, 0, 0.5)';
-                    ctx.lineWidth = 2;
-                    ctx.strokeRect(
-                        enemy.x - 2,
-                        enemy.y - 2,
-                        enemy.width + 4,
-                        enemy.height + 4
-                    );
-                }
-            });
+            // Draw targeting indicators on enemies (only if not in BB mode)
+            if (!this.bbMode) {
+                this.enemyUnits.forEach(enemy => {
+                    if (!enemy.isDead()) {
+                        ctx.strokeStyle = 'rgba(255, 0, 0, 0.5)';
+                        ctx.lineWidth = 2;
+                        ctx.strokeRect(
+                            enemy.x - 2,
+                            enemy.y - 2,
+                            enemy.width + 4,
+                            enemy.height + 4
+                        );
+                    }
+                });
+            }
+        }
+
+        // Draw BB mode indicator
+        if (this.bbMode && this.selectedUnit) {
+            // Golden overlay
+            ctx.fillStyle = 'rgba(255, 215, 0, 0.2)';
+            ctx.fillRect(0, 0, this.game.width, this.game.height);
+
+            // BB text
+            ctx.fillStyle = 'gold';
+            ctx.font = 'bold 48px Arial';
+            ctx.textAlign = 'center';
+            ctx.strokeStyle = 'black';
+            ctx.lineWidth = 3;
+            ctx.strokeText('BRAVE BURST!', this.game.width / 2, 80);
+            ctx.fillText('BRAVE BURST!', this.game.width / 2, 80);
+
+            // Instruction text
+            ctx.font = '24px Arial';
+            ctx.strokeText('Cliquez pour lancer', this.game.width / 2, 120);
+            ctx.fillText('Cliquez pour lancer', this.game.width / 2, 120);
         }
     }
 }
