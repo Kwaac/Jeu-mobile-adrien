@@ -217,11 +217,146 @@ export default class UIManager {
     }
 
     updateCharacterDetail(unit) {
-        // Placeholder - sera complété en Phase 3
         document.getElementById('char-name').textContent = unit.name;
         document.getElementById('char-element').textContent = unit.element.toUpperCase();
         document.getElementById('char-rarity').textContent = '⭐'.repeat(unit.rarity);
         document.getElementById('char-description').textContent = unit.description || 'Aucune description';
+
+        const sprite = document.getElementById('char-sprite');
+        const colors = {
+            'fire': '#e74c3c', 'water': '#3498db', 'earth': '#27ae60',
+            'thunder': '#f39c12', 'light': '#ecf0f1', 'dark': '#34495e', 'none': '#95a5a6'
+        };
+        sprite.style.backgroundColor = colors[unit.element] || colors['none'];
+
+        this.updateStatsDisplay(unit);
+        this.updateEquipmentSlots(unit);
+        this.updateInventoryForEquip(unit);
+
+        const btn = document.getElementById('btn-toggle-party');
+        if (this.game.partyManager.isInParty(unit)) {
+            btn.textContent = "Retirer de l'équipe";
+            btn.onclick = () => {
+                this.game.partyManager.removeFromParty(unit);
+                this.updateCharacterList();
+                this.updateCharacterDetail(unit);
+            };
+        } else {
+            btn.textContent = "Ajouter à l'équipe";
+            btn.onclick = () => {
+                if (this.game.partyManager.addToParty(unit)) {
+                    this.updateCharacterList();
+                    this.updateCharacterDetail(unit);
+                } else {
+                    alert('Équipe complète ! (Maximum 5 unités)');
+                }
+            };
+        }
+    }
+
+    updateStatsDisplay(unit) {
+        const statsDisplay = document.getElementById('stats-display');
+        const atkBonus = unit.getStat('atk') - unit.atk;
+        const defBonus = unit.getStat('def') - unit.def;
+        const maxHp = unit.getStat('maxHp');
+
+        statsDisplay.innerHTML = `
+            <div class="stat-row level-row">
+                <span class="stat-label">⭐ Niveau :</span>
+                <span class="stat-value">${unit.level}</span>
+            </div>
+            <div class="stat-row xp-row">
+                <span class="stat-label">📊 XP :</span>
+                <span class="stat-value">${unit.xp} / ${unit.xpToNextLevel}</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">❤️ HP :</span>
+                <span class="stat-value">${unit.hp} / ${maxHp}</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">⚔️ ATK :</span>
+                <span class="stat-value">${unit.atk}${atkBonus > 0 ? ' (+' + atkBonus + ')' : ''}</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">🛡️ DEF :</span>
+                <span class="stat-value">${unit.def}${defBonus > 0 ? ' (+' + defBonus + ')' : ''}</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">💫 BB :</span>
+                <span class="stat-value">${unit.bbGauge} / ${unit.maxBbGauge}</span>
+            </div>
+        `;
+    }
+
+    updateEquipmentSlots(unit) {
+        const equipment = unit.getEquipment();
+
+        ['weapon', 'armor', 'accessory'].forEach(slot => {
+            const slotEl = document.getElementById(`slot-${slot}`);
+            const unequipBtn = document.querySelector(`.btn-unequip[data-slot="${slot}"]`);
+
+            if (equipment[slot]) {
+                const statsStr = this.getItemStatsString(equipment[slot]);
+                slotEl.innerHTML = `
+                    <div class="equipped-name">${equipment[slot].name}</div>
+                    <div class="equipped-desc">${statsStr}</div>
+                `;
+                slotEl.classList.add('equipped');
+                unequipBtn.style.display = 'inline-block';
+                unequipBtn.onclick = () => {
+                    const item = unit.unequipItem(slot);
+                    if (item) {
+                        this.game.economySystem.addItem(item);
+                    }
+                    this.updateCharacterDetail(unit);
+                };
+            } else {
+                slotEl.textContent = 'Vide';
+                slotEl.classList.remove('equipped');
+                unequipBtn.style.display = 'none';
+            }
+        });
+    }
+
+    updateInventoryForEquip(unit) {
+        const inventoryGrid = document.getElementById('inventory-items');
+        inventoryGrid.innerHTML = '';
+
+        const inventory = this.game.economySystem.inventory;
+
+        if (inventory.length === 0) {
+            inventoryGrid.innerHTML = "<p class='empty-message'>Aucun objet dans l'inventaire</p>";
+            return;
+        }
+
+        inventory.forEach(item => {
+            const itemCard = document.createElement('div');
+            itemCard.className = 'inventory-item';
+            const statsStr = this.getItemStatsString(item);
+            itemCard.innerHTML = `
+                <div class="item-name">${item.name}</div>
+                <div class="item-desc">${statsStr}</div>
+                <div class="item-type">${item.slot}</div>
+            `;
+
+            itemCard.addEventListener('click', () => {
+                if (unit.equipItem(item)) {
+                    this.game.economySystem.removeItem(item);
+                    this.updateCharacterDetail(unit);
+                }
+            });
+
+            inventoryGrid.appendChild(itemCard);
+        });
+    }
+
+    getItemStatsString(item) {
+        if (!item || !item.stats) return '';
+        const stats = [];
+        if (item.stats.atk) stats.push(`ATK +${item.stats.atk}`);
+        if (item.stats.def) stats.push(`DEF +${item.stats.def}`);
+        if (item.stats.maxHp) stats.push(`HP +${item.stats.maxHp}`);
+        return stats.join(', ');
     }
 
     updateQuestList() {
