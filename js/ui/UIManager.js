@@ -602,6 +602,7 @@ export default class UIManager {
         });
 
         document.getElementById('btn-back-inventory').addEventListener('click', () => {
+            console.log('Back button clicked - returning to main menu');
             this.showScreen(this.screens.MAIN_MENU);
         });
 
