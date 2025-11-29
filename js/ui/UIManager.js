@@ -9,7 +9,8 @@ export default class UIManager {
             BATTLE_HUD: 'battle-hud',
             EQUIPMENT: 'equipment-screen',
             SHOP: 'shop-screen',
-            QUEST_SELECT: 'quest-screen'
+            QUEST_SELECT: 'quest-screen',
+            EVOLUTION: 'evolution-screen'
         };
 
         this.initScreens();
@@ -214,6 +215,40 @@ export default class UIManager {
         questScreen.style.display = 'none';
         this.uiLayer.appendChild(questScreen);
 
+        // Create Evolution Screen
+        const evolutionScreen = document.createElement('div');
+        evolutionScreen.id = this.screens.EVOLUTION;
+        evolutionScreen.className = 'screen';
+        evolutionScreen.innerHTML = `
+            <h2>🌟 Évolution</h2>
+            <div class="evolution-container">
+                <div class="evolution-source">
+                    <h3>Avant</h3>
+                    <div id="evo-before" class="evolution-preview">
+                        <p>Sélectionnez une unité</p>
+                    </div>
+                </div>
+                <div class="evolution-arrow">→</div>
+                <div class="evolution-result">
+                    <h3>Après</h3>
+                    <div id="evo-after" class="evolution-preview">
+                        <p>---</p>
+                    </div>
+                </div>
+            </div>
+            <div class="evolution-requirements">
+                <h3>Matériaux Requis</h3>
+                <div id="evo-materials"></div>
+                <div id="evo-cost" class="cost-display"></div>
+            </div>
+            <div class="evolution-actions">
+                <button id="btn-evolve" class="btn-evolve" disabled>Évoluer</button>
+                <button id="btn-back-evolution" class="btn-back">← Retour</button>
+            </div>
+        `;
+        evolutionScreen.style.display = 'none';
+        this.uiLayer.appendChild(evolutionScreen);
+
         this.bindEvents();
     }
 
@@ -256,15 +291,23 @@ export default class UIManager {
         if (inParty) card.classList.add('in-party');
         if (isSelected) card.classList.add('selected');
 
+        // Check if evolution is possible
+        const canEvolve = unit.canEvolve();
+        const duplicates = this.game.evolutionSystem.findDuplicates(unit);
+        const hasEnoughDuplicates = duplicates.length >= 2;
+        const evolutionPossible = canEvolve && hasEnoughDuplicates;
+
+        const evolutionBadge = evolutionPossible
+            ? '<span class="evolution-badge">🌟 Évolution!</span>'
+            : '';
+
         card.innerHTML = `
             <div class="char-name">${unit.name}</div>
-            <div class="char-element">${unit.element}</div>
+            <div class="char-element">${unit.element} ${unit.getRarityStars()}</div>
+            ${evolutionBadge}
         `;
 
-        card.addEventListener('click', () => {
-            this.selectCharacter(unit);
-        });
-
+        card.addEventListener('click', () => this.selectCharacter(unit));
         return card;
     }
 
@@ -322,6 +365,10 @@ export default class UIManager {
         const defBonus = unit.getStat('def') - unit.def;
         const maxHp = unit.getStat('maxHp');
 
+        const evolutionButton = unit.canEvolve()
+            ? `<button id="btn-evolve-unit" class="btn-evolve" style="margin-top: 16px; width: 100%;">🌟 Évoluer (${unit.getRarityStars()} → ${'★'.repeat(unit.currentRarity + 1)})</button>`
+            : '';
+
         statsDisplay.innerHTML = `
             <div class="stat-row level-row">
                 <span class="stat-label">⭐ Niveau :</span>
@@ -330,6 +377,10 @@ export default class UIManager {
             <div class="stat-row xp-row">
                 <span class="stat-label">📊 XP :</span>
                 <span class="stat-value">${unit.xp} / ${unit.xpToNextLevel}</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">🌟 Rang :</span>
+                <span class="stat-value">${unit.getRarityStars()} / ${unit.getMaxRarityStars()}</span>
             </div>
             <div class="stat-row">
                 <span class="stat-label">❤️ HP :</span>
@@ -347,7 +398,18 @@ export default class UIManager {
                 <span class="stat-label">💫 BB :</span>
                 <span class="stat-value">${unit.bbGauge} / ${unit.maxBbGauge}</span>
             </div>
+            ${evolutionButton}
         `;
+
+        // Add event listener for evolution button if it exists
+        if (unit.canEvolve()) {
+            setTimeout(() => {
+                const btn = document.getElementById('btn-evolve-unit');
+                if (btn) {
+                    btn.onclick = () => this.openEvolutionScreen(unit);
+                }
+            }, 0);
+        }
     }
 
     updateEquipmentSlots(unit) {
@@ -503,6 +565,15 @@ export default class UIManager {
         document.getElementById('btn-back-quest').addEventListener('click', () => {
             this.showScreen(this.screens.MAIN_MENU);
         });
+
+        // Evolution Events
+        document.getElementById('btn-back-evolution').addEventListener('click', () => {
+            this.showScreen(this.screens.EQUIPMENT);
+        });
+
+        document.getElementById('btn-evolve').addEventListener('click', () => {
+            this.performEvolution();
+        });
     }
 
     showScreen(screenId) {
@@ -601,5 +672,107 @@ export default class UIManager {
 
         this.uiLayer.appendChild(el);
         setTimeout(() => el.remove(), 2000);
+    }
+
+    // Evolution Methods
+    openEvolutionScreen(unit) {
+        this.selectedEvolutionUnit = unit;
+        this.showScreen(this.screens.EVOLUTION);
+        this.updateEvolutionScreen();
+    }
+
+    updateEvolutionScreen() {
+        const unit = this.selectedEvolutionUnit;
+        if (!unit) return;
+
+        const beforeDiv = document.getElementById('evo-before');
+        const afterDiv = document.getElementById('evo-after');
+        const materialsDiv = document.getElementById('evo-materials');
+        const costDiv = document.getElementById('evo-cost');
+        const evolveBtn = document.getElementById('btn-evolve');
+
+        // Display current unit stats
+        beforeDiv.innerHTML = `
+            <div class="unit-preview">
+                <h4>${unit.name}</h4>
+                <p class="rarity-stars">${unit.getRarityStars()}</p>
+                <p>Niveau ${unit.level}</p>
+                <div class="stats-preview">
+                    <p>HP: ${unit.hp}</p>
+                    <p>ATK: ${unit.atk}</p>
+                    <p>DEF: ${unit.def}</p>
+                </div>
+            </div>
+        `;
+
+        // Check if evolution is possible
+        const check = this.game.evolutionSystem.canPerformEvolution(unit);
+
+        if (check.possible) {
+            // Show preview of evolved stats
+            const preview = this.game.evolutionSystem.getEvolutionPreview(unit);
+            afterDiv.innerHTML = `
+                <div class="unit-preview">
+                    <h4>${unit.name}</h4>
+                    <p class="rarity-stars">${'★'.repeat(preview.nextRarity)}</p>
+                    <p>Niveau 1</p>
+                    <div class="stats-preview">
+                        <p>HP: ${preview.nextStats.hp} <span class="stat-increase">+${preview.nextStats.hp - preview.currentStats.hp}</span></p>
+                        <p>ATK: ${preview.nextStats.atk} <span class="stat-increase">+${preview.nextStats.atk - preview.currentStats.atk}</span></p>
+                        <p>DEF: ${preview.nextStats.def} <span class="stat-increase">+${preview.nextStats.def - preview.currentStats.def}</span></p>
+                    </div>
+                </div>
+            `;
+
+            // Show materials
+            materialsDiv.innerHTML = `
+                <p>✓ 2 Duplicatas disponibles</p>
+            `;
+
+            // Show cost
+            costDiv.innerHTML = `
+                <p>💰 Coût: ${check.cost.toLocaleString()} Or</p>
+            `;
+
+            // Enable button
+            evolveBtn.disabled = false;
+        } else {
+            // Show why evolution is not possible
+            afterDiv.innerHTML = `
+                <div class="unit-preview">
+                    <p>Évolution impossible</p>
+                </div>
+            `;
+
+            materialsDiv.innerHTML = `
+                <p class="error">✗ ${check.reason}</p>
+            `;
+
+            costDiv.innerHTML = '';
+            evolveBtn.disabled = true;
+        }
+    }
+
+    performEvolution() {
+        const unit = this.selectedEvolutionUnit;
+        if (!unit) return;
+
+        const check = this.game.evolutionSystem.canPerformEvolution(unit);
+        if (!check.possible) {
+            alert(check.reason);
+            return;
+        }
+
+        // Perform evolution
+        const success = this.game.evolutionSystem.evolveUnit(unit, check.duplicates);
+
+        if (success) {
+            alert(`✨ ${unit.name} a évolué vers ${unit.getRarityStars()} !`);
+            this.updateResourceDisplay();
+            this.showScreen(this.screens.EQUIPMENT);
+            this.updateEquipmentScreen();
+        } else {
+            alert('Échec de l\'évolution');
+        }
     }
 }
