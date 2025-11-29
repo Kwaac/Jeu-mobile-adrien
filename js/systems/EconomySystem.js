@@ -6,7 +6,8 @@ export default class EconomySystem {
         this.resources = {
             zel: 0,
             karma: 0,
-            gems: 0
+            gems: 0,
+            gold: 10000  // Or de départ pour tester l'évolution
         };
         this.inventory = [];
 
