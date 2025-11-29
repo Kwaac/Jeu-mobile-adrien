@@ -596,15 +596,23 @@ export default class UIManager {
             }
         });
 
+
         // Inventory Events
+        const backBtn = document.getElementById('btn-back-inventory');
+        console.log('btn-back-inventory element:', backBtn);
+
         document.getElementById('card-inventory').addEventListener('click', () => {
             this.openInventoryScreen();
         });
 
-        document.getElementById('btn-back-inventory').addEventListener('click', () => {
-            console.log('Back button clicked - returning to main menu');
-            this.showScreen(this.screens.MAIN_MENU);
-        });
+        if (backBtn) {
+            backBtn.addEventListener('click', () => {
+                console.log('Back button clicked - returning to main menu');
+                this.showScreen(this.screens.MAIN_MENU);
+            });
+        } else {
+            console.error('btn-back-inventory not found!');
+        }
 
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
