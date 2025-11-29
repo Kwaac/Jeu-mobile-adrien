@@ -1,4 +1,5 @@
 import Unit from '../entities/Unit.js';
+import { getStatsForRarity } from '../data/UnitDatabase.js';
 
 export default class PartyManager {
     constructor(game) {
@@ -12,58 +13,38 @@ export default class PartyManager {
     }
 
     initializeDefaultUnits() {
-        // Créer des unités de test
-        const vargas = new Unit('Vargas', true, {
-            hp: 120,
-            atk: 18,
-            def: 6,
-            maxBbGauge: 20,
-            element: 'fire',
-            rarity: 5,
-            description: 'Guerrier du feu légendaire'
-        });
+        // Créer des unités de test avec le nouveau système
 
-        const selena = new Unit('Selena', true, {
-            hp: 110,
-            atk: 15,
-            def: 8,
-            maxBbGauge: 25,
-            element: 'water',
-            rarity: 5,
-            description: 'Maîtresse des eaux'
-        });
+        // 3x Chevalier de Feu 3★ (pour tester l'évolution)
+        const fireKnight1 = new Unit('Chevalier de Feu', true, getStatsForRarity('fire_knight', 3));
+        const fireKnight2 = new Unit('Chevalier de Feu', true, getStatsForRarity('fire_knight', 3));
+        const fireKnight3 = new Unit('Chevalier de Feu', true, getStatsForRarity('fire_knight', 3));
 
-        const lance = new Unit('Lance', true, {
-            hp: 130,
-            atk: 14,
-            def: 10,
-            maxBbGauge: 30,
-            element: 'earth',
-            rarity: 4,
-            description: 'Protecteur de la terre'
-        });
+        // 2x Mage Aquatique 3★
+        const waterMage1 = new Unit('Mage Aquatique', true, getStatsForRarity('water_mage', 3));
+        const waterMage2 = new Unit('Mage Aquatique', true, getStatsForRarity('water_mage', 3));
 
-        const eze = new Unit('Eze', true, {
-            hp: 100,
-            atk: 20,
-            def: 5,
-            maxBbGauge: 22,
-            element: 'thunder',
-            rarity: 5,
-            description: 'Maître de la foudre'
-        });
+        // 1x Guerrier Terrestre 4★
+        const earthWarrior = new Unit('Guerrier Terrestre', true, getStatsForRarity('earth_warrior', 4));
+
+        // 1x Paladin Lumineux 5★
+        const lightPaladin = new Unit('Paladin Lumineux', true, getStatsForRarity('light_paladin', 5));
 
         // Ajouter les unités
-        this.addUnit(vargas);
-        this.addUnit(selena);
-        this.addUnit(lance);
-        this.addUnit(eze);
+        this.addUnit(fireKnight1);
+        this.addUnit(fireKnight2);
+        this.addUnit(fireKnight3);
+        this.addUnit(waterMage1);
+        this.addUnit(waterMage2);
+        this.addUnit(earthWarrior);
+        this.addUnit(lightPaladin);
 
-        // Ajouter Vargas et Selena à l'équipe de combat
-        this.addToParty(vargas);
-        this.addToParty(selena);
+        // Ajouter à l'équipe de combat
+        this.addToParty(fireKnight1);
+        this.addToParty(waterMage1);
+        this.addToParty(earthWarrior);
 
-        console.log('PartyManager initialisé avec 4 unités, 2 dans l\'équipe');
+        console.log('PartyManager initialisé avec 7 unités (dont duplicatas pour test évolution)');
     }
 
     addUnit(unit) {
@@ -132,6 +113,10 @@ export default class PartyManager {
     selectUnit(unit) {
         this.selectedUnit = unit;
         console.log(`Unité sélectionnée : ${unit.name}`);
+    }
+
+    getAllUnits() {
+        return this.ownedUnits;
     }
 
     getSelectedUnit() {

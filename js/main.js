@@ -8,6 +8,6 @@ window.addEventListener('load', () => {
     console.log('Initializing Game...');
     const canvas = document.getElementById('game-canvas');
     const game = new Game(canvas);
-    // window.game = game; // Removed global exposure for production cleanliness
+    window.game = game; // Expose for console testing
     game.start();
 });

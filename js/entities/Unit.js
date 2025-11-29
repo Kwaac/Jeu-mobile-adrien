@@ -6,6 +6,13 @@ export default class Unit {
         // Apply stats
         Object.assign(this, stats);
 
+        // Rank/Evolution system
+        this.unitId = stats.unitId || 'unknown';
+        this.baseRarity = stats.baseRarity || 3;
+        this.currentRarity = stats.currentRarity || stats.baseRarity || 3;
+        this.maxRarity = stats.maxRarity || 6;
+        this.evolutionCount = stats.evolutionCount || 0;
+
         // Ensure core stats exist
         this.hp = this.hp || 100;
         this.maxHp = this.hp;
@@ -26,7 +33,7 @@ export default class Unit {
 
         // Unit properties
         this.element = this.element || 'none';
-        this.rarity = this.rarity || 3;
+        this.rarity = this.currentRarity; // Alias for compatibility
         this.description = this.description || '';
 
         // Equipment system
@@ -208,5 +215,32 @@ export default class Unit {
         ctx.fillStyle = '#3498db'; // Blue for BB
         if (this.isBbReady()) ctx.fillStyle = 'gold'; // Gold when full
         ctx.fillRect(this.x, this.y - 4, this.width * bbPercent, 3);
+    }
+
+    // Evolution methods
+    canEvolve() {
+        return this.currentRarity < this.maxRarity;
+    }
+
+    getEvolutionCost() {
+        // Import will be done at runtime
+        const costs = {
+            1: 1000,
+            2: 2500,
+            3: 5000,
+            4: 10000,
+            5: 20000,
+            6: 35000,
+            7: 50000
+        };
+        return costs[this.currentRarity] || 0;
+    }
+
+    getRarityStars() {
+        return '★'.repeat(this.currentRarity);
+    }
+
+    getMaxRarityStars() {
+        return '★'.repeat(this.maxRarity);
     }
 }

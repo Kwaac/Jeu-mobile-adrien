@@ -118,32 +118,29 @@ export default class BattleSystem {
         }
     }
 
+
     handleInput(x, y) {
         if (this.turnState !== 'PLAYER_PHASE') return;
 
-        // If BB mode is active, clicking anywhere triggers the BB
-        if (this.bbMode && this.selectedUnit) {
-            this.executePlayerBB(this.selectedUnit);
-            this.bbMode = false;
-            this.selectedUnit = null;
-            this.game.uiManager.updateBattleInfo('Phase Joueur - Choisissez une unité');
-            return;
+        // Check if clicking on a BB button first
+        for (const unit of this.playerUnits) {
+            if (!unit.hasActed && unit.isBbReady()) {
+                const bbButtonX = unit.x + unit.width / 2 - 30;
+                const bbButtonY = unit.y + unit.height + 5;
+                const bbButtonWidth = 60;
+                const bbButtonHeight = 25;
+
+                if (x >= bbButtonX && x <= bbButtonX + bbButtonWidth &&
+                    y >= bbButtonY && y <= bbButtonY + bbButtonHeight) {
+                    console.log(`BB button clicked for ${unit.name}`);
+                    this.executePlayerBB(unit);
+                    return;
+                }
+            }
         }
 
-        // If a unit is already selected, check if clicking on an enemy or same unit
+        // If a unit is already selected, check if clicking on an enemy
         if (this.selectedUnit) {
-            // Check if clicking on the same unit (to activate BB)
-            const clickedSameUnit =
-                x >= this.selectedUnit.x && x <= this.selectedUnit.x + this.selectedUnit.width &&
-                y >= this.selectedUnit.y && y <= this.selectedUnit.y + this.selectedUnit.height;
-
-            if (clickedSameUnit && this.selectedUnit.isBbReady()) {
-                // Activate BB mode
-                this.bbMode = true;
-                this.game.uiManager.updateBattleInfo(`${this.selectedUnit.name} - Mode BB ! Cliquez pour lancer`);
-                return;
-            }
-
             // Check if clicking on an enemy
             const clickedEnemy = this.enemyUnits.find(enemy =>
                 x >= enemy.x && x <= enemy.x + enemy.width &&
@@ -172,7 +169,7 @@ export default class BattleSystem {
                 this.selectedUnit = unit;
                 console.log(`${unit.name} selected`);
                 if (unit.isBbReady()) {
-                    this.game.uiManager.updateBattleInfo(`${unit.name} - BB prêt ! Cliquez à nouveau pour activer`);
+                    this.game.uiManager.updateBattleInfo(`${unit.name} - BB prêt ! Cliquez sur le bouton BB ou une cible`);
                 } else {
                     this.game.uiManager.updateBattleInfo(`${unit.name} sélectionné - Choisissez une cible`);
                 }
@@ -350,5 +347,40 @@ export default class BattleSystem {
             ctx.strokeText('Cliquez pour lancer', this.game.width / 2, 120);
             ctx.fillText('Cliquez pour lancer', this.game.width / 2, 120);
         }
+
+        // Draw BB buttons under player units
+        this.playerUnits.forEach(unit => {
+            if (!unit.hasActed && unit.isBbReady()) {
+                const bbButtonX = unit.x + unit.width / 2 - 30;
+                const bbButtonY = unit.y + unit.height + 5;
+                const bbButtonWidth = 60;
+                const bbButtonHeight = 25;
+
+                // Button background with gradient
+                const gradient = ctx.createLinearGradient(bbButtonX, bbButtonY, bbButtonX, bbButtonY + bbButtonHeight);
+                gradient.addColorStop(0, '#ffd700');
+                gradient.addColorStop(1, '#ff8c00');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(bbButtonX, bbButtonY, bbButtonWidth, bbButtonHeight);
+
+                // Button border
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(bbButtonX, bbButtonY, bbButtonWidth, bbButtonHeight);
+
+                // Button text
+                ctx.fillStyle = '#000';
+                ctx.font = 'bold 14px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('BB', bbButtonX + bbButtonWidth / 2, bbButtonY + bbButtonHeight / 2);
+
+                // Glow effect
+                ctx.shadowColor = '#ffd700';
+                ctx.shadowBlur = 10;
+                ctx.strokeRect(bbButtonX, bbButtonY, bbButtonWidth, bbButtonHeight);
+                ctx.shadowBlur = 0;
+            }
+        });
     }
 }

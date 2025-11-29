@@ -27,10 +27,47 @@ export default class UIManager {
         mainMenu.id = this.screens.MAIN_MENU;
         mainMenu.className = 'screen';
         mainMenu.innerHTML = `
+            <div class="menu-header">
+                <h2 style="font-family: 'Poppins', sans-serif; font-size: 24px; margin: 0;">⚔️ Brave RPG</h2>
+                <div class="resources-display">
+                    <div class="resource-item">
+                        <span class="resource-icon">💎</span>
+                        <span id="gems-count">0</span>
+                    </div>
+                    <div class="resource-item">
+                        <span class="resource-icon">🪙</span>
+                        <span id="gold-count">0</span>
+                    </div>
+                    <div class="resource-item">
+                        <span class="resource-icon">⚡</span>
+                        <span id="energy-count">100</span>
+                    </div>
+                </div>
+            </div>
             <h1>Brave RPG</h1>
-            <button id="btn-battle">Combat</button>
-            <button id="btn-equip">Équipement</button>
-            <button id="btn-shop">Boutique</button>
+            <div class="menu-cards">
+                <div class="menu-card" id="card-battle">
+                    <div class="menu-card-content">
+                        <div class="menu-card-icon">⚔️</div>
+                        <h3>Combat</h3>
+                        <p>Partez en quête et affrontez vos ennemis</p>
+                    </div>
+                </div>
+                <div class="menu-card" id="card-equip">
+                    <div class="menu-card-content">
+                        <div class="menu-card-icon">👥</div>
+                        <h3>Équipement</h3>
+                        <p>Gérez votre équipe et votre équipement</p>
+                    </div>
+                </div>
+                <div class="menu-card" id="card-shop">
+                    <div class="menu-card-content">
+                        <div class="menu-card-icon">🏪</div>
+                        <h3>Boutique</h3>
+                        <p>Achetez des gemmes et invoquez des héros</p>
+                    </div>
+                </div>
+            </div>
         `;
         mainMenu.style.display = 'none';
         this.uiLayer.appendChild(mainMenu);
@@ -123,19 +160,44 @@ export default class UIManager {
         shopScreen.id = this.screens.SHOP;
         shopScreen.className = 'screen';
         shopScreen.innerHTML = `
-            <h2>Boutique</h2>
-            <div style="display: flex; gap: 20px;">
-                <div style="border: 1px solid white; padding: 10px;">
-                    <h3>Boutique de Gemmes (Argent Réel)</h3>
-                    <button id="btn-buy-gems-1">Acheter 1 Gemme (0,99€)</button>
-                    <button id="btn-buy-gems-10">Acheter 10 Gemmes (8,99€)</button>
+            <h2 style="font-family: 'Poppins', sans-serif; font-size: 36px; margin-bottom: 30px;">🏪 Boutique</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; max-width: 1000px; width: 90%;">
+                <div class="shop-section">
+                    <h3 style="font-family: 'Poppins', sans-serif; color: var(--gold-color); margin-bottom: 20px;">💎 Gemmes Premium</h3>
+                    <div style="display: flex; flex-direction: column; gap: 15px;">
+                        <div class="shop-item">
+                            <div class="shop-item-icon">💎</div>
+                            <div class="shop-item-info">
+                                <h4>Pack Starter</h4>
+                                <p>1 Gemme</p>
+                            </div>
+                            <button id="btn-buy-gems-1" class="shop-buy-btn">0,99€</button>
+                        </div>
+                        <div class="shop-item featured">
+                            <div class="best-value-badge">MEILLEURE OFFRE</div>
+                            <div class="shop-item-icon">💎</div>
+                            <div class="shop-item-info">
+                                <h4>Pack Premium</h4>
+                                <p>10 Gemmes</p>
+                            </div>
+                            <button id="btn-buy-gems-10" class="shop-buy-btn gold">8,99€</button>
+                        </div>
+                    </div>
                 </div>
-                <div style="border: 1px solid white; padding: 10px;">
-                    <h3>Portail d'Invocation</h3>
-                    <button id="btn-summon">Invoquer une Unité (5 Gemmes)</button>
+                <div class="shop-section">
+                    <h3 style="font-family: 'Poppins', sans-serif; color: var(--gold-color); margin-bottom: 20px;">✨ Portail d'Invocation</h3>
+                    <div class="summon-portal">
+                        <div class="portal-glow"></div>
+                        <div class="portal-content">
+                            <div style="font-size: 64px; margin-bottom: 20px;">🌟</div>
+                            <h4 style="font-family: 'Poppins', sans-serif; font-size: 20px; margin-bottom: 10px;">Invoquer un Héros</h4>
+                            <p style="color: var(--text-secondary); margin-bottom: 20px;">Obtenez un nouveau personnage aléatoire !</p>
+                            <button id="btn-summon" class="summon-btn">Invoquer (5 💎)</button>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <button id="btn-back-shop">Retour</button>
+            <button id="btn-back-shop" class="btn-back">← Retour</button>
         `;
         shopScreen.style.display = 'none';
         this.uiLayer.appendChild(shopScreen);
@@ -390,12 +452,17 @@ export default class UIManager {
     }
 
     bindEvents() {
-        document.getElementById('btn-battle').addEventListener('click', () => {
+        // Main Menu Card Navigation
+        document.getElementById('card-battle').addEventListener('click', () => {
             this.showScreen(this.screens.QUEST_SELECT);
         });
 
-        document.getElementById('btn-equip').addEventListener('click', () => {
+        document.getElementById('card-equip').addEventListener('click', () => {
             this.showScreen(this.screens.EQUIPMENT);
+        });
+
+        document.getElementById('card-shop').addEventListener('click', () => {
+            this.showScreen(this.screens.SHOP);
         });
 
         document.getElementById('btn-back-equip').addEventListener('click', () => {
@@ -407,26 +474,25 @@ export default class UIManager {
         });
 
         // Shop Events
-        document.getElementById('btn-shop').addEventListener('click', () => {
-            this.showScreen(this.screens.SHOP);
-        });
-
         document.getElementById('btn-back-shop').addEventListener('click', () => {
             this.showScreen(this.screens.MAIN_MENU);
         });
 
         document.getElementById('btn-buy-gems-1').addEventListener('click', () => {
             this.game.economySystem.buyGems(1);
+            this.updateResourceDisplay();
             console.log('Purchased 1 Gem!');
         });
 
         document.getElementById('btn-buy-gems-10').addEventListener('click', () => {
             this.game.economySystem.buyGems(10);
+            this.updateResourceDisplay();
             console.log('Purchased 10 Gems!');
         });
 
         document.getElementById('btn-summon').addEventListener('click', () => {
             if (this.game.economySystem.spendResource('gems', 5)) {
+                this.updateResourceDisplay();
                 console.log('Summoned a new Unit! (Placeholder)');
             } else {
                 console.log('Not enough Gems!');
@@ -455,7 +521,19 @@ export default class UIManager {
             this.updateEquipmentScreen();
         } else if (screenId === this.screens.QUEST_SELECT) {
             this.updateQuestList();
+        } else if (screenId === this.screens.MAIN_MENU) {
+            this.updateResourceDisplay();
         }
+    }
+
+    updateResourceDisplay() {
+        const gemsEl = document.getElementById('gems-count');
+        const goldEl = document.getElementById('gold-count');
+        const energyEl = document.getElementById('energy-count');
+
+        if (gemsEl) gemsEl.textContent = this.game.economySystem.resources.gems || 0;
+        if (goldEl) goldEl.textContent = this.game.economySystem.resources.gold || 0;
+        if (energyEl) energyEl.textContent = this.game.economySystem.resources.energy || 100;
     }
 
     updateBattleInfo(text) {
