@@ -974,8 +974,30 @@ export default class UIManager {
                 <div class="unit-level">Niv. ${unit.level}</div>
             `;
 
+            // Add click event for selection
+            unitCard.addEventListener('click', () => {
+                this.selectHeroForEquipment(unit);
+            });
+
             partyContainer.appendChild(unitCard);
         });
+    }
+
+    selectHeroForEquipment(unit) {
+        this.selectedHeroForEquipment = unit;
+
+        // Update visual selection
+        document.querySelectorAll('#inventory-party-units .party-unit-card').forEach(card => {
+            card.classList.remove('selected');
+        });
+        event.target.closest('.party-unit-card').classList.add('selected');
+
+        // Show equipment panel
+        const panel = document.getElementById('hero-equipment-panel');
+        if (panel) panel.style.display = 'block';
+
+        // Update equipment display (will be implemented in Step 3)
+        console.log(`Héros sélectionné: ${unit.name}`);
     }
 
     updateInventoryGrid(filterType) {
