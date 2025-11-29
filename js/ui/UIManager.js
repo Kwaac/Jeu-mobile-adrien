@@ -61,6 +61,13 @@ export default class UIManager {
                         <p>Gérez votre équipe et votre équipement</p>
                     </div>
                 </div>
+                <div class="menu-card" id="card-inventory">
+                    <div class="menu-card-content">
+                        <div class="menu-card-icon">🎒</div>
+                        <h3>Inventaire</h3>
+                        <p>Gérez vos objets et équipements</p>
+                    </div>
+                </div>
                 <div class="menu-card" id="card-shop">
                     <div class="menu-card-content">
                         <div class="menu-card-icon">🏪</div>
@@ -202,6 +209,34 @@ export default class UIManager {
         `;
         shopScreen.style.display = 'none';
         this.uiLayer.appendChild(shopScreen);
+
+        // Create Inventory Screen
+        const inventoryScreen = document.createElement('div');
+        inventoryScreen.id = this.screens.INVENTORY;
+        inventoryScreen.className = 'screen';
+        inventoryScreen.innerHTML = `
+            <div class="inventory-header">
+                <h2>🎒 Inventaire</h2>
+                <div class="gold-display">
+                    <span class="resource-icon">🪙</span>
+                    <span id="inventory-gold">0</span> Or
+                </div>
+            </div>
+            <div class="inventory-container">
+                <div class="inventory-tabs">
+                    <button class="tab-btn active" data-tab="all">Tout</button>
+                    <button class="tab-btn" data-tab="weapon">Armes</button>
+                    <button class="tab-btn" data-tab="armor">Armures</button>
+                    <button class="tab-btn" data-tab="accessory">Accessoires</button>
+                </div>
+                <div id="full-inventory-grid" class="inventory-grid-large">
+                    <!-- Items will be injected here -->
+                </div>
+            </div>
+            <button id="btn-back-inventory" class="btn-back">← Retour</button>
+        `;
+        inventoryScreen.style.display = 'none';
+        this.uiLayer.appendChild(inventoryScreen);
 
         // Create Quest Selection Screen
         const questScreen = document.createElement('div');
@@ -561,6 +596,24 @@ export default class UIManager {
             }
         });
 
+        // Inventory Events
+        document.getElementById('card-inventory').addEventListener('click', () => {
+            this.openInventoryScreen();
+        });
+
+        document.getElementById('btn-back-inventory').addEventListener('click', () => {
+            this.showScreen(this.screens.MAIN_MENU);
+        });
+
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                const type = e.target.dataset.tab;
+                this.updateInventoryGrid(type);
+            });
+        });
+
         // Quest Events
         document.getElementById('btn-back-quest').addEventListener('click', () => {
             this.showScreen(this.screens.MAIN_MENU);
@@ -774,5 +827,59 @@ export default class UIManager {
         } else {
             alert('Échec de l\'évolution');
         }
+    }
+
+    openInventoryScreen() {
+        this.showScreen(this.screens.INVENTORY);
+        this.updateInventoryScreen();
+    }
+
+    updateInventoryScreen() {
+        const gold = this.game.economySystem.resources.gold || 0;
+        const goldDisplay = document.getElementById('inventory-gold');
+        if (goldDisplay) {
+            goldDisplay.textContent = gold.toLocaleString();
+        }
+        this.updateInventoryGrid('all');
+    }
+
+    updateInventoryGrid(filterType) {
+        const grid = document.getElementById('full-inventory-grid');
+        if (!grid) return;
+
+        grid.innerHTML = '';
+        const inventory = this.game.economySystem.inventory;
+
+        let filteredItems = inventory;
+        if (filterType !== 'all') {
+            filteredItems = inventory.filter(item => item.type === filterType);
+        }
+
+        if (filteredItems.length === 0) {
+            grid.innerHTML = '<div class="empty-inventory">Aucun objet trouvé</div>';
+            return;
+        }
+
+        filteredItems.forEach(item => {
+            const itemCard = document.createElement('div');
+            itemCard.className = 'inventory-item-large';
+
+            let icon = '❓';
+            if (item.type === 'weapon') icon = '⚔️';
+            if (item.type === 'armor') icon = '🛡️';
+            if (item.type === 'accessory') icon = '💍';
+
+            itemCard.innerHTML = `
+                <div class="item-icon-large">${icon}</div>
+                <div class="item-details">
+                    <div class="item-name">${item.name}</div>
+                    <div class="item-type">${item.type.toUpperCase()}</div>
+                    <div class="item-stats">${this.getItemStatsString(item)}</div>
+                    <div class="item-desc">${item.description}</div>
+                </div>
+            `;
+
+            grid.appendChild(itemCard);
+        });
     }
 }
