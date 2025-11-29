@@ -181,6 +181,29 @@ export default class UIManager {
                     <div id="inventory-party-units" class="party-horizontal"></div>
                 </div>
                 
+                <!-- Panneau d'équipement du héros sélectionné -->
+                <div class="equipment-panel" id="hero-equipment-panel" style="display: none;">
+                    <h4 id="selected-hero-name">Sélectionnez un héros</h4>
+                    <div class="equipment-slots-display">
+                        <div class="equipment-slot-item" data-slot="weapon">
+                            <span class="slot-label">⚔️ Arme:</span>
+                            <span class="slot-content" id="slot-weapon-inv">Vide</span>
+                            <button class="btn-unequip-inv" data-slot="weapon" style="display: none;">✖</button>
+                        </div>
+                        <div class="equipment-slot-item" data-slot="armor">
+                            <span class="slot-label">🛡️ Armure:</span>
+                            <span class="slot-content" id="slot-armor-inv">Vide</span>
+                            <button class="btn-unequip-inv" data-slot="armor" style="display: none;">✖</button>
+                        </div>
+                        <div class="equipment-slot-item" data-slot="accessory">
+                            <span class="slot-label">💍 Accessoire:</span>
+                            <span class="slot-content" id="slot-accessory-inv">Vide</span>
+                            <button class="btn-unequip-inv" data-slot="accessory" style="display: none;">✖</button>
+                        </div>
+                    </div>
+                    <div class="hero-stats-display" id="hero-stats-inv"></div>
+                </div>
+                
                 <!-- Items en grille -->
                 <div class="items-section">
                     <div class="inventory-tabs">
