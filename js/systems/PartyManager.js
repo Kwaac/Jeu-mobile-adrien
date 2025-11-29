@@ -20,9 +20,10 @@ export default class PartyManager {
         const fireKnight2 = new Unit('Chevalier de Feu', true, getStatsForRarity('fire_knight', 3));
         const fireKnight3 = new Unit('Chevalier de Feu', true, getStatsForRarity('fire_knight', 3));
 
-        // 2x Mage Aquatique 3★
+        // 3x Mage Aquatique 3★ (pour tester l'évolution)
         const waterMage1 = new Unit('Mage Aquatique', true, getStatsForRarity('water_mage', 3));
         const waterMage2 = new Unit('Mage Aquatique', true, getStatsForRarity('water_mage', 3));
+        const waterMage3 = new Unit('Mage Aquatique', true, getStatsForRarity('water_mage', 3));
 
         // 1x Guerrier Terrestre 4★
         const earthWarrior = new Unit('Guerrier Terrestre', true, getStatsForRarity('earth_warrior', 4));
@@ -36,6 +37,7 @@ export default class PartyManager {
         this.addUnit(fireKnight3);
         this.addUnit(waterMage1);
         this.addUnit(waterMage2);
+        this.addUnit(waterMage3);
         this.addUnit(earthWarrior);
         this.addUnit(lightPaladin);
 
@@ -44,7 +46,7 @@ export default class PartyManager {
         this.addToParty(waterMage1);
         this.addToParty(earthWarrior);
 
-        console.log('PartyManager initialisé avec 7 unités (dont duplicatas pour test évolution)');
+        console.log('PartyManager initialisé avec 8 unités (dont duplicatas pour test évolution)');
     }
 
     addUnit(unit) {
