@@ -851,6 +851,8 @@ export default class UIManager {
             this.updateResourceDisplay();
             this.showScreen(this.screens.EQUIPMENT);
             this.updateEquipmentScreen();
+            // Force refresh of the unit display to show new stats and rank
+            this.updateCharacterDetail(unit);
         } else {
             alert('Échec de l\'évolution');
         }
