@@ -174,15 +174,22 @@ export default class UIManager {
                     <span id="inventory-gold">0</span> Or
                 </div>
             </div>
-            <div class="inventory-container">
-                <div class="inventory-tabs">
-                    <button class="tab-btn active" data-tab="all">Tout</button>
-                    <button class="tab-btn" data-tab="weapon">Armes</button>
-                    <button class="tab-btn" data-tab="armor">Armures</button>
-                    <button class="tab-btn" data-tab="accessory">Accessoires</button>
+            <div class="inventory-new-layout">
+                <!-- Héros en haut -->
+                <div class="party-section">
+                    <h3>⚔️ Équipe</h3>
+                    <div id="inventory-party-units" class="party-horizontal"></div>
                 </div>
-                <div id="full-inventory-grid" class="inventory-grid-large">
-                    <!-- Items will be injected here -->
+                
+                <!-- Items en grille -->
+                <div class="items-section">
+                    <div class="inventory-tabs">
+                        <button class="tab-btn active" data-tab="all">Tout</button>
+                        <button class="tab-btn" data-tab="weapon">Armes</button>
+                        <button class="tab-btn" data-tab="armor">Armures</button>
+                        <button class="tab-btn" data-tab="accessory">Accessoires</button>
+                    </div>
+                    <div id="full-inventory-grid" class="items-grid"></div>
                 </div>
             </div>
             <button id="btn-back-inventory" class="btn-back">← Retour</button>
@@ -908,7 +915,44 @@ export default class UIManager {
         if (goldDisplay) {
             goldDisplay.textContent = gold.toLocaleString();
         }
+
+        // Render party units at the top
+        this.renderInventoryPartyUnits();
+
+        // Render items grid
         this.updateInventoryGrid('all');
+    }
+
+    renderInventoryPartyUnits() {
+        const partyContainer = document.getElementById('inventory-party-units');
+        if (!partyContainer) return;
+
+        partyContainer.innerHTML = '';
+        const party = this.game.partyManager.getParty();
+
+        if (party.length === 0) {
+            partyContainer.innerHTML = '<div class="empty-party">Aucune unité dans l\'équipe</div>';
+            return;
+        }
+
+        party.forEach(unit => {
+            const unitCard = document.createElement('div');
+            unitCard.className = 'party-unit-card';
+
+            const colors = {
+                'fire': '#e74c3c', 'water': '#3498db', 'earth': '#27ae60',
+                'thunder': '#f39c12', 'light': '#ecf0f1', 'dark': '#34495e', 'none': '#95a5a6'
+            };
+
+            unitCard.innerHTML = `
+                <div class="unit-sprite" style="background-color: ${colors[unit.element] || colors['none']}"></div>
+                <div class="unit-name">${unit.name}</div>
+                <div class="unit-rarity">${unit.getRarityStars()}</div>
+                <div class="unit-level">Niv. ${unit.level}</div>
+            `;
+
+            partyContainer.appendChild(unitCard);
+        });
     }
 
     updateInventoryGrid(filterType) {
@@ -930,7 +974,7 @@ export default class UIManager {
 
         filteredItems.forEach(item => {
             const itemCard = document.createElement('div');
-            itemCard.className = 'inventory-item-large';
+            itemCard.className = 'inventory-item-compact';
 
             let icon = '❓';
             if (item.type === 'weapon') icon = '⚔️';
@@ -938,14 +982,13 @@ export default class UIManager {
             if (item.type === 'accessory') icon = '💍';
 
             itemCard.innerHTML = `
-                <div class="item-icon-large">${icon}</div>
-                <div class="item-details">
-                    <div class="item-name">${item.name}</div>
-                    <div class="item-type">${item.type.toUpperCase()}</div>
-                    <div class="item-stats">${this.getItemStatsString(item)}</div>
-                    <div class="item-desc">${item.description}</div>
-                </div>
+                <div class="item-icon">${icon}</div>
+                <div class="item-name">${item.name}</div>
+                <div class="item-stats-compact">${this.getItemStatsString(item)}</div>
             `;
+
+            // Add tooltip or click event for details
+            itemCard.title = `${item.name}\n${item.type.toUpperCase()}\n${this.getItemStatsString(item)}\n${item.description || ''}`;
 
             grid.appendChild(itemCard);
         });
