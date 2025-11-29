@@ -81,71 +81,22 @@ export default class UIManager {
         mainMenu.style.display = 'none';
         this.uiLayer.appendChild(mainMenu);
 
-        // Create Equipment Screen - NOUVELLE VERSION COMPLÈTE
+        // Create Equipment Screen - NOUVELLE VERSION AVEC ÉQUIPE HORIZONTALE
         const equipScreen = document.createElement('div');
         equipScreen.id = this.screens.EQUIPMENT;
         equipScreen.className = 'screen equipment-screen';
         equipScreen.innerHTML = `
-            <div class="equipment-container">
-                <div class="character-list">
-                    <div class="party-section">
-                        <h3>⚔️ Équipe de Combat</h3>
-                        <div id="party-list" class="unit-list"></div>
-                    </div>
-                    <hr class="separator">
-                    <div class="owned-section">
-                        <h3>📦 Personnages Possédés</h3>
-                        <div id="owned-list" class="unit-list"></div>
-                    </div>
+            <div class="equipment-new-layout">
+                <!-- Équipe de combat en ligne horizontale -->
+                <div class="party-section">
+                    <h3>⚔️ Équipe de Combat</h3>
+                    <div id="party-units" class="party-horizontal"></div>
                 </div>
-                <div class="character-detail">
-                    <div id="no-selection" class="no-selection">
-                        <p>👈 Sélectionnez un personnage</p>
-                    </div>
-                    <div id="character-info" class="character-info" style="display: none;">
-                        <div class="character-display">
-                            <div class="character-sprite" id="char-sprite"></div>
-                            <div class="character-header">
-                                <h2 id="char-name">-</h2>
-                                <div class="character-meta">
-                                    <span id="char-element" class="element-badge">-</span>
-                                    <span id="char-rarity" class="rarity-badge">-</span>
-                                </div>
-                                <p id="char-description" class="description">-</p>
-                            </div>
-                        </div>
-                        <div class="character-stats">
-                            <h3>📊 Statistiques</h3>
-                            <div id="stats-display" class="stats-grid"></div>
-                        </div>
-                        <div class="character-equipment">
-                            <h3>🎒 Équipement</h3>
-                            <div class="equipment-slots">
-                                <div class="equipment-slot" data-slot="weapon">
-                                    <span class="slot-label">⚔️ Arme :</span>
-                                    <div id="slot-weapon" class="slot-content">Vide</div>
-                                    <button class="btn-unequip" data-slot="weapon" style="display: none;">✖</button>
-                                </div>
-                                <div class="equipment-slot" data-slot="armor">
-                                    <span class="slot-label">🛡️ Armure :</span>
-                                    <div id="slot-armor" class="slot-content">Vide</div>
-                                    <button class="btn-unequip" data-slot="armor" style="display: none;">✖</button>
-                                </div>
-                                <div class="equipment-slot" data-slot="accessory">
-                                    <span class="slot-label">💍 Accessoire :</span>
-                                    <div id="slot-accessory" class="slot-content">Vide</div>
-                                    <button class="btn-unequip" data-slot="accessory" style="display: none;">✖</button>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="inventory-section">
-                            <h3>🎁 Inventaire</h3>
-                            <div id="inventory-items" class="inventory-grid"></div>
-                        </div>
-                        <div class="party-actions">
-                            <button id="btn-toggle-party" class="btn-party-toggle">Ajouter à l'équipe</button>
-                        </div>
-                    </div>
+                
+                <!-- Équipements disponibles en grille -->
+                <div class="equipment-section">
+                    <h3>🎒 Tous les Équipements</h3>
+                    <div id="equipment-grid" class="equipment-grid"></div>
                 </div>
             </div>
             <button id="btn-back-equip" class="btn-back">← Retour</button>
@@ -306,12 +257,100 @@ export default class UIManager {
     }
 
     updateEquipmentScreen() {
-        this.updateCharacterList();
-        // Select first unit in party by default if none selected
+        this.renderPartyUnits();
+        this.renderEquipmentGrid();
+    }
+
+    renderPartyUnits() {
+        const partyContainer = document.getElementById('party-units');
+        if (!partyContainer) return;
+
+        partyContainer.innerHTML = '';
         const party = this.game.partyManager.getParty();
-        if (party.length > 0 && !this.game.partyManager.getSelectedUnit()) {
-            this.selectCharacter(party[0]);
+
+        if (party.length === 0) {
+            partyContainer.innerHTML = '<div class="empty-party">Aucune unité dans l\'équipe</div>';
+            return;
         }
+
+        party.forEach(unit => {
+            const unitCard = document.createElement('div');
+            unitCard.className = 'party-unit-card';
+
+            const colors = {
+                'fire': '#e74c3c', 'water': '#3498db', 'earth': '#27ae60',
+                'thunder': '#f39c12', 'light': '#ecf0f1', 'dark': '#34495e', 'none': '#95a5a6'
+            };
+
+            unitCard.innerHTML = `
+                <div class="unit-sprite" style="background-color: ${colors[unit.element] || colors['none']}"></div>
+                <div class="unit-name">${unit.name}</div>
+                <div class="unit-rarity">${unit.getRarityStars()}</div>
+                <div class="unit-level">Niv. ${unit.level}</div>
+                <div class="unit-stats-mini">
+                    <span>❤️ ${unit.hp}</span>
+                    <span>⚔️ ${unit.atk}</span>
+                    <span>🛡️ ${unit.def}</span>
+                </div>
+            `;
+
+            partyContainer.appendChild(unitCard);
+        });
+    }
+
+    renderEquipmentGrid() {
+        const gridContainer = document.getElementById('equipment-grid');
+        if (!gridContainer) return;
+
+        gridContainer.innerHTML = '';
+        const allUnits = this.game.partyManager.getAllUnits();
+
+        if (allUnits.length === 0) {
+            gridContainer.innerHTML = '<div class="empty-equipment">Aucun personnage disponible</div>';
+            return;
+        }
+
+        allUnits.forEach(unit => {
+            const unitCard = document.createElement('div');
+            unitCard.className = 'equipment-item-card';
+
+            const colors = {
+                'fire': '#e74c3c', 'water': '#3498db', 'earth': '#27ae60',
+                'thunder': '#f39c12', 'light': '#ecf0f1', 'dark': '#34495e', 'none': '#95a5a6'
+            };
+
+            const isInParty = this.game.partyManager.isInParty(unit);
+            const partyBadge = isInParty ? '<div class="party-badge">⚔️ En équipe</div>' : '';
+
+            unitCard.innerHTML = `
+                <div class="unit-sprite-large" style="background-color: ${colors[unit.element] || colors['none']}"></div>
+                ${partyBadge}
+                <div class="unit-name">${unit.name}</div>
+                <div class="unit-rarity">${unit.getRarityStars()}</div>
+                <div class="unit-level">Niv. ${unit.level}</div>
+                <div class="unit-stats">
+                    <div>❤️ ${unit.hp}/${unit.getStat('maxHp')}</div>
+                    <div>⚔️ ${unit.atk}</div>
+                    <div>🛡️ ${unit.def}</div>
+                </div>
+                <button class="btn-toggle-party-inline">${isInParty ? 'Retirer' : 'Ajouter'}</button>
+            `;
+
+            const toggleBtn = unitCard.querySelector('.btn-toggle-party-inline');
+            toggleBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (isInParty) {
+                    this.game.partyManager.removeFromParty(unit);
+                } else {
+                    if (!this.game.partyManager.addToParty(unit)) {
+                        alert('Équipe complète ! (Maximum 5 unités)');
+                    }
+                }
+                this.updateEquipmentScreen();
+            });
+
+            gridContainer.appendChild(unitCard);
+        });
     }
 
     updateCharacterList() {
