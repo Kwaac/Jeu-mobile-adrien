@@ -996,8 +996,59 @@ export default class UIManager {
         const panel = document.getElementById('hero-equipment-panel');
         if (panel) panel.style.display = 'block';
 
-        // Update equipment display (will be implemented in Step 3)
+        // Update equipment display
+        this.updateHeroEquipmentDisplay(unit);
         console.log(`Héros sélectionné: ${unit.name}`);
+    }
+
+    updateHeroEquipmentDisplay(unit) {
+        // Update hero name
+        const nameEl = document.getElementById('selected-hero-name');
+        if (nameEl) {
+            nameEl.textContent = `Équipement de ${unit.name}`;
+        }
+
+        // Update equipment slots
+        const slots = ['weapon', 'armor', 'accessory'];
+        slots.forEach(slot => {
+            const contentEl = document.getElementById(`slot-${slot}-inv`);
+            const btnEl = document.querySelector(`.btn-unequip-inv[data-slot="${slot}"]`);
+
+            if (unit.equipment && unit.equipment[slot]) {
+                const item = unit.equipment[slot];
+                if (contentEl) contentEl.textContent = item.name;
+                if (btnEl) {
+                    btnEl.style.display = 'inline-block';
+                    btnEl.onclick = () => this.unequipItemFromHero(unit, slot);
+                }
+            } else {
+                if (contentEl) contentEl.textContent = 'Vide';
+                if (btnEl) btnEl.style.display = 'none';
+            }
+        });
+
+        // Update stats display
+        const statsEl = document.getElementById('hero-stats-inv');
+        if (statsEl) {
+            const baseAtk = unit.atk;
+            const baseDef = unit.def;
+            const baseHp = unit.getStat('maxHp'); // Assuming getStat handles base stats correctly or we use unit.hp
+
+            // Calculate totals (assuming getStat includes equipment bonuses)
+            const totalAtk = unit.getStat('atk');
+            const totalDef = unit.getStat('def');
+            const totalHp = unit.getStat('maxHp');
+
+            const atkBonus = totalAtk - baseAtk;
+            const defBonus = totalDef - baseDef;
+            const hpBonus = totalHp - baseHp;
+
+            statsEl.innerHTML = `
+                <div class="stat-line">HP: ${baseHp} ${hpBonus > 0 ? `<span class="stat-bonus">(+${hpBonus})</span>` : ''} = ${totalHp}</div>
+                <div class="stat-line">ATK: ${baseAtk} ${atkBonus > 0 ? `<span class="stat-bonus">(+${atkBonus})</span>` : ''} = ${totalAtk}</div>
+                <div class="stat-line">DEF: ${baseDef} ${defBonus > 0 ? `<span class="stat-bonus">(+${defBonus})</span>` : ''} = ${totalDef}</div>
+            `;
+        }
     }
 
     updateInventoryGrid(filterType) {
