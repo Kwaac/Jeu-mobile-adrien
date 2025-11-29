@@ -9,6 +9,7 @@ export default class UIManager {
             BATTLE_HUD: 'battle-hud',
             EQUIPMENT: 'equipment-screen',
             SHOP: 'shop-screen',
+            INVENTORY: 'inventory-screen',
             QUEST_SELECT: 'quest-screen',
             EVOLUTION: 'evolution-screen'
         };
