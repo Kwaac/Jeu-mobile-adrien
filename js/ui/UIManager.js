@@ -238,6 +238,23 @@ export default class UIManager {
         inventoryScreen.style.display = 'none';
         this.uiLayer.appendChild(inventoryScreen);
 
+        // Attach inventory event listeners immediately after creation
+        const invBackBtn = inventoryScreen.querySelector('#btn-back-inventory');
+        if (invBackBtn) {
+            invBackBtn.addEventListener('click', () => {
+                this.showScreen(this.screens.MAIN_MENU);
+            });
+        }
+
+        inventoryScreen.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                inventoryScreen.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                const type = e.target.dataset.tab;
+                this.updateInventoryGrid(type);
+            });
+        });
+
         // Create Quest Selection Screen
         const questScreen = document.createElement('div');
         questScreen.id = this.screens.QUEST_SELECT;
