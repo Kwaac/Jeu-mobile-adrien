@@ -1,0 +1,278 @@
+/* ===================================
+   INVENTAIRE RPG STYLE (V2)
+   =================================== */
+
+.inventory-rpg-container {
+    display: flex;
+    gap: var(--spacing-md);
+    height: 80vh;
+    /* Prend une bonne partie de la hauteur */
+    width: 100%;
+    margin-top: var(--spacing-md);
+}
+
+/* --- COLONNE GAUCHE : FICHE PERSO --- */
+.character-sheet-panel {
+    flex: 4;
+    /* 40% */
+    background: rgba(16, 20, 30, 0.85);
+    /* Fond sombre style Dofus */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-md);
+    display: flex;
+    flex-direction: column;
+    padding: var(--spacing-md);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+/* Sélecteur de Héros */
+.hero-selector-container {
+    height: 80px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    margin-bottom: var(--spacing-md);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: var(--spacing-sm);
+}
+
+.hero-list {
+    display: flex;
+    gap: var(--spacing-sm);
+    padding: 4px;
+}
+
+.hero-avatar-small {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    cursor: pointer;
+    transition: all 0.2s;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+}
+
+.hero-avatar-small:hover {
+    transform: scale(1.1);
+    border-color: var(--primary-color);
+}
+
+.hero-avatar-small.selected {
+    border-color: var(--warning-color);
+    box-shadow: 0 0 10px var(--warning-color);
+    transform: scale(1.1);
+}
+
+/* Zone Principale */
+.character-display-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+}
+
+.rpg-hero-name {
+    color: var(--text-primary);
+    font-size: 1.2em;
+    margin-bottom: var(--spacing-lg);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.character-visual-container {
+    position: relative;
+    width: 300px;
+    height: 300px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: var(--spacing-md);
+}
+
+.character-avatar-large {
+    width: 150px;
+    height: 150px;
+    background-color: rgba(255, 255, 255, 0.05);
+    /* Placeholder */
+    border-radius: 50%;
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+    z-index: 1;
+}
+
+/* Slots d'équipement */
+.equipment-slot {
+    position: absolute;
+    width: 64px;
+    height: 64px;
+    background: rgba(0, 0, 0, 0.6);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: var(--radius-sm);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    z-index: 2;
+}
+
+.equipment-slot:hover {
+    border-color: var(--primary-color);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.slot-left {
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.slot-right {
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.slot-bottom {
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.slot-icon {
+    font-size: 24px;
+    opacity: 0.3;
+}
+
+.slot-item-img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 28px;
+}
+
+.btn-unequip-rpg {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: var(--danger-color);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    font-size: 12px;
+    cursor: pointer;
+    display: none;
+    /* Caché par défaut */
+}
+
+.equipment-slot:hover .btn-unequip-rpg {
+    display: block;
+}
+
+/* Stats */
+.character-stats-rpg {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.3);
+    padding: var(--spacing-md);
+    border-radius: var(--radius-sm);
+    margin-top: auto;
+}
+
+.rpg-stat-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    padding: 4px 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+}
+
+.rpg-stat-label {
+    color: var(--text-secondary);
+}
+
+.rpg-stat-value {
+    color: var(--text-primary);
+    font-weight: bold;
+}
+
+.rpg-stat-bonus {
+    color: var(--success-color);
+    font-size: 0.9em;
+    margin-left: 4px;
+}
+
+/* --- COLONNE DROITE : INVENTAIRE --- */
+.inventory-grid-panel {
+    flex: 6;
+    /* 60% */
+    background: rgba(20, 25, 40, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-md);
+    display: flex;
+    flex-direction: column;
+    padding: var(--spacing-md);
+    backdrop-filter: blur(10px);
+}
+
+.rpg-items-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+    gap: 8px;
+    overflow-y: auto;
+    padding-right: 8px;
+    flex: 1;
+}
+
+.rpg-item-card {
+    aspect-ratio: 1;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-sm);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+}
+
+.rpg-item-card:hover {
+    border-color: var(--primary-color);
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+}
+
+.rpg-item-icon {
+    font-size: 28px;
+}
+
+.rpg-item-level {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    font-size: 10px;
+    color: var(--text-secondary);
+}
+
+/* Scrollbar stylisée */
+.rpg-items-grid::-webkit-scrollbar {
+    width: 6px;
+}
+
+.rpg-items-grid::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.rpg-items-grid::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+}

@@ -1,3 +1,4 @@
+console.log('[MAIN.JS] Module loaded - starting import');
 import Game from './core/Game.js';
 
 window.addEventListener('load', () => {

@@ -16,6 +16,12 @@ export default class UIManager {
 
         this.initScreens();
         this.showScreen(this.screens.MAIN_MENU);
+
+        // Hide debug overlay after initialization
+        const debugOverlay = document.getElementById('debug-overlay');
+        if (debugOverlay) {
+            debugOverlay.style.display = 'none';
+        }
     }
 
     initScreens() {
@@ -58,7 +64,7 @@ export default class UIManager {
                 <div class="menu-card" id="card-equip">
                     <div class="menu-card-content">
                         <div class="menu-card-icon">👥</div>
-                        <h3>Équipement</h3>
+                        <h3>Équipe</h3>
                         <p>Gérez votre équipe et votre équipement</p>
                     </div>
                 </div>
@@ -174,45 +180,57 @@ export default class UIManager {
                     <span id="inventory-gold">0</span> Or
                 </div>
             </div>
-            <div class="inventory-new-layout">
-                <!-- Héros en haut -->
-                <div class="party-section">
-                    <h3>⚔️ Équipe</h3>
-                    <div id="inventory-party-units" class="party-horizontal"></div>
-                </div>
-                
-                <!-- Panneau d'équipement du héros sélectionné -->
-                <div class="equipment-panel" id="hero-equipment-panel" style="display: none;">
-                    <h4 id="selected-hero-name">Sélectionnez un héros</h4>
-                    <div class="equipment-slots-display">
-                        <div class="equipment-slot-item" data-slot="weapon">
-                            <span class="slot-label">⚔️ Arme:</span>
-                            <span class="slot-content" id="slot-weapon-inv">Vide</span>
-                            <button class="btn-unequip-inv" data-slot="weapon" style="display: none;">✖</button>
+            <div class="inventory-rpg-container">
+                <!-- COLONNE GAUCHE : Fiche Perso -->
+                <div class="character-sheet-panel">
+                    <!-- Sélecteur de Héros -->
+                    <div class="hero-selector-container">
+                        <div id="hero-selector-list" class="hero-list"></div>
+                    </div>
+
+                    <!-- Zone Principale Personnage -->
+                    <div class="character-display-area">
+                        <h3 id="rpg-hero-name" class="rpg-hero-name">Sélectionnez un héros</h3>
+                        
+                        <div class="character-visual-container">
+                            <!-- Slots d'équipement autour -->
+                            <div class="equipment-slot slot-left" data-slot="weapon" id="rpg-slot-weapon" title="Arme">
+                                <div class="slot-icon">⚔️</div>
+                                <div class="slot-item-img"></div>
+                                <button class="btn-unequip-rpg" style="display: none;">✖</button>
+                            </div>
+                            
+                            <div class="character-avatar-large" id="rpg-hero-avatar"></div>
+                            
+                            <div class="equipment-slot slot-right" data-slot="armor" id="rpg-slot-armor" title="Armure">
+                                <div class="slot-icon">🛡️</div>
+                                <div class="slot-item-img"></div>
+                                <button class="btn-unequip-rpg" style="display: none;">✖</button>
+                            </div>
+
+                            <div class="equipment-slot slot-bottom" data-slot="accessory" id="rpg-slot-accessory" title="Accessoire">
+                                <div class="slot-icon">💍</div>
+                                <div class="slot-item-img"></div>
+                                <button class="btn-unequip-rpg" style="display: none;">✖</button>
+                            </div>
                         </div>
-                        <div class="equipment-slot-item" data-slot="armor">
-                            <span class="slot-label">🛡️ Armure:</span>
-                            <span class="slot-content" id="slot-armor-inv">Vide</span>
-                            <button class="btn-unequip-inv" data-slot="armor" style="display: none;">✖</button>
-                        </div>
-                        <div class="equipment-slot-item" data-slot="accessory">
-                            <span class="slot-label">💍 Accessoire:</span>
-                            <span class="slot-content" id="slot-accessory-inv">Vide</span>
-                            <button class="btn-unequip-inv" data-slot="accessory" style="display: none;">✖</button>
+
+                        <!-- Stats -->
+                        <div class="character-stats-rpg" id="rpg-hero-stats">
+                            <!-- Rempli par JS -->
                         </div>
                     </div>
-                    <div class="hero-stats-display" id="hero-stats-inv"></div>
                 </div>
-                
-                <!-- Items en grille -->
-                <div class="items-section">
+
+                <!-- COLONNE DROITE : Inventaire -->
+                <div class="inventory-grid-panel">
                     <div class="inventory-tabs">
                         <button class="tab-btn active" data-tab="all">Tout</button>
                         <button class="tab-btn" data-tab="weapon">Armes</button>
                         <button class="tab-btn" data-tab="armor">Armures</button>
                         <button class="tab-btn" data-tab="accessory">Accessoires</button>
                     </div>
-                    <div id="full-inventory-grid" class="items-grid"></div>
+                    <div id="rpg-inventory-grid" class="rpg-items-grid"></div>
                 </div>
             </div>
             <button id="btn-back-inventory" class="btn-back">← Retour</button>
@@ -556,9 +574,6 @@ export default class UIManager {
                     }
                     this.updateCharacterDetail(unit);
                 };
-            } else {
-                slotEl.textContent = 'Vide';
-                slotEl.classList.remove('equipped');
                 unequipBtn.style.display = 'none';
             }
         });
@@ -566,6 +581,7 @@ export default class UIManager {
 
     updateInventoryForEquip(unit) {
         const inventoryGrid = document.getElementById('inventory-items');
+        if (!inventoryGrid) return;
         inventoryGrid.innerHTML = '';
 
         const inventory = this.game.economySystem.inventory;
@@ -582,11 +598,11 @@ export default class UIManager {
             itemCard.innerHTML = `
                 <div class="item-name">${item.name}</div>
                 <div class="item-desc">${statsStr}</div>
-                <div class="item-type">${item.slot}</div>
+                <div class="item-type">${item.type}</div>
             `;
 
             itemCard.addEventListener('click', () => {
-                if (unit.equipItem(item)) {
+                if (unit.equip(item)) {
                     this.game.economySystem.removeItem(item);
                     this.updateCharacterDetail(unit);
                 }
@@ -947,94 +963,126 @@ export default class UIManager {
     }
 
     renderInventoryPartyUnits() {
-        const partyContainer = document.getElementById('inventory-party-units');
-        if (!partyContainer) return;
+        const selectorList = document.getElementById('hero-selector-list');
+        if (!selectorList) return;
 
-        partyContainer.innerHTML = '';
+        selectorList.innerHTML = '';
         const party = this.game.partyManager.getParty();
 
         if (party.length === 0) {
-            partyContainer.innerHTML = '<div class="empty-party">Aucune unité dans l\'équipe</div>';
+            selectorList.innerHTML = '<div class="empty-party">Vide</div>';
             return;
         }
 
         party.forEach(unit => {
-            const unitCard = document.createElement('div');
-            unitCard.className = 'party-unit-card';
+            const avatar = document.createElement('div');
+            avatar.className = 'hero-avatar-small';
 
             const colors = {
                 'fire': '#e74c3c', 'water': '#3498db', 'earth': '#27ae60',
                 'thunder': '#f39c12', 'light': '#ecf0f1', 'dark': '#34495e', 'none': '#95a5a6'
             };
+            avatar.style.backgroundColor = colors[unit.element] || colors['none'];
+            avatar.title = unit.name;
 
-            unitCard.innerHTML = `
-                <div class="unit-sprite" style="background-color: ${colors[unit.element] || colors['none']}"></div>
-                <div class="unit-name">${unit.name}</div>
-                <div class="unit-rarity">${unit.getRarityStars()}</div>
-                <div class="unit-level">Niv. ${unit.level}</div>
-            `;
+            if (this.selectedHeroForEquipment === unit) {
+                avatar.classList.add('selected');
+            }
 
-            // Add click event for selection
-            unitCard.addEventListener('click', () => {
+            avatar.addEventListener('click', () => {
                 this.selectHeroForEquipment(unit);
             });
 
-            partyContainer.appendChild(unitCard);
+            selectorList.appendChild(avatar);
         });
+
+        // Select first hero by default if none selected
+        if (!this.selectedHeroForEquipment && party.length > 0) {
+            this.selectHeroForEquipment(party[0]);
+        }
     }
 
     selectHeroForEquipment(unit) {
         this.selectedHeroForEquipment = unit;
 
-        // Update visual selection
-        document.querySelectorAll('#inventory-party-units .party-unit-card').forEach(card => {
-            card.classList.remove('selected');
+        // Update visual selection in list
+        document.querySelectorAll('.hero-avatar-small').forEach(av => {
+            av.classList.remove('selected');
+            if (av.title === unit.name) av.classList.add('selected'); // Simple check by name
         });
-        event.target.closest('.party-unit-card').classList.add('selected');
 
-        // Show equipment panel
-        const panel = document.getElementById('hero-equipment-panel');
-        if (panel) panel.style.display = 'block';
-
-        // Update equipment display
+        // Update main display
         this.updateHeroEquipmentDisplay(unit);
         console.log(`Héros sélectionné: ${unit.name}`);
     }
 
     updateHeroEquipmentDisplay(unit) {
-        // Update hero name
-        const nameEl = document.getElementById('selected-hero-name');
-        if (nameEl) {
-            nameEl.textContent = `Équipement de ${unit.name}`;
+        // Update Name
+        const nameEl = document.getElementById('rpg-hero-name');
+        if (nameEl) nameEl.textContent = unit.name;
+
+        // Update Large Avatar
+        const avatarEl = document.getElementById('rpg-hero-avatar');
+        if (avatarEl) {
+            const colors = {
+                'fire': '#e74c3c', 'water': '#3498db', 'earth': '#27ae60',
+                'thunder': '#f39c12', 'light': '#ecf0f1', 'dark': '#34495e', 'none': '#95a5a6'
+            };
+            avatarEl.style.backgroundColor = colors[unit.element] || colors['none'];
         }
 
-        // Update equipment slots
+        // Update Slots
         const slots = ['weapon', 'armor', 'accessory'];
         slots.forEach(slot => {
-            const contentEl = document.getElementById(`slot-${slot}-inv`);
-            const btnEl = document.querySelector(`.btn-unequip-inv[data-slot="${slot}"]`);
+            const slotEl = document.getElementById(`rpg-slot-${slot}`);
+            if (!slotEl) return;
+
+            const itemImg = slotEl.querySelector('.slot-item-img');
+            const unequipBtn = slotEl.querySelector('.btn-unequip-rpg');
+            const iconEl = slotEl.querySelector('.slot-icon');
 
             if (unit.equipment && unit.equipment[slot]) {
                 const item = unit.equipment[slot];
-                if (contentEl) contentEl.textContent = item.name;
-                if (btnEl) {
-                    btnEl.style.display = 'inline-block';
-                    btnEl.onclick = () => this.unequipItemFromHero(unit, slot);
+                // Show item
+                let icon = '❓';
+                if (item.type === 'weapon') icon = '⚔️';
+                if (item.type === 'armor') icon = '🛡️';
+                if (item.type === 'accessory') icon = '💍';
+
+                if (itemImg) {
+                    itemImg.textContent = icon;
+                    itemImg.style.display = 'flex';
                 }
+                if (iconEl) iconEl.style.opacity = '0'; // Hide default icon
+                if (unequipBtn) {
+                    unequipBtn.style.display = 'none'; // Hidden by default, shown on hover via CSS
+                    unequipBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        this.unequipItemFromHero(unit, slot);
+                    };
+                }
+                slotEl.title = `${item.name} (Niv. ${item.level || 1})`;
+                slotEl.classList.add('equipped');
             } else {
-                if (contentEl) contentEl.textContent = 'Vide';
-                if (btnEl) btnEl.style.display = 'none';
+                // Empty slot
+                if (itemImg) {
+                    itemImg.textContent = '';
+                    itemImg.style.display = 'none';
+                }
+                if (iconEl) iconEl.style.opacity = '0.3'; // Show default icon
+                if (unequipBtn) unequipBtn.style.display = 'none';
+                slotEl.title = slot.charAt(0).toUpperCase() + slot.slice(1);
+                slotEl.classList.remove('equipped');
             }
         });
 
-        // Update stats display
-        const statsEl = document.getElementById('hero-stats-inv');
+        // Update Stats
+        const statsEl = document.getElementById('rpg-hero-stats');
         if (statsEl) {
             const baseAtk = unit.atk;
             const baseDef = unit.def;
-            const baseHp = unit.getStat('maxHp'); // Assuming getStat handles base stats correctly or we use unit.hp
+            const baseHp = unit.getStat('maxHp');
 
-            // Calculate totals (assuming getStat includes equipment bonuses)
             const totalAtk = unit.getStat('atk');
             const totalDef = unit.getStat('def');
             const totalHp = unit.getStat('maxHp');
@@ -1044,15 +1092,78 @@ export default class UIManager {
             const hpBonus = totalHp - baseHp;
 
             statsEl.innerHTML = `
-                <div class="stat-line">HP: ${baseHp} ${hpBonus > 0 ? `<span class="stat-bonus">(+${hpBonus})</span>` : ''} = ${totalHp}</div>
-                <div class="stat-line">ATK: ${baseAtk} ${atkBonus > 0 ? `<span class="stat-bonus">(+${atkBonus})</span>` : ''} = ${totalAtk}</div>
-                <div class="stat-line">DEF: ${baseDef} ${defBonus > 0 ? `<span class="stat-bonus">(+${defBonus})</span>` : ''} = ${totalDef}</div>
+                <div class="rpg-stat-row">
+                    <span class="rpg-stat-label">HP</span>
+                    <span class="rpg-stat-value">${totalHp} ${hpBonus > 0 ? `<span class="rpg-stat-bonus">(+${hpBonus})</span>` : ''}</span>
+                </div>
+                <div class="rpg-stat-row">
+                    <span class="rpg-stat-label">ATK</span>
+                    <span class="rpg-stat-value">${totalAtk} ${atkBonus > 0 ? `<span class="rpg-stat-bonus">(+${atkBonus})</span>` : ''}</span>
+                </div>
+                <div class="rpg-stat-row">
+                    <span class="rpg-stat-label">DEF</span>
+                    <span class="rpg-stat-value">${totalDef} ${defBonus > 0 ? `<span class="rpg-stat-bonus">(+${defBonus})</span>` : ''}</span>
+                </div>
             `;
         }
     }
 
+    unequipItemFromHero(unit, slot) {
+        if (!unit.equipment || !unit.equipment[slot]) return;
+
+        const item = unit.equipment[slot];
+
+        // Remove from unit
+        unit.unequip(slot);
+
+        // Add back to inventory
+        this.game.economySystem.inventory.push(item);
+
+        // Refresh displays
+        this.updateHeroEquipmentDisplay(unit);
+
+        // Get current filter tab
+        const activeTab = document.querySelector('.tab-btn.active');
+        const filterType = activeTab ? activeTab.dataset.tab : 'all';
+        this.updateInventoryGrid(filterType);
+
+        this.renderInventoryPartyUnits();
+    }
+
+    equipItemOnSelectedHero(item) {
+        const unit = this.selectedHeroForEquipment;
+        if (!unit) return;
+
+        // Determine slot based on item type
+        let slot = item.type;
+
+        // Check if slot is already occupied
+        if (unit.equipment && unit.equipment[slot]) {
+            const oldItem = unit.equipment[slot];
+            this.game.economySystem.inventory.push(oldItem);
+        }
+
+        // Equip the item
+        unit.equip(item);
+
+        // Remove from inventory
+        const index = this.game.economySystem.inventory.indexOf(item);
+        if (index > -1) {
+            this.game.economySystem.inventory.splice(index, 1);
+        }
+
+        // Refresh displays
+        this.updateHeroEquipmentDisplay(unit);
+
+        // Get current filter tab
+        const activeTab = document.querySelector('.tab-btn.active');
+        const filterType = activeTab ? activeTab.dataset.tab : 'all';
+        this.updateInventoryGrid(filterType);
+        this.renderInventoryPartyUnits();
+    }
+
     updateInventoryGrid(filterType) {
-        const grid = document.getElementById('full-inventory-grid');
+        const grid = document.getElementById('rpg-inventory-grid');
         if (!grid) return;
 
         grid.innerHTML = '';
@@ -1070,7 +1181,7 @@ export default class UIManager {
 
         filteredItems.forEach(item => {
             const itemCard = document.createElement('div');
-            itemCard.className = 'inventory-item-compact';
+            itemCard.className = 'rpg-item-card';
 
             let icon = '❓';
             if (item.type === 'weapon') icon = '⚔️';
@@ -1078,13 +1189,21 @@ export default class UIManager {
             if (item.type === 'accessory') icon = '💍';
 
             itemCard.innerHTML = `
-                <div class="item-icon">${icon}</div>
-                <div class="item-name">${item.name}</div>
-                <div class="item-stats-compact">${this.getItemStatsString(item)}</div>
+                <div class="rpg-item-icon">${icon}</div>
+                <div class="rpg-item-level">Niv.${item.level || 1}</div>
             `;
 
-            // Add tooltip or click event for details
+            // Add tooltip
             itemCard.title = `${item.name}\n${item.type.toUpperCase()}\n${this.getItemStatsString(item)}\n${item.description || ''}`;
+
+            // Add click event to equip on selected hero
+            itemCard.addEventListener('click', () => {
+                if (this.selectedHeroForEquipment) {
+                    this.equipItemOnSelectedHero(item);
+                } else {
+                    alert('Sélectionnez d\'abord un héros !');
+                }
+            });
 
             grid.appendChild(itemCard);
         });

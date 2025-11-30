@@ -1,0 +1,91 @@
+/* ===================================
+   PANNEAU D'ÉQUIPEMENT (INVENTAIRE)
+   =================================== */
+
+.equipment-panel {
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+    border: 1px solid var(--glass-border);
+}
+
+.equipment-panel h4 {
+    margin-top: 0;
+    margin-bottom: var(--spacing-md);
+    color: var(--primary-color);
+    text-align: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: var(--spacing-sm);
+}
+
+.equipment-slots-display {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+}
+
+.equipment-slot-item {
+    background: rgba(255, 255, 255, 0.05);
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.slot-label {
+    color: var(--text-secondary);
+    font-size: 0.9em;
+}
+
+.slot-content {
+    font-weight: bold;
+    color: var(--text-primary);
+}
+
+.btn-unequip-inv {
+    background: none;
+    border: none;
+    color: var(--danger-color);
+    cursor: pointer;
+    font-size: 1.2em;
+    padding: 0 4px;
+    margin-left: 4px;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+
+.btn-unequip-inv:hover {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+.hero-stats-display {
+    display: flex;
+    justify-content: space-around;
+    background: rgba(0, 0, 0, 0.2);
+    padding: var(--spacing-sm);
+    border-radius: var(--radius-sm);
+    font-size: 0.9em;
+}
+
+.stat-line {
+    color: var(--text-secondary);
+}
+
+.stat-bonus {
+    color: var(--success-color);
+    font-weight: bold;
+}
+
+/* Style pour la sélection de héros */
+.party-unit-card.selected {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+    transform: translateY(-2px);
+    background: rgba(255, 215, 0, 0.1);
+}

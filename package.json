@@ -1,0 +1,21 @@
+{
+  "name": "brave-rpg-mobile",
+  "version": "1.0.0",
+  "description": "Un jeu RPG mobile de style Brave Frontier",
+  "main": "index.html",
+  "scripts": {
+    "start": "http-server -p 8000",
+    "dev": "http-server -p 8000 -c-1"
+  },
+  "keywords": [
+    "rpg",
+    "game",
+    "mobile",
+    "brave-frontier"
+  ],
+  "author": "Adrien",
+  "license": "ISC",
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  }
+}
