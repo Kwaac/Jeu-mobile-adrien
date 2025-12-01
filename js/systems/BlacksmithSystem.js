@@ -66,14 +66,16 @@ export default class BlacksmithSystem {
      * @param {string} statName - Nom de la stat (hp, atk, def, etc.)
      */
     getStatBonus(nextLevel, statName) {
-        // HP : +10% (multiplicateur)
+        // Calculer le palier (1-2: tier 1, 3-4: tier 2, etc.)
+        const tier = Math.ceil(nextLevel / 2);
+
+        // HP : Pourcentage par paliers (10%, 12%, 14%, 16%, 18%)
         if (statName === 'hp') {
-            return { type: 'percent', value: 0.10 };
+            const percentBonus = 0.08 + (tier * 0.02); // 10%, 12%, 14%, 16%, 18%
+            return { type: 'percent', value: percentBonus };
         }
 
-        // ATK/DEF : Bonus par paliers
-        // Niveau 1-2: +1, 3-4: +2, 5-6: +3, 7-8: +4, 9-10: +5
-        const tier = Math.ceil(nextLevel / 2);
+        // ATK/DEF : Bonus flat par paliers (+1, +2, +3, +4, +5)
         return { type: 'flat', value: tier };
     }
 
@@ -104,7 +106,7 @@ export default class BlacksmithSystem {
             const bonus = this.getStatBonus(item.level, stat);
 
             if (bonus.type === 'percent') {
-                // HP : +10%
+                // HP : Pourcentage par paliers
                 item.stats[stat] = Math.floor(item.stats[stat] * (1 + bonus.value));
             } else {
                 // ATK/DEF : +X flat
@@ -128,7 +130,7 @@ export default class BlacksmithSystem {
             const bonus = this.getStatBonus(nextLevel, stat);
 
             if (bonus.type === 'percent') {
-                // HP : +10%
+                // HP : Pourcentage par paliers
                 nextStats[stat] = Math.floor(nextStats[stat] * (1 + bonus.value));
             } else {
                 // ATK/DEF : +X flat
