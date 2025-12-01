@@ -61,6 +61,23 @@ export default class BlacksmithSystem {
     }
 
     /**
+     * Calcule le bonus de stats selon le niveau
+     * @param {number} nextLevel - Le niveau après upgrade
+     * @param {string} statName - Nom de la stat (hp, atk, def, etc.)
+     */
+    getStatBonus(nextLevel, statName) {
+        // HP : +10% (multiplicateur)
+        if (statName === 'hp') {
+            return { type: 'percent', value: 0.10 };
+        }
+
+        // ATK/DEF : Bonus par paliers
+        // Niveau 1-2: +1, 3-4: +2, 5-6: +3, 7-8: +4, 9-10: +5
+        const tier = Math.ceil(nextLevel / 2);
+        return { type: 'flat', value: tier };
+    }
+
+    /**
      * Exécute l'amélioration
      * @param {Equipment} item 
      * @param {Equipment} material 
@@ -82,11 +99,17 @@ export default class BlacksmithSystem {
         // Appliquer Upgrade
         item.level++;
 
-        // Augmenter stats (+10% par niveau par rapport aux stats de base)
-        // Note: Pour simplifier, on multiplie les stats actuelles par 1.1 ou on recalcule depuis la base ?
-        // On va faire simple : Stats actuelles * 1.1
+        // Augmenter stats selon le type
         for (let stat in item.stats) {
-            item.stats[stat] = Math.floor(item.stats[stat] * 1.1);
+            const bonus = this.getStatBonus(item.level, stat);
+
+            if (bonus.type === 'percent') {
+                // HP : +10%
+                item.stats[stat] = Math.floor(item.stats[stat] * (1 + bonus.value));
+            } else {
+                // ATK/DEF : +X flat
+                item.stats[stat] += bonus.value;
+            }
         }
 
         console.log(`Upgrade réussi : ${item.name} +${item.level}`);
@@ -99,9 +122,20 @@ export default class BlacksmithSystem {
      */
     getPreviewStats(item) {
         const nextStats = { ...item.stats };
+        const nextLevel = item.level + 1;
+
         for (let stat in nextStats) {
-            nextStats[stat] = Math.floor(nextStats[stat] * 1.1);
+            const bonus = this.getStatBonus(nextLevel, stat);
+
+            if (bonus.type === 'percent') {
+                // HP : +10%
+                nextStats[stat] = Math.floor(nextStats[stat] * (1 + bonus.value));
+            } else {
+                // ATK/DEF : +X flat
+                nextStats[stat] += bonus.value;
+            }
         }
+
         return nextStats;
     }
 }
