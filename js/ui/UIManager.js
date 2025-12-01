@@ -1661,15 +1661,30 @@ export default class UIManager {
         const costEl = document.getElementById('blacksmith-cost');
         const btnUpgrade = document.getElementById('btn-upgrade');
 
+        // Déterminer si on passe un palier
+        const currentTier = Math.ceil(item.level / 2);
+        const nextTier = Math.ceil((item.level + 1) / 2);
+        const isTierUp = nextTier > currentTier;
+
         // Preview Stats
         const nextStats = this.game.blacksmithSystem.getPreviewStats(item);
         let statsHtml = '';
         for (let key in item.stats) {
-            statsHtml += `<div>${key.toUpperCase()}: ${item.stats[key]} → <span class="stat-boost">${nextStats[key]}</span></div>`;
+            const bonus = this.game.blacksmithSystem.getStatBonus(item.level + 1, key);
+            const bonusText = bonus.type === 'percent'
+                ? `+${Math.floor(bonus.value * 100)}%`
+                : `+${bonus.value}`;
+
+            statsHtml += `<div>${key.toUpperCase()}: ${item.stats[key]} → <span class="stat-boost">${nextStats[key]}</span> <span class="bonus-indicator">(${bonusText})</span></div>`;
         }
+
+        const tierBadge = isTierUp
+            ? `<span class="tier-up-badge">🌟 PALIER ${nextTier} 🌟</span>`
+            : '';
 
         previewEl.innerHTML = `
             <h3>${item.name} +${item.level} → +${item.level + 1}</h3>
+            ${tierBadge}
             <div class="upgrade-stats">${statsHtml}</div>
         `;
 
