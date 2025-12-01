@@ -379,13 +379,14 @@ export default class UIManager {
                             <button id="btn-upgrade" class="btn-upgrade" disabled>Améliorer</button>
                         </div>
                     </div>
+                    </div>
                 </div>
 
                 <!-- Tab: Échope -->
                 <div id="tab-shop" class="guild-tab-content">
-                    <div class="placeholder-content">
-                        <h3>💰 Échope</h3>
-                        <p>Bientôt disponible : Achetez des potions et matériaux !</p>
+                    <h3 style="text-align: center; margin-bottom: 20px;">Équipements Disponibles</h3>
+                    <div class="shop-grid" id="shop-items">
+                        <!-- Items will be populated here -->
                     </div>
                 </div>
             </div>
@@ -1553,9 +1554,11 @@ export default class UIManager {
         });
         document.getElementById(`tab-${activeTab}`).classList.add('active');
 
-        // Update Blacksmith screen when switching to it
+        // Update screens when switching tabs
         if (activeTab === 'blacksmith') {
             this.updateBlacksmithScreen();
+        } else if (activeTab === 'shop') {
+            this.updateShopScreen();
         }
     }
 
@@ -1737,5 +1740,83 @@ export default class UIManager {
         } else {
             alert("Échec de l'amélioration");
         }
+    }
+
+    updateShopScreen() {
+        const shopGrid = document.getElementById('shop-items');
+        if (!shopGrid) return;
+
+        // Liste d'équipements à vendre (prix 0 pour tests)
+        const shopItems = [
+            { id: 'sword_shop', name: 'Épée de Fer', desc: 'Épée basique', slot: 'weapon', stats: { atk: 10, def: 2 }, price: 0 },
+            { id: 'sword_shop', name: 'Épée de Fer', desc: 'Épée basique', slot: 'weapon', stats: { atk: 10, def: 2 }, price: 0 },
+            { id: 'sword_shop', name: 'Épée de Fer', desc: 'Épée basique', slot: 'weapon', stats: { atk: 10, def: 2 }, price: 0 },
+            { id: 'armor_shop', name: 'Armure de Fer', desc: 'Protection solide', slot: 'armor', stats: { def: 15, maxHp: 50 }, price: 0 },
+            { id: 'armor_shop', name: 'Armure de Fer', desc: 'Protection solide', slot: 'armor', stats: { def: 15, maxHp: 50 }, price: 0 },
+            { id: 'ring_shop', name: 'Anneau de Vie', desc: 'Augmente la vitalité', slot: 'accessory', stats: { maxHp: 30 }, price: 0 },
+            { id: 'ring_shop', name: 'Anneau de Vie', desc: 'Augmente la vitalité', slot: 'accessory', stats: { maxHp: 30 }, price: 0 },
+            { id: 'ring_shop', name: 'Anneau de Vie', desc: 'Augmente la vitalité', slot: 'accessory', stats: { maxHp: 30 }, price: 0 },
+        ];
+
+        shopGrid.innerHTML = '';
+        shopItems.forEach((itemData, index) => {
+            const el = document.createElement('div');
+            el.className = 'shop-item-card';
+
+            let statsHtml = '';
+            for (let key in itemData.stats) {
+                statsHtml += `<div>${key.toUpperCase()}: +${itemData.stats[key]}</div>`;
+            }
+
+            el.innerHTML = `
+                <div class="item-name">${itemData.name}</div>
+                <div class="item-type">${itemData.slot}</div>
+                <div class="item-stats">${statsHtml}</div>
+                <button class="btn-buy" data-index="${index}">Acheter (${itemData.price} Or)</button>
+            `;
+
+            shopGrid.appendChild(el);
+        });
+
+        // Bind purchase buttons
+        document.querySelectorAll('.btn-buy').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const index = parseInt(e.target.dataset.index);
+                this.purchaseItem(shopItems[index]);
+            });
+        });
+    }
+
+    purchaseItem(itemData) {
+        // Check gold
+        if (this.game.economySystem.resources.gold < itemData.price) {
+            alert('Pas assez d\'or !');
+            return;
+        }
+
+        // Check inventory space
+        if (this.game.economySystem.inventory.length >= this.game.economySystem.maxInventorySize) {
+            alert('Inventaire plein !');
+            return;
+        }
+
+        // Import Equipment dynamically
+        import('../items/Equipment.js').then(module => {
+            const Equipment = module.default;
+            const newItem = new Equipment(itemData.id, itemData.name, itemData.desc, itemData.slot, itemData.stats);
+            newItem.type = itemData.slot;
+
+            // Add to inventory
+            this.game.economySystem.inventory.push(newItem);
+
+            // Deduct gold
+            this.game.economySystem.resources.gold -= itemData.price;
+
+            // Update UI
+            this.updateResourceDisplay();
+
+            console.log(`Acheté: ${itemData.name}`);
+            alert(`${itemData.name} acheté !`);
+        });
     }
 }

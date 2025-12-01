@@ -7,7 +7,7 @@ export default class EconomySystem {
             zel: 0,
             karma: 0,
             gems: 0,
-            gold: 10000
+            gold: 100000
         };
         this.maxInventorySize = 50; // Limite d'inventaire
         this.inventory = [];
