@@ -359,9 +359,25 @@ export default class UIManager {
 
                 <!-- Tab: Forgeron -->
                 <div id="tab-blacksmith" class="guild-tab-content">
-                    <div class="placeholder-content">
-                        <h3>🔨 Forgeron</h3>
-                        <p>Bientôt disponible : Améliorez vos équipements !</p>
+                    <div class="blacksmith-container">
+                        <!-- Left: Item List -->
+                        <div class="blacksmith-list-panel">
+                            <h3>Équipements</h3>
+                            <div id="blacksmith-items" class="blacksmith-grid"></div>
+                        </div>
+
+                        <!-- Right: Upgrade Panel -->
+                        <div class="blacksmith-upgrade-panel">
+                            <div id="blacksmith-preview">
+                                <p class="placeholder-text">Sélectionnez un équipement à améliorer</p>
+                            </div>
+                            <div id="blacksmith-materials" class="materials-section" style="display:none;">
+                                <h4>Matériau requis (Doublon)</h4>
+                                <div id="blacksmith-material-slot" class="material-slot"></div>
+                            </div>
+                            <div id="blacksmith-cost" class="cost-display"></div>
+                            <button id="btn-upgrade" class="btn-upgrade" disabled>Améliorer</button>
+                        </div>
                     </div>
                 </div>
 
@@ -1536,6 +1552,11 @@ export default class UIManager {
             content.classList.remove('active');
         });
         document.getElementById(`tab-${activeTab}`).classList.add('active');
+
+        // Update Blacksmith screen when switching to it
+        if (activeTab === 'blacksmith') {
+            this.updateBlacksmithScreen();
+        }
     }
 
     performSummon() {
@@ -1570,18 +1591,16 @@ export default class UIManager {
             crystal.style.display = 'none';
             this.showSummonResult(unit);
         }, 1500);
-    }
+        showSummonResult(unit) {
+            const resultCard = document.getElementById('summon-result-card');
+            const closeBtn = document.getElementById('btn-close-summon');
 
-    showSummonResult(unit) {
-        const resultCard = document.getElementById('summon-result-card');
-        const closeBtn = document.getElementById('btn-close-summon');
+            const colors = {
+                'fire': '#e74c3c', 'water': '#3498db', 'earth': '#27ae60',
+                'thunder': '#f39c12', 'light': '#ecf0f1', 'dark': '#34495e', 'none': '#95a5a6'
+            };
 
-        const colors = {
-            'fire': '#e74c3c', 'water': '#3498db', 'earth': '#27ae60',
-            'thunder': '#f39c12', 'light': '#ecf0f1', 'dark': '#34495e', 'none': '#95a5a6'
-        };
-
-        resultCard.innerHTML = `
+            resultCard.innerHTML = `
             <div class="summon-flash"></div>
             <div class="hero-avatar-large" style="background-color: ${colors[unit.element]}; width: 100px; height: 100px; margin: 0 auto 15px;"></div>
             <h2>${unit.name}</h2>
@@ -1594,12 +1613,112 @@ export default class UIManager {
             </div>
         `;
 
-        resultCard.style.display = 'block';
-        closeBtn.style.display = 'block';
+            resultCard.style.display = 'block';
+            closeBtn.style.display = 'block';
 
-        // Reset crystal for next time
-        const crystal = document.querySelector('.summon-crystal');
-        crystal.style.transform = 'scale(1)';
-        crystal.style.opacity = '1';
+            // Reset crystal for next time
+            const crystal = document.querySelector('.summon-crystal');
+            crystal.style.transform = 'scale(1)';
+            crystal.style.opacity = '1';
+        }
+
+        updateBlacksmithScreen() {
+            const list = document.getElementById('blacksmith-items');
+            if (!list) return;
+            list.innerHTML = '';
+
+            const items = this.game.economySystem.inventory.filter(item => item.type === 'weapon' || item.type === 'armor' || item.type === 'accessory');
+
+            if (items.length === 0) {
+                list.innerHTML = '<p class="empty-message">Aucun équipement améliorable</p>';
+                return;
+            }
+
+            items.forEach(item => {
+                const el = document.createElement('div');
+                el.className = 'blacksmith-item-card';
+                if (this.selectedBlacksmithItem === item) el.classList.add('selected');
+
+                el.innerHTML = `
+                <div class="item-name">${item.name} <span class="item-level">+${item.level}</span></div>
+                <div class="item-type">${item.type}</div>
+            `;
+                el.onclick = () => this.selectBlacksmithItem(item);
+                list.appendChild(el);
+            });
+        }
+
+        selectBlacksmithItem(item) {
+            this.selectedBlacksmithItem = item;
+            this.selectedBlacksmithMaterial = null;
+            this.updateBlacksmithScreen(); // Refresh selection highlight
+
+            const previewEl = document.getElementById('blacksmith-preview');
+            const materialsSection = document.getElementById('blacksmith-materials');
+            const materialSlot = document.getElementById('blacksmith-material-slot');
+            const costEl = document.getElementById('blacksmith-cost');
+            const btnUpgrade = document.getElementById('btn-upgrade');
+
+            // Preview Stats
+            const nextStats = this.game.blacksmithSystem.getPreviewStats(item);
+            let statsHtml = '';
+            for (let key in item.stats) {
+                statsHtml += `<div>${key.toUpperCase()}: ${item.stats[key]} → <span class="stat-boost">${nextStats[key]}</span></div>`;
+            }
+
+            previewEl.innerHTML = `
+            <h3>${item.name} +${item.level} → +${item.level + 1}</h3>
+            <div class="upgrade-stats">${statsHtml}</div>
+        `;
+
+            // Check Requirements
+            const cost = this.game.blacksmithSystem.getUpgradeCost(item);
+            const canAffordGold = this.game.economySystem.resources.gold >= cost.gold;
+
+            if (cost.requiresMaterial) {
+                materialsSection.style.display = 'block';
+                const materials = this.game.blacksmithSystem.findMaterials(item);
+
+                if (materials.length > 0) {
+                    // Auto-select first material
+                    this.selectedBlacksmithMaterial = materials[0];
+                    materialSlot.innerHTML = `
+                    <div class="material-card selected">
+                        <div class="item-name">${this.selectedBlacksmithMaterial.name}</div>
+                        <div class="item-level">+${this.selectedBlacksmithMaterial.level}</div>
+                    </div>
+                `;
+                } else {
+                    materialSlot.innerHTML = `<p class="error-text">Aucun doublon +${item.level} trouvé</p>`;
+                }
+            } else {
+                materialsSection.style.display = 'none';
+            }
+
+            // Cost Display
+            costEl.innerHTML = `Coût: <span class="${canAffordGold ? 'cost-ok' : 'cost-error'}">${cost.gold} Or</span>`;
+
+            // Button State
+            const check = this.game.blacksmithSystem.canUpgrade(item, this.selectedBlacksmithMaterial);
+            if (check.possible) {
+                btnUpgrade.disabled = false;
+                btnUpgrade.textContent = 'Améliorer';
+                btnUpgrade.onclick = () => this.performUpgrade();
+            } else {
+                btnUpgrade.disabled = true;
+                btnUpgrade.textContent = check.reason;
+            }
+        }
+
+        performUpgrade() {
+            const item = this.selectedBlacksmithItem;
+            const material = this.selectedBlacksmithMaterial;
+
+            if (this.game.blacksmithSystem.upgradeItem(item, material)) {
+                this.selectBlacksmithItem(item); // Refresh view
+                this.updateResourceDisplay();
+            } else {
+                alert("Échec de l'amélioration");
+            }
+        }
     }
-}

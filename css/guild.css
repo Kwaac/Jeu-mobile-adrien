@@ -266,3 +266,146 @@
     border: 2px dashed rgba(255, 255, 255, 0.1);
     border-radius: 10px;
 }
+
+/* Blacksmith Styles */
+.blacksmith-container {
+    display: flex;
+    gap: 20px;
+    height: 100%;
+}
+
+.blacksmith-list-panel {
+    flex: 1;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+}
+
+.blacksmith-upgrade-panel {
+    flex: 1;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.blacksmith-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 10px;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+.blacksmith-item-card {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    padding: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.blacksmith-item-card:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+.blacksmith-item-card.selected {
+    border-color: #f1c40f;
+    background: rgba(241, 196, 15, 0.1);
+    box-shadow: 0 0 10px rgba(241, 196, 15, 0.3);
+}
+
+.item-level {
+    color: #f1c40f;
+    font-weight: bold;
+    font-size: 0.9em;
+}
+
+.upgrade-stats {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 15px;
+    border-radius: 8px;
+    margin: 15px 0;
+    width: 100%;
+    text-align: left;
+}
+
+.stat-boost {
+    color: #2ecc71;
+    font-weight: bold;
+}
+
+.materials-section {
+    margin: 15px 0;
+    width: 100%;
+}
+
+.material-slot {
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+.material-card {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px dashed rgba(255, 255, 255, 0.3);
+    padding: 10px;
+    border-radius: 8px;
+    width: 120px;
+}
+
+.cost-display {
+    font-size: 1.2em;
+    margin: 20px 0;
+    font-weight: bold;
+}
+
+.cost-ok {
+    color: #2ecc71;
+}
+
+.cost-error {
+    color: #e74c3c;
+}
+
+.btn-upgrade {
+    background: linear-gradient(to right, #e67e22, #d35400);
+    border: none;
+    color: white;
+    padding: 12px 30px;
+    border-radius: 25px;
+    font-size: 1.1em;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 0 #a04000;
+}
+
+.btn-upgrade:active {
+    transform: translateY(4px);
+    box-shadow: 0 0 0 #a04000;
+}
+
+.btn-upgrade:disabled {
+    background: #7f8c8d;
+    box-shadow: none;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.error-text {
+    color: #e74c3c;
+    font-size: 0.9em;
+}
+
+.placeholder-text {
+    color: #95a5a6;
+    font-style: italic;
+}

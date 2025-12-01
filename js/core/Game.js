@@ -5,6 +5,7 @@ import LootManager from '../systems/LootManager.js';
 import PartyManager from '../systems/PartyManager.js';
 import EvolutionSystem from '../systems/EvolutionSystem.js';
 import GachaSystem from '../systems/GachaSystem.js';
+import BlacksmithSystem from '../systems/BlacksmithSystem.js';
 import UIManager from '../ui/UIManager.js';
 
 export default class Game {
@@ -37,6 +38,7 @@ export default class Game {
         this.battleSystem = new BattleSystem(this);
         this.evolutionSystem = new EvolutionSystem(this);
         this.gachaSystem = new GachaSystem(this);
+        this.blacksmithSystem = new BlacksmithSystem(this);
         this.uiManager = new UIManager(this);
 
         this.resize();
