@@ -1,5 +1,6 @@
 export default class Unit {
     constructor(name, isPlayer, stats) {
+        this.instanceId = Date.now().toString(36) + Math.random().toString(36).substr(2);
         this.name = name;
         this.isPlayer = isPlayer;
 
@@ -169,6 +170,15 @@ export default class Unit {
 
     getEquipment() {
         return this.equipment;
+    }
+
+    // Alias methods for compatibility with UIManager
+    equip(item) {
+        return this.equipItem(item);
+    }
+
+    unequip(slot) {
+        return this.unequipItem(slot);
     }
 
     executeBB(targets) {

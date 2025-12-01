@@ -68,17 +68,24 @@ export default class PartyManager {
     addToParty(unit) {
         if (this.party.length >= this.maxPartySize) {
             console.log('Équipe complète ! Maximum 5 unités.');
-            return false;
+            return 'PARTY_FULL';
         }
 
         if (!this.ownedUnits.includes(unit)) {
             console.log('Cette unité n\'est pas possédée !');
-            return false;
+            return 'NOT_OWNED';
+        }
+
+        // Check for duplicate type (unitId)
+        const isDuplicateType = this.party.some(p => p.unitId === unit.unitId);
+        if (isDuplicateType) {
+            console.log(`Un héros de type ${unit.name} est déjà dans l'équipe.`);
+            return 'DUPLICATE_NAME';
         }
 
         if (this.party.includes(unit)) {
             console.log(`${unit.name} est déjà dans l'équipe.`);
-            return false;
+            return 'ALREADY_IN_PARTY';
         }
 
         this.party.push(unit);

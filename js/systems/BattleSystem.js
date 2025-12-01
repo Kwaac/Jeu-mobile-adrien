@@ -51,6 +51,7 @@ export default class BattleSystem {
         this.game = game;
         this.playerUnits = [];
         this.enemyUnits = [];
+        this.defeatedEnemies = []; // Track defeated enemies for XP calculation
         this.waveIndex = 0;
         this.turnState = 'PLAYER_PHASE'; // PLAYER_PHASE, ENEMY_PHASE, VICTORY, DEFEAT
         this.actionQueue = []; // For handling simultaneous attacks/animations
@@ -64,8 +65,25 @@ export default class BattleSystem {
         // Placeholder for testing without QuestSystem if needed
     }
 
+    reset() {
+        console.log("BattleSystem reset");
+        this.playerUnits = [];
+        this.enemyUnits = [];
+        this.defeatedEnemies = [];
+        this.waveIndex = 0;
+        this.turnState = 'PLAYER_PHASE';
+        this.actionQueue = [];
+        this.selectedUnit = null;
+        this.hoveredEnemy = null;
+        this.animations = [];
+        this.bbMode = false;
+    }
+
     startWave(enemyDataArray) {
         console.log("BattleSystem.startWave called", enemyDataArray);
+        // Reset defeated enemies for new wave
+        this.defeatedEnemies = [];
+
         this.enemyUnits = enemyDataArray.map((data, index) => {
             const unit = new Unit(data.name, false, data);
             unit.x = this.game.width * 0.6 + (index % 2) * 110;
@@ -76,7 +94,13 @@ export default class BattleSystem {
         // Setup Player Units
         if (this.playerUnits.length === 0) {
             this.playerUnits = this.game.partyManager.getParty().slice();
-            console.log(`Équipe de combat chargée : ${this.playerUnits.length} unités`);
+            // Reset unit state for new battle
+            this.playerUnits.forEach(unit => {
+                unit.hasActed = false;
+                unit.isDeadState = false;
+                unit.bbGauge = 0;
+            });
+            console.log(`Équipe de combat chargée : ${this.playerUnits.length} unités (État réinitialisé)`);
         } else {
             console.log(`Équipe de combat existante : ${this.playerUnits.length} unités`);
         }
@@ -106,7 +130,11 @@ export default class BattleSystem {
             this.handleEnemyTurn();
         }
 
-        // Check for dead units
+        // Check for dead units and track defeated enemies
+        const deadEnemies = this.enemyUnits.filter(u => u.isDead());
+        if (deadEnemies.length > 0) {
+            this.defeatedEnemies.push(...deadEnemies);
+        }
         this.enemyUnits = this.enemyUnits.filter(u => !u.isDead());
 
         if (this.enemyUnits.length === 0 && this.turnState !== 'VICTORY') {
@@ -265,9 +293,13 @@ export default class BattleSystem {
         this.turnState = 'VICTORY';
         console.log("Vague terminée !");
 
-        // Award XP to surviving players
-        const xpPerEnemy = 50;
-        const totalXp = this.enemyUnits.length * xpPerEnemy;
+        // Calculate XP based on defeated enemies (dynamic XP system)
+        const totalXp = this.defeatedEnemies.reduce((sum, enemy) => {
+            const enemyXp = enemy.exp || 0;
+            return sum + enemyXp;
+        }, 0);
+
+        console.log(`XP total de la vague : ${totalXp}`);
 
         this.playerUnits.forEach(unit => {
             if (!unit.isDead()) {

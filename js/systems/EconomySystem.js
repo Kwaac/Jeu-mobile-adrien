@@ -7,19 +7,33 @@ export default class EconomySystem {
             zel: 0,
             karma: 0,
             gems: 0,
-            gold: 10000  // Or de départ pour tester l'évolution
+            gold: 10000
         };
+        this.maxInventorySize = 50; // Limite d'inventaire
         this.inventory = [];
 
-        // Add dummy items
-        this.addItem(new Equipment('sword1', 'Épée rouillée', 'Vieille épée', 'weapon', { atk: 5 }));
-        this.addItem(new Equipment('armor1', 'Armure de cuir', 'Protection basique', 'armor', { def: 3 }));
-        this.addItem(new Equipment('acc1', 'Anneau de Vie', 'Donne de la vitalité', 'accessory', { maxHp: 50 }));
+        // Add dummy items - type must match slot for filtering
+        const sword = new Equipment('sword1', 'Épée rouillée', 'Vieille épée', 'weapon', { atk: 5 });
+        sword.type = 'weapon'; // Ensure type is set for filtering
+        this.addItem(sword);
+
+        const armor = new Equipment('armor1', 'Armure de cuir', 'Protection basique', 'armor', { def: 3 });
+        armor.type = 'armor';
+        this.addItem(armor);
+
+        const accessory = new Equipment('acc1', 'Anneau de Vie', 'Donne de la vitalité', 'accessory', { maxHp: 50 });
+        accessory.type = 'accessory';
+        this.addItem(accessory);
     }
 
     addItem(item) {
+        if (this.inventory.length >= this.maxInventorySize) {
+            console.log(`Inventaire plein ! Impossible d'ajouter ${item.name}`);
+            return false;
+        }
         this.inventory.push(item);
-        console.log(`Objet ajouté : ${item.name}`);
+        console.log(`Objet ajouté : ${item.name} (${this.inventory.length}/${this.maxInventorySize})`);
+        return true;
     }
 
     removeItem(item) {

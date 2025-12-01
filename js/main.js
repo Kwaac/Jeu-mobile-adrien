@@ -1,5 +1,5 @@
-console.log('[MAIN.JS] Module loaded - starting import');
-import Game from './core/Game.js';
+console.log('[MAIN.JS] Module loaded - starting import (v2)');
+import Game from './core/Game.js?v=6';
 
 window.addEventListener('load', () => {
     if (window.game) {

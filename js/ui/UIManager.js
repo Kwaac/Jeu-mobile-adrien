@@ -92,17 +92,31 @@ export default class UIManager {
         equipScreen.id = this.screens.EQUIPMENT;
         equipScreen.className = 'screen equipment-screen';
         equipScreen.innerHTML = `
-            <div class="equipment-new-layout">
-                <!-- Équipe de combat en ligne horizontale -->
-                <div class="party-section">
-                    <h3>⚔️ Équipe de Combat</h3>
-                    <div id="party-units" class="party-horizontal"></div>
+            <div class="inventory-rpg-container team-screen-container">
+                <!-- Colonne Gauche : Équipe & Détails -->
+                <div class="character-sheet-panel party-column">
+                    <h3 style="margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
+                        ⚔️ Équipe <span id="party-count" style="font-size: 0.8em; color: #aaa; float: right;">(0/5)</span>
+                    </h3>
+                    
+                    <!-- Liste des membres de l'équipe -->
+                    <div id="party-units" class="party-list-vertical"></div>
+                    
+                    <!-- Panneau de détails du héros sélectionné -->
+                    <div id="hero-details-panel" class="hero-details-panel" style="display:none; margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1);">
+                        <div class="hero-preview-large">
+                            <!-- Avatar et infos injectés via JS -->
+                        </div>
+                        <button id="btn-remove-party" class="btn-action-rpg" style="width: 100%; margin-top: 15px; background: #e74c3c;">Retirer de l'équipe</button>
+                    </div>
                 </div>
                 
-                <!-- Équipements disponibles en grille -->
-                <div class="equipment-section">
-                    <h3>🎒 Tous les Équipements</h3>
-                    <div id="equipment-grid" class="equipment-grid"></div>
+                <!-- Colonne Droite : Héros Disponibles -->
+                <div class="inventory-grid-panel available-heroes-column">
+                    <div class="inventory-header">
+                        <h3>Héros Disponibles <span id="total-hero-count" style="font-size: 0.8em; color: #aaa;">(0/50)</span></h3>
+                    </div>
+                    <div id="equipment-grid" class="inventory-grid-rpg available-heroes-grid"></div>
                 </div>
             </div>
             <button id="btn-back-equip" class="btn-back">← Retour</button>
@@ -305,97 +319,182 @@ export default class UIManager {
     }
 
     updateEquipmentScreen() {
-        this.renderPartyUnits();
-        this.renderEquipmentGrid();
+        this.renderPartySlots();
+        this.renderAvailableHeroes();
+
+        // Update counts
+        const party = this.game.partyManager.getParty();
+        const allUnits = this.game.partyManager.getAllUnits();
+
+        const partyCountEl = document.getElementById('party-count');
+        if (partyCountEl) partyCountEl.textContent = `(${party.length}/5)`;
+
+        const totalCountEl = document.getElementById('total-hero-count');
+        if (totalCountEl) totalCountEl.textContent = `(${allUnits.length}/50)`;
     }
 
-    renderPartyUnits() {
+    renderPartySlots() {
         const partyContainer = document.getElementById('party-units');
         if (!partyContainer) return;
 
         partyContainer.innerHTML = '';
         const party = this.game.partyManager.getParty();
+        const maxPartySize = 5;
 
-        if (party.length === 0) {
-            partyContainer.innerHTML = '<div class="empty-party">Aucune unité dans l\'équipe</div>';
-            return;
+        // Render 5 slots (filled or empty)
+        for (let i = 0; i < maxPartySize; i++) {
+            const unit = party[i];
+            const slotEl = document.createElement('div');
+            slotEl.className = 'party-unit-card-row';
+
+            if (unit) {
+                // Filled slot
+                const colors = {
+                    'fire': '#e74c3c', 'water': '#3498db', 'earth': '#27ae60',
+                    'thunder': '#f39c12', 'light': '#ecf0f1', 'dark': '#34495e', 'none': '#95a5a6'
+                };
+
+                slotEl.innerHTML = `
+                    <div class="unit-avatar" style="background-color: ${colors[unit.element] || colors['none']}"></div>
+                    <div class="unit-info">
+                        <div class="unit-name">${unit.name}</div>
+                        <div class="unit-level">Niv. ${unit.level} - ${unit.getRarityStars()}</div>
+                    </div>
+                    <div class="unit-status">✅</div>
+                `;
+
+                slotEl.onclick = () => {
+                    this.renderHeroDetails(unit);
+                    // Update selection visual
+                    document.querySelectorAll('.party-unit-card-row').forEach(el => el.classList.remove('selected'));
+                    slotEl.classList.add('selected');
+                };
+
+                // Select first unit by default if none selected
+                if (i === 0 && !document.querySelector('.party-unit-card-row.selected')) {
+                    setTimeout(() => slotEl.click(), 0);
+                }
+            } else {
+                // Empty slot
+                slotEl.style.opacity = '0.5';
+                slotEl.style.cursor = 'default';
+                slotEl.innerHTML = `
+                    <div class="unit-avatar" style="background: rgba(255,255,255,0.1); border-style: dashed;"></div>
+                    <div class="unit-info">
+                        <div class="unit-name" style="color: #aaa;">Emplacement vide</div>
+                        <div class="unit-level">Ajoutez un héros</div>
+                    </div>
+                `;
+            }
+
+            partyContainer.appendChild(slotEl);
         }
-
-        party.forEach(unit => {
-            const unitCard = document.createElement('div');
-            unitCard.className = 'party-unit-card';
-
-            const colors = {
-                'fire': '#e74c3c', 'water': '#3498db', 'earth': '#27ae60',
-                'thunder': '#f39c12', 'light': '#ecf0f1', 'dark': '#34495e', 'none': '#95a5a6'
-            };
-
-            unitCard.innerHTML = `
-                <div class="unit-sprite" style="background-color: ${colors[unit.element] || colors['none']}"></div>
-                <div class="unit-name">${unit.name}</div>
-                <div class="unit-rarity">${unit.getRarityStars()}</div>
-                <div class="unit-level">Niv. ${unit.level}</div>
-                <div class="unit-stats-mini">
-                    <span>❤️ ${unit.hp}</span>
-                    <span>⚔️ ${unit.atk}</span>
-                    <span>🛡️ ${unit.def}</span>
-                </div>
-            `;
-
-            partyContainer.appendChild(unitCard);
-        });
     }
 
-    renderEquipmentGrid() {
+    renderHeroDetails(unit) {
+        const detailsPanel = document.getElementById('hero-details-panel');
+        if (!detailsPanel) return;
+
+        detailsPanel.style.display = 'block';
+
+        const colors = {
+            'fire': '#e74c3c', 'water': '#3498db', 'earth': '#27ae60',
+            'thunder': '#f39c12', 'light': '#ecf0f1', 'dark': '#34495e', 'none': '#95a5a6'
+        };
+
+        const previewContainer = detailsPanel.querySelector('.hero-preview-large');
+        previewContainer.innerHTML = `
+            <div class="hero-avatar-large" style="background-color: ${colors[unit.element] || colors['none']}"></div>
+            <h3 style="margin: 0; color: #fff;">${unit.name}</h3>
+            <div style="color: #ffd700; margin-bottom: 5px;">${unit.getRarityStars()}</div>
+            <div style="color: #ffd700; margin-bottom: 5px;">${unit.getRarityStars()}</div>
+            <div style="color: #aaa; font-size: 0.9em; margin-bottom: 5px;">Niveau ${unit.level}</div>
+            
+            <!-- XP Bar -->
+            <div class="xp-container" style="width: 100%; height: 6px; background: #333; border-radius: 3px; margin-bottom: 15px; position: relative;">
+                <div class="xp-bar" style="width: ${(unit.xp / unit.xpToNextLevel) * 100}%; height: 100%; background: #3498db; border-radius: 3px;"></div>
+                <div style="position: absolute; top: -15px; right: 0; font-size: 0.7em; color: #aaa;">${unit.xp} / ${unit.xpToNextLevel} XP</div>
+            </div>
+            
+            <div class="hero-stats-grid">
+                <div class="stat-item">
+                    <span style="color: #e74c3c;">HP</span>
+                    <span class="stat-value">${unit.hp}/${unit.getStat('maxHp')}</span>
+                </div>
+                <div class="stat-item">
+                    <span style="color: #3498db;">ATK</span>
+                    <span class="stat-value">${unit.atk}</span>
+                </div>
+                <div class="stat-item">
+                    <span style="color: #2ecc71;">DEF</span>
+                    <span class="stat-value">${unit.def}</span>
+                </div>
+            </div>
+            ${unit.canEvolve() ? `<button id="btn-evolve-unit-panel" class="btn-evolve" style="margin-top: 15px; width: 100%; padding: 10px; background: linear-gradient(to right, #f1c40f, #f39c12); border: none; border-radius: 5px; color: white; font-weight: bold; cursor: pointer;">🌟 Évoluer</button>` : ''}
+        `;
+
+        if (unit.canEvolve()) {
+            setTimeout(() => {
+                const btn = document.getElementById('btn-evolve-unit-panel');
+                if (btn) {
+                    btn.onclick = () => this.openEvolutionScreen(unit);
+                }
+            }, 0);
+        }
+
+        const removeBtn = document.getElementById('btn-remove-party');
+        if (removeBtn) {
+            removeBtn.onclick = () => {
+                this.game.partyManager.removeFromParty(unit);
+                this.updateEquipmentScreen();
+                detailsPanel.style.display = 'none';
+            };
+        }
+    }
+
+    renderAvailableHeroes() {
         const gridContainer = document.getElementById('equipment-grid');
         if (!gridContainer) return;
 
         gridContainer.innerHTML = '';
         const allUnits = this.game.partyManager.getAllUnits();
+        const party = this.game.partyManager.getParty();
 
-        if (allUnits.length === 0) {
-            gridContainer.innerHTML = '<div class="empty-equipment">Aucun personnage disponible</div>';
+        // Filter out units already in party
+        const availableUnits = allUnits.filter(u => !party.includes(u));
+
+        if (availableUnits.length === 0) {
+            gridContainer.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #aaa; padding: 20px;">Aucun autre héros disponible</div>';
             return;
         }
 
-        allUnits.forEach(unit => {
+        availableUnits.forEach(unit => {
             const unitCard = document.createElement('div');
-            unitCard.className = 'equipment-item-card';
+            unitCard.className = 'hero-card-compact';
 
             const colors = {
                 'fire': '#e74c3c', 'water': '#3498db', 'earth': '#27ae60',
                 'thunder': '#f39c12', 'light': '#ecf0f1', 'dark': '#34495e', 'none': '#95a5a6'
             };
 
-            const isInParty = this.game.partyManager.isInParty(unit);
-            const partyBadge = isInParty ? '<div class="party-badge">⚔️ En équipe</div>' : '';
-
             unitCard.innerHTML = `
-                <div class="unit-sprite-large" style="background-color: ${colors[unit.element] || colors['none']}"></div>
-                ${partyBadge}
-                <div class="unit-name">${unit.name}</div>
-                <div class="unit-rarity">${unit.getRarityStars()}</div>
-                <div class="unit-level">Niv. ${unit.level}</div>
-                <div class="unit-stats">
-                    <div>❤️ ${unit.hp}/${unit.getStat('maxHp')}</div>
-                    <div>⚔️ ${unit.atk}</div>
-                    <div>🛡️ ${unit.def}</div>
-                </div>
-                <button class="btn-toggle-party-inline">${isInParty ? 'Retirer' : 'Ajouter'}</button>
+                <div class="hero-avatar" style="background-color: ${colors[unit.element] || colors['none']}"></div>
+                <div class="hero-name">${unit.name}</div>
+                <div class="hero-level">Niv. ${unit.level}</div>
             `;
 
-            const toggleBtn = unitCard.querySelector('.btn-toggle-party-inline');
-            toggleBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                if (isInParty) {
-                    this.game.partyManager.removeFromParty(unit);
-                } else {
-                    if (!this.game.partyManager.addToParty(unit)) {
-                        alert('Équipe complète ! (Maximum 5 unités)');
-                    }
+            unitCard.onclick = () => {
+                const result = this.game.partyManager.addToParty(unit);
+                if (result === true) {
+                    this.updateEquipmentScreen();
+                } else if (result === 'PARTY_FULL') {
+                    alert('Équipe complète ! (Maximum 5 unités)');
+                } else if (result === 'DUPLICATE_NAME' || result === 'DUPLICATE_TYPE') {
+                    alert('Vous ne pouvez pas avoir deux héros avec le même nom dans l\'équipe !');
+                } else if (result === 'ALREADY_IN_PARTY') {
+                    alert('Ce héros est déjà dans l\'équipe !');
                 }
-                this.updateEquipmentScreen();
-            });
+            };
 
             gridContainer.appendChild(unitCard);
         });
@@ -676,6 +775,10 @@ export default class UIManager {
         // Shop Events
         document.getElementById('btn-back-shop').addEventListener('click', () => {
             this.showScreen(this.screens.MAIN_MENU);
+        });
+
+        document.getElementById('btn-back-evolution').addEventListener('click', () => {
+            this.showScreen(this.screens.EQUIPMENT);
         });
 
         document.getElementById('btn-buy-gems-1').addEventListener('click', () => {
@@ -1054,14 +1157,12 @@ export default class UIManager {
                     itemImg.style.display = 'flex';
                 }
                 if (iconEl) iconEl.style.opacity = '0'; // Hide default icon
-                if (unequipBtn) {
-                    unequipBtn.style.display = 'none'; // Hidden by default, shown on hover via CSS
-                    unequipBtn.onclick = (e) => {
-                        e.stopPropagation();
-                        this.unequipItemFromHero(unit, slot);
-                    };
-                }
-                slotEl.title = `${item.name} (Niv. ${item.level || 1})`;
+                // Click on slot to unequip
+                slotEl.style.cursor = 'pointer';
+                slotEl.onclick = () => {
+                    this.unequipItemFromHero(unit, slot);
+                };
+                slotEl.title = `${item.name} (Niv. ${item.level || 1}) - Cliquez pour déséquiper`;
                 slotEl.classList.add('equipped');
             } else {
                 // Empty slot
@@ -1070,7 +1171,7 @@ export default class UIManager {
                     itemImg.style.display = 'none';
                 }
                 if (iconEl) iconEl.style.opacity = '0.3'; // Show default icon
-                if (unequipBtn) unequipBtn.style.display = 'none';
+                slotEl.style.cursor = 'default';
                 slotEl.title = slot.charAt(0).toUpperCase() + slot.slice(1);
                 slotEl.classList.remove('equipped');
             }
@@ -1207,5 +1308,103 @@ export default class UIManager {
 
             grid.appendChild(itemCard);
         });
+    }
+    openEvolutionScreen(unit) {
+        this.selectedEvolutionUnit = unit;
+        this.selectedMaterials = [];
+        this.showScreen(this.screens.EVOLUTION);
+
+        // Update Before/After
+        const preview = this.game.evolutionSystem.getEvolutionPreview(unit);
+
+        const beforeEl = document.getElementById('evo-before');
+        beforeEl.innerHTML = `
+            <div class="character-card">
+                <div class="char-name">${unit.name}</div>
+                <div class="char-element">${unit.element} ${unit.getRarityStars()}</div>
+                <div class="char-stats">
+                    HP: ${unit.maxHp}<br>
+                    ATK: ${unit.atk}<br>
+                    DEF: ${unit.def}
+                </div>
+            </div>
+        `;
+
+        const afterEl = document.getElementById('evo-after');
+        if (preview) {
+            afterEl.innerHTML = `
+                <div class="character-card">
+                    <div class="char-name">${unit.name}</div>
+                    <div class="char-element">${unit.element} ${'⭐'.repeat(preview.nextRarity)}</div>
+                    <div class="char-stats">
+                        HP: <span class="stat-boost">${preview.nextStats.hp} (+${preview.nextStats.hp - unit.maxHp})</span><br>
+                        ATK: <span class="stat-boost">${preview.nextStats.atk} (+${preview.nextStats.atk - unit.atk})</span><br>
+                        DEF: <span class="stat-boost">${preview.nextStats.def} (+${preview.nextStats.def - unit.def})</span>
+                    </div>
+                </div>
+            `;
+        } else {
+            afterEl.innerHTML = '<p>Évolution impossible</p>';
+        }
+
+        this.updateEvolutionMaterials();
+    }
+
+    updateEvolutionMaterials() {
+        const unit = this.selectedEvolutionUnit;
+        const duplicates = this.game.evolutionSystem.findDuplicates(unit);
+        const cost = unit.getEvolutionCost();
+
+        const materialsEl = document.getElementById('evo-materials');
+        materialsEl.innerHTML = '';
+
+        if (duplicates.length === 0) {
+            materialsEl.innerHTML = '<p>Aucun doublon disponible (Besoin de 2)</p>';
+        } else {
+            duplicates.forEach(dup => {
+                const el = document.createElement('div');
+                el.className = 'material-card';
+                el.innerHTML = `
+                    <div class="char-name">${dup.name}</div>
+                    <div class="char-level">Niv. ${dup.level}</div>
+                `;
+                // Auto-select first 2
+                if (this.selectedMaterials.length < 2) {
+                    this.selectedMaterials.push(dup);
+                    el.classList.add('selected');
+                }
+                materialsEl.appendChild(el);
+            });
+        }
+
+        const costEl = document.getElementById('evo-cost');
+        const canAfford = this.game.economySystem.resources.gold >= cost;
+        costEl.innerHTML = `Coût: <span class="${canAfford ? 'cost-ok' : 'cost-error'}">${cost} Or</span>`;
+
+        // Update Button
+        const btnEvolve = document.getElementById('btn-evolve');
+        const check = this.game.evolutionSystem.canPerformEvolution(unit);
+
+        if (check.possible) {
+            btnEvolve.disabled = false;
+            btnEvolve.textContent = 'Évoluer !';
+            btnEvolve.onclick = () => this.performEvolution();
+        } else {
+            btnEvolve.disabled = true;
+            btnEvolve.textContent = check.reason;
+        }
+    }
+
+    performEvolution() {
+        const unit = this.selectedEvolutionUnit;
+        const success = this.game.evolutionSystem.evolveUnit(unit, this.selectedMaterials);
+
+        if (success) {
+            alert(`Félicitations ! ${unit.name} a évolué !`);
+            this.showScreen(this.screens.EQUIPMENT); // Return to team screen
+            this.updateEquipmentScreen(); // Refresh
+        } else {
+            alert("Erreur lors de l'évolution");
+        }
     }
 }

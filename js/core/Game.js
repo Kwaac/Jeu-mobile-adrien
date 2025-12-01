@@ -1,4 +1,4 @@
-import BattleSystem from '../systems/BattleSystem.js';
+import BattleSystem from '../systems/BattleSystem.js?v=3';
 import EconomySystem from '../systems/EconomySystem.js';
 import QuestSystem from '../systems/QuestSystem.js';
 import LootManager from '../systems/LootManager.js';
@@ -55,6 +55,7 @@ export default class Game {
             alert("Défaite...");
             this.lootManager.clearLoot();
         }
+        this.battleSystem.reset();
         this.uiManager.showScreen(this.uiManager.screens.MAIN_MENU);
     }
 

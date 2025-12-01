@@ -59,8 +59,22 @@ export default class QuestSystem {
 
     completeQuest() {
         console.log('Quête terminée !');
+
+        // Distribute gold reward
         this.game.economySystem.earnZel(this.activeQuest.rewards.zel);
-        // Add EXP logic here later
+
+        // Distribute XP reward to all surviving party members
+        const questXp = this.activeQuest.rewards.exp || 0;
+        if (questXp > 0) {
+            const party = this.game.partyManager.getParty();
+            party.forEach(unit => {
+                if (!unit.isDead()) {
+                    unit.gainXp(questXp);
+                }
+            });
+            console.log(`Récompense de quête : ${questXp} XP distribués`);
+        }
+
         this.activeQuest = null;
         this.game.endBattle(true); // true = victory
     }

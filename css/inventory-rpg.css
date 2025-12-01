@@ -1,12 +1,11 @@
 /* ===================================
-   INVENTAIRE RPG STYLE (V2)
+   INVENTAIRE RPG STYLE (V2) - ENHANCED
    =================================== */
 
 .inventory-rpg-container {
     display: flex;
     gap: var(--spacing-md);
     height: 80vh;
-    /* Prend une bonne partie de la hauteur */
     width: 100%;
     margin-top: var(--spacing-md);
 }
@@ -14,9 +13,7 @@
 /* --- COLONNE GAUCHE : FICHE PERSO --- */
 .character-sheet-panel {
     flex: 4;
-    /* 40% */
     background: rgba(16, 20, 30, 0.85);
-    /* Fond sombre style Dofus */
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: var(--radius-md);
     display: flex;
@@ -26,9 +23,9 @@
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
 }
 
-/* Sélecteur de Héros */
+/* Sélecteur de Héros - ENHANCED */
 .hero-selector-container {
-    height: 80px;
+    height: 90px;
     overflow-x: auto;
     overflow-y: hidden;
     margin-bottom: var(--spacing-md);
@@ -38,31 +35,47 @@
 
 .hero-list {
     display: flex;
-    gap: var(--spacing-sm);
+    gap: var(--spacing-md);
     padding: 4px;
 }
 
 .hero-avatar-small {
-    width: 60px;
-    height: 60px;
+    width: 70px;
+    height: 70px;
     border-radius: 50%;
-    border: 2px solid rgba(255, 255, 255, 0.2);
+    border: 3px solid rgba(255, 255, 255, 0.3);
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.3s ease;
     background-size: cover;
     background-position: center;
     position: relative;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .hero-avatar-small:hover {
-    transform: scale(1.1);
+    transform: scale(1.15);
     border-color: var(--primary-color);
+    box-shadow: 0 0 15px rgba(103, 126, 234, 0.5);
 }
 
 .hero-avatar-small.selected {
-    border-color: var(--warning-color);
-    box-shadow: 0 0 10px var(--warning-color);
-    transform: scale(1.1);
+    border-width: 4px;
+    border-color: #ffd700;
+    box-shadow: 0 0 25px rgba(255, 215, 0, 0.8), 0 0 40px rgba(255, 215, 0, 0.4);
+    transform: scale(1.2);
+    animation: pulse-glow 2s infinite;
+}
+
+@keyframes pulse-glow {
+
+    0%,
+    100% {
+        box-shadow: 0 0 25px rgba(255, 215, 0, 0.8), 0 0 40px rgba(255, 215, 0, 0.4);
+    }
+
+    50% {
+        box-shadow: 0 0 35px rgba(255, 215, 0, 1), 0 0 60px rgba(255, 215, 0, 0.6);
+    }
 }
 
 /* Zone Principale */
@@ -76,15 +89,16 @@
 
 .rpg-hero-name {
     color: var(--text-primary);
-    font-size: 1.2em;
+    font-size: 1.3em;
     margin-bottom: var(--spacing-lg);
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+    font-weight: bold;
 }
 
 .character-visual-container {
     position: relative;
-    width: 300px;
-    height: 300px;
+    width: 320px;
+    height: 320px;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -95,54 +109,78 @@
     width: 150px;
     height: 150px;
     background-color: rgba(255, 255, 255, 0.05);
-    /* Placeholder */
     border-radius: 50%;
     box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
     z-index: 1;
 }
 
-/* Slots d'équipement */
+/* Slots d'équipement - ENHANCED */
 .equipment-slot {
     position: absolute;
-    width: 64px;
-    height: 64px;
-    background: rgba(0, 0, 0, 0.6);
-    border: 2px solid rgba(255, 255, 255, 0.2);
-    border-radius: var(--radius-sm);
+    width: 80px;
+    height: 80px;
+    background: rgba(0, 0, 0, 0.7);
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: var(--radius-md);
     display: flex;
     justify-content: center;
     align-items: center;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.3s ease;
     z-index: 2;
 }
 
 .equipment-slot:hover {
     border-color: var(--primary-color);
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(103, 126, 234, 0.2);
+    transform: scale(1.1);
+    box-shadow: 0 0 20px rgba(103, 126, 234, 0.5);
+}
+
+.equipment-slot.equipped {
+    border-color: var(--success-color);
+    background: rgba(46, 204, 113, 0.1);
+    animation: equip-flash 0.5s ease;
+}
+
+@keyframes equip-flash {
+
+    0%,
+    100% {
+        box-shadow: 0 0 10px rgba(46, 204, 113, 0.5);
+    }
+
+    50% {
+        box-shadow: 0 0 30px rgba(46, 204, 113, 1);
+    }
 }
 
 .slot-left {
-    left: 20px;
+    left: 10px;
     top: 50%;
     transform: translateY(-50%);
 }
 
 .slot-right {
-    right: 20px;
+    right: 10px;
     top: 50%;
     transform: translateY(-50%);
 }
 
 .slot-bottom {
-    bottom: 20px;
+    bottom: 10px;
     left: 50%;
     transform: translateX(-50%);
 }
 
 .slot-icon {
-    font-size: 24px;
-    opacity: 0.3;
+    font-size: 32px;
+    opacity: 0.4;
+    transition: opacity 0.3s;
+}
+
+.equipment-slot:hover .slot-icon {
+    opacity: 0.6;
 }
 
 .slot-item-img {
@@ -154,27 +192,40 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 28px;
+    font-size: 36px;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
 }
 
 .btn-unequip-rpg {
     position: absolute;
-    top: -8px;
-    right: -8px;
+    top: -10px;
+    right: -10px;
     background: var(--danger-color);
     color: white;
-    border: none;
+    border: 2px solid white;
     border-radius: 50%;
-    width: 20px;
-    height: 20px;
-    font-size: 12px;
+    width: 28px;
+    height: 28px;
+    font-size: 16px;
+    font-weight: bold;
     cursor: pointer;
-    display: none;
-    /* Caché par défaut */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: all 0.3s ease;
+    z-index: 10;
 }
 
 .equipment-slot:hover .btn-unequip-rpg {
-    display: block;
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+.btn-unequip-rpg:hover {
+    background: #c0392b;
+    transform: scale(1.2) !important;
+    box-shadow: 0 0 10px rgba(231, 76, 60, 0.8);
 }
 
 /* Stats */
@@ -190,13 +241,19 @@
     display: flex;
     justify-content: space-between;
     margin-bottom: 8px;
-    padding: 4px 8px;
+    padding: 6px 10px;
     background: rgba(255, 255, 255, 0.05);
     border-radius: 4px;
+    transition: background 0.3s;
+}
+
+.rpg-stat-row:hover {
+    background: rgba(255, 255, 255, 0.08);
 }
 
 .rpg-stat-label {
     color: var(--text-secondary);
+    font-weight: 500;
 }
 
 .rpg-stat-value {
@@ -208,12 +265,12 @@
     color: var(--success-color);
     font-size: 0.9em;
     margin-left: 4px;
+    font-weight: bold;
 }
 
 /* --- COLONNE DROITE : INVENTAIRE --- */
 .inventory-grid-panel {
     flex: 6;
-    /* 60% */
     background: rgba(20, 25, 40, 0.8);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: var(--radius-md);
@@ -225,8 +282,8 @@
 
 .rpg-items-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
-    gap: 8px;
+    grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+    gap: 10px;
     overflow-y: auto;
     padding-right: 8px;
     flex: 1;
@@ -234,33 +291,257 @@
 
 .rpg-item-card {
     aspect-ratio: 1;
-    background: rgba(0, 0, 0, 0.4);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: var(--radius-sm);
+    background: rgba(0, 0, 0, 0.5);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: var(--radius-md);
     display: flex;
     justify-content: center;
     align-items: center;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.3s ease;
     position: relative;
 }
 
 .rpg-item-card:hover {
     border-color: var(--primary-color);
-    background: rgba(255, 255, 255, 0.1);
-    transform: translateY(-2px);
+    background: rgba(103, 126, 234, 0.2);
+    transform: translateY(-4px) scale(1.05);
+    box-shadow: 0 8px 20px rgba(103, 126, 234, 0.4);
+}
+
+.rpg-item-card:active {
+    transform: translateY(-2px) scale(0.98);
+    animation: item-click 0.3s ease;
+}
+
+@keyframes item-click {
+    0% {
+        transform: translateY(-4px) scale(1.05);
+    }
+
+    50% {
+        transform: translateY(-2px) scale(0.95);
+    }
+
+    100% {
+        transform: translateY(-2px) scale(0.98);
+    }
 }
 
 .rpg-item-icon {
-    font-size: 28px;
+    font-size: 32px;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+    transition: transform 0.3s ease;
+}
+
+.rpg-item-card:hover .rpg-item-icon {
+    transform: scale(1.1);
 }
 
 .rpg-item-level {
     position: absolute;
-    bottom: 2px;
-    right: 2px;
-    font-size: 10px;
+    bottom: 4px;
+    right: 4px;
+    font-size: 11px;
     color: var(--text-secondary);
+    background: rgba(0, 0, 0, 0.7);
+    padding: 2px 4px;
+    border-radius: 3px;
+}
+
+/* Scrollbar stylisée */
+.rpg-items-grid::-webkit-scrollbar {
+    width: 6px;
+}
+
+.rpg-items-grid::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+}
+
+top: 50%;
+transform: translateY(-50%);
+}
+
+.slot-bottom {
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.slot-icon {
+    font-size: 32px;
+    opacity: 0.4;
+    transition: opacity 0.3s;
+}
+
+.equipment-slot:hover .slot-icon {
+    opacity: 0.6;
+}
+
+.slot-item-img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 36px;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+}
+
+.btn-unequip-rpg {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    background: var(--danger-color);
+    color: white;
+    border: 2px solid white;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: all 0.3s ease;
+    z-index: 10;
+}
+
+.equipment-slot:hover .btn-unequip-rpg {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+.btn-unequip-rpg:hover {
+    background: #c0392b;
+    transform: scale(1.2) !important;
+    box-shadow: 0 0 10px rgba(231, 76, 60, 0.8);
+}
+
+/* Stats */
+.character-stats-rpg {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.3);
+    padding: var(--spacing-md);
+    border-radius: var(--radius-sm);
+    margin-top: auto;
+}
+
+.rpg-stat-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    padding: 6px 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+    transition: background 0.3s;
+}
+
+.rpg-stat-row:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.rpg-stat-label {
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.rpg-stat-value {
+    color: var(--text-primary);
+    font-weight: bold;
+}
+
+.rpg-stat-bonus {
+    color: var(--success-color);
+    font-size: 0.9em;
+    margin-left: 4px;
+    font-weight: bold;
+}
+
+/* --- COLONNE DROITE : INVENTAIRE --- */
+.inventory-grid-panel {
+    flex: 6;
+    background: rgba(20, 25, 40, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-md);
+    display: flex;
+    flex-direction: column;
+    padding: var(--spacing-md);
+    backdrop-filter: blur(10px);
+}
+
+.rpg-items-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+    gap: 10px;
+    overflow-y: auto;
+    padding-right: 8px;
+    flex: 1;
+}
+
+.rpg-item-card {
+    aspect-ratio: 1;
+    background: rgba(0, 0, 0, 0.5);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: var(--radius-md);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.rpg-item-card:hover {
+    border-color: var(--primary-color);
+    background: rgba(103, 126, 234, 0.2);
+    transform: translateY(-4px) scale(1.05);
+    box-shadow: 0 8px 20px rgba(103, 126, 234, 0.4);
+}
+
+.rpg-item-card:active {
+    transform: translateY(-2px) scale(0.98);
+    animation: item-click 0.3s ease;
+}
+
+@keyframes item-click {
+    0% {
+        transform: translateY(-4px) scale(1.05);
+    }
+
+    50% {
+        transform: translateY(-2px) scale(0.95);
+    }
+
+    100% {
+        transform: translateY(-2px) scale(0.98);
+    }
+}
+
+.rpg-item-icon {
+    font-size: 32px;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+    transition: transform 0.3s ease;
+}
+
+.rpg-item-card:hover .rpg-item-icon {
+    transform: scale(1.1);
+}
+
+.rpg-item-level {
+    position: absolute;
+    bottom: 4px;
+    right: 4px;
+    font-size: 11px;
+    color: var(--text-secondary);
+    background: rgba(0, 0, 0, 0.7);
+    padding: 2px 4px;
+    border-radius: 3px;
 }
 
 /* Scrollbar stylisée */
@@ -275,4 +556,169 @@
 .rpg-items-grid::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.2);
     border-radius: 3px;
+}
+
+.rpg-items-grid::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* ===================================
+   ÉCRAN ÉQUIPE (TEAM SCREEN)
+   =================================== */
+
+.team-screen-container {
+    /* Hérite de .inventory-rpg-container */
+}
+
+/* Colonne Gauche : Liste Équipe */
+.party-list-vertical {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.party-unit-card-row {
+    display: flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.party-unit-card-row:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.party-unit-card-row.selected {
+    background: rgba(103, 126, 234, 0.2);
+    border-color: #ffd700;
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+}
+
+.party-unit-card-row .unit-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    margin-right: 15px;
+    border: 2px solid #fff;
+    background-size: cover;
+    background-position: center;
+}
+
+.party-unit-card-row .unit-info {
+    flex: 1;
+}
+
+.party-unit-card-row .unit-name {
+    font-weight: bold;
+    color: #fff;
+    font-size: 1.1em;
+}
+
+.party-unit-card-row .unit-level {
+    font-size: 0.9em;
+    color: #aaa;
+}
+
+/* Panneau Détails Héros */
+.hero-details-panel {
+    animation: fadeIn 0.3s ease;
+}
+
+.hero-preview-large {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.hero-avatar-large {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    border: 4px solid #ffd700;
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+    margin-bottom: 15px;
+    background-size: cover;
+    background-position: center;
+}
+
+.hero-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    width: 100%;
+    margin-top: 15px;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 10px;
+    border-radius: 8px;
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 0.9em;
+}
+
+.stat-value {
+    font-weight: bold;
+    color: #fff;
+    font-size: 1.1em;
+}
+
+/* Grille Héros Disponibles */
+.available-heroes-grid {
+    /* Hérite de .inventory-grid-rpg */
+    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+}
+
+.hero-card-compact {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.hero-card-compact:hover {
+    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--primary-color);
+}
+
+.hero-card-compact .hero-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    margin-bottom: 5px;
+    background-size: cover;
+    background-position: center;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.hero-card-compact .hero-name {
+    font-size: 0.8em;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+}
+
+.hero-card-compact .hero-level {
+    font-size: 0.7em;
+    color: #aaa;
 }
