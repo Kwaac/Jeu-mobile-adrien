@@ -11,7 +11,8 @@ export default class UIManager {
             SHOP: 'shop-screen',
             INVENTORY: 'inventory-screen',
             QUEST_SELECT: 'quest-screen',
-            EVOLUTION: 'evolution-screen'
+            EVOLUTION: 'evolution-screen',
+            GUILD: 'guild-screen'
         };
 
         this.initScreens();
@@ -75,11 +76,18 @@ export default class UIManager {
                         <p>Gérez vos objets et équipements</p>
                     </div>
                 </div>
+                <div class="menu-card" id="card-guild">
+                    <div class="menu-card-content">
+                        <div class="menu-card-icon">🏰</div>
+                        <h3>La Guilde</h3>
+                        <p>Invocation, Forgeron et Échope</p>
+                    </div>
+                </div>
                 <div class="menu-card" id="card-shop">
                     <div class="menu-card-content">
-                        <div class="menu-card-icon">🏪</div>
-                        <h3>Boutique</h3>
-                        <p>Achetez des gemmes et invoquez des héros</p>
+                        <div class="menu-card-icon">💎</div>
+                        <h3>Boutique Premium</h3>
+                        <p>Achetez des gemmes</p>
                     </div>
                 </div>
             </div>
@@ -314,6 +322,71 @@ export default class UIManager {
         `;
         evolutionScreen.style.display = 'none';
         this.uiLayer.appendChild(evolutionScreen);
+
+        // Create Guild Screen
+        const guildScreen = document.createElement('div');
+        guildScreen.id = this.screens.GUILD;
+        guildScreen.className = 'screen';
+        guildScreen.innerHTML = `
+            <div class="guild-header">
+                <h2>🏰 La Guilde</h2>
+                <div class="guild-tabs">
+                    <button class="guild-tab active" data-tab="summon">Invocation</button>
+                    <button class="guild-tab" data-tab="blacksmith">Forgeron</button>
+                    <button class="guild-tab" data-tab="shop">Échope</button>
+                </div>
+            </div>
+            
+            <div class="guild-content">
+                <!-- Tab: Invocation -->
+                <div id="tab-summon" class="guild-tab-content active">
+                    <div class="summon-banner">
+                        <h3>Portail Rare</h3>
+                        <p>Invoquez des héros légendaires !</p>
+                        <div class="banner-visual">🌟</div>
+                    </div>
+                    <div class="summon-actions">
+                        <button id="btn-summon-single" class="btn-summon">
+                            <span class="summon-label">Invocation Simple</span>
+                            <span class="summon-cost">💎 5</span>
+                        </button>
+                        <button id="btn-summon-multi" class="btn-summon disabled" disabled>
+                            <span class="summon-label">Invocation x10</span>
+                            <span class="summon-cost">💎 50</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tab: Forgeron -->
+                <div id="tab-blacksmith" class="guild-tab-content">
+                    <div class="placeholder-content">
+                        <h3>🔨 Forgeron</h3>
+                        <p>Bientôt disponible : Améliorez vos équipements !</p>
+                    </div>
+                </div>
+
+                <!-- Tab: Échope -->
+                <div id="tab-shop" class="guild-tab-content">
+                    <div class="placeholder-content">
+                        <h3>💰 Échope</h3>
+                        <p>Bientôt disponible : Achetez des potions et matériaux !</p>
+                    </div>
+                </div>
+            </div>
+            
+            <button id="btn-back-guild" class="btn-back">← Retour</button>
+
+            <!-- Summon Animation Overlay -->
+            <div id="summon-overlay" class="summon-overlay" style="display: none;">
+                <div class="summon-crystal">💎</div>
+                <div id="summon-result-card" class="summon-result-card" style="display: none;">
+                    <!-- Result injected here -->
+                </div>
+                <button id="btn-close-summon" style="display: none;">Continuer</button>
+            </div>
+        `;
+        guildScreen.style.display = 'none';
+        this.uiLayer.appendChild(guildScreen);
 
         this.bindEvents();
     }
@@ -780,6 +853,41 @@ export default class UIManager {
         document.getElementById('btn-back-evolution').addEventListener('click', () => {
             this.showScreen(this.screens.EQUIPMENT);
         });
+
+        // Guild Events
+        const cardGuild = document.getElementById('card-guild');
+        if (cardGuild) {
+            cardGuild.addEventListener('click', () => {
+                this.openGuildScreen();
+            });
+        }
+
+        const btnBackGuild = document.getElementById('btn-back-guild');
+        if (btnBackGuild) {
+            btnBackGuild.addEventListener('click', () => {
+                this.showScreen(this.screens.MAIN_MENU);
+            });
+        }
+
+        document.querySelectorAll('.guild-tab').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                this.updateGuildScreen(e.target.dataset.tab);
+            });
+        });
+
+        const btnSummonSingle = document.getElementById('btn-summon-single');
+        if (btnSummonSingle) {
+            btnSummonSingle.addEventListener('click', () => {
+                this.performSummon();
+            });
+        }
+
+        const btnCloseSummon = document.getElementById('btn-close-summon');
+        if (btnCloseSummon) {
+            btnCloseSummon.addEventListener('click', () => {
+                document.getElementById('summon-overlay').style.display = 'none';
+            });
+        }
 
         document.getElementById('btn-buy-gems-1').addEventListener('click', () => {
             this.game.economySystem.buyGems(1);
@@ -1406,5 +1514,92 @@ export default class UIManager {
         } else {
             alert("Erreur lors de l'évolution");
         }
+    }
+
+    openGuildScreen() {
+        this.showScreen(this.screens.GUILD);
+        this.updateGuildScreen('summon'); // Default tab
+    }
+
+    updateGuildScreen(activeTab) {
+        // Update Tabs UI
+        document.querySelectorAll('.guild-tab').forEach(tab => {
+            if (tab.dataset.tab === activeTab) {
+                tab.classList.add('active');
+            } else {
+                tab.classList.remove('active');
+            }
+        });
+
+        // Update Content Visibility
+        document.querySelectorAll('.guild-tab-content').forEach(content => {
+            content.classList.remove('active');
+        });
+        document.getElementById(`tab-${activeTab}`).classList.add('active');
+    }
+
+    performSummon() {
+        const result = this.game.gachaSystem.summonSingle();
+
+        if (result.success) {
+            this.showSummonAnimation(result.unit);
+            this.updateResourceDisplay(); // Update gems
+        } else {
+            alert(result.error);
+        }
+    }
+
+    showSummonAnimation(unit) {
+        const overlay = document.getElementById('summon-overlay');
+        const crystal = overlay.querySelector('.summon-crystal');
+        const resultCard = document.getElementById('summon-result-card');
+        const closeBtn = document.getElementById('btn-close-summon');
+
+        overlay.style.display = 'flex';
+        crystal.style.display = 'block';
+        resultCard.style.display = 'none';
+        closeBtn.style.display = 'none';
+
+        // Simple animation sequence
+        setTimeout(() => {
+            crystal.style.transform = 'scale(1.5) rotate(360deg)';
+            crystal.style.opacity = '0';
+        }, 1000);
+
+        setTimeout(() => {
+            crystal.style.display = 'none';
+            this.showSummonResult(unit);
+        }, 1500);
+    }
+
+    showSummonResult(unit) {
+        const resultCard = document.getElementById('summon-result-card');
+        const closeBtn = document.getElementById('btn-close-summon');
+
+        const colors = {
+            'fire': '#e74c3c', 'water': '#3498db', 'earth': '#27ae60',
+            'thunder': '#f39c12', 'light': '#ecf0f1', 'dark': '#34495e', 'none': '#95a5a6'
+        };
+
+        resultCard.innerHTML = `
+            <div class="summon-flash"></div>
+            <div class="hero-avatar-large" style="background-color: ${colors[unit.element]}; width: 100px; height: 100px; margin: 0 auto 15px;"></div>
+            <h2>${unit.name}</h2>
+            <div style="color: #ffd700; font-size: 1.5em; margin-bottom: 10px;">${unit.getRarityStars()}</div>
+            <div class="new-badge">NOUVEAU !</div>
+            <div class="summon-stats">
+                <div>HP: ${unit.maxHp}</div>
+                <div>ATK: ${unit.atk}</div>
+                <div>DEF: ${unit.def}</div>
+            </div>
+        `;
+
+        resultCard.style.display = 'block';
+        closeBtn.style.display = 'block';
+
+        // Reset crystal for next time
+        const crystal = document.querySelector('.summon-crystal');
+        crystal.style.transform = 'scale(1)';
+        crystal.style.opacity = '1';
     }
 }

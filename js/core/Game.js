@@ -4,6 +4,7 @@ import QuestSystem from '../systems/QuestSystem.js';
 import LootManager from '../systems/LootManager.js';
 import PartyManager from '../systems/PartyManager.js';
 import EvolutionSystem from '../systems/EvolutionSystem.js';
+import GachaSystem from '../systems/GachaSystem.js';
 import UIManager from '../ui/UIManager.js';
 
 export default class Game {
@@ -35,6 +36,7 @@ export default class Game {
         this.questSystem = new QuestSystem(this);
         this.battleSystem = new BattleSystem(this);
         this.evolutionSystem = new EvolutionSystem(this);
+        this.gachaSystem = new GachaSystem(this);
         this.uiManager = new UIManager(this);
 
         this.resize();
