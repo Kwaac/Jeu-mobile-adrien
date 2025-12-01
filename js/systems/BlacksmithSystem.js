@@ -70,7 +70,10 @@ export default class BlacksmithSystem {
         const tier = Math.ceil(nextLevel / 2);
 
         // HP : Pourcentage par paliers (10%, 12%, 14%, 16%, 18%)
-        if (statName === 'hp') {
+        // Détecter les stats de HP (hp, maxHp, maxhp, etc.)
+        const isHpStat = statName.toLowerCase().includes('hp');
+
+        if (isHpStat) {
             const percentBonus = 0.08 + (tier * 0.02); // 10%, 12%, 14%, 16%, 18%
             return { type: 'percent', value: percentBonus };
         }
