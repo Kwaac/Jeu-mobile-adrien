@@ -359,6 +359,10 @@ export default class UIManager {
 
                 <!-- Tab: Forgeron -->
                 <div id="tab-blacksmith" class="guild-tab-content">
+                    <div class="shop-exit-btn" id="btn-blacksmith-exit">
+                        <div class="door-icon">🚪</div>
+                        <span>Sortie</span>
+                    </div>
                     <div class="blacksmith-container">
                         <!-- Left: Item List -->
                         <div class="blacksmith-list-panel">
@@ -915,6 +919,13 @@ export default class UIManager {
             btnShopExit.addEventListener('click', () => {
                 // Return to main menu or just switch tab? User said "sortir de l'échope"
                 // Let's go back to main menu for now as it seems to be an "exit"
+                this.showScreen(this.screens.MAIN_MENU);
+            });
+        }
+
+        const btnBlacksmithExit = document.getElementById('btn-blacksmith-exit');
+        if (btnBlacksmithExit) {
+            btnBlacksmithExit.addEventListener('click', () => {
                 this.showScreen(this.screens.MAIN_MENU);
             });
         }
