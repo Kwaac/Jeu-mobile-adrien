@@ -432,8 +432,6 @@ export default class UIManager {
                 </div>
             </div>
             
-            <button id="btn-back-guild" class="btn-back">← Retour</button>
-
             <!-- Summon Animation Overlay -->
             <div id="summon-overlay" class="summon-overlay" style="display: none;">
                 <div class="summon-crystal">💎</div>
@@ -917,13 +915,6 @@ export default class UIManager {
         if (cardGuild) {
             cardGuild.addEventListener('click', () => {
                 this.openGuildScreen();
-            });
-        }
-
-        const btnBackGuild = document.getElementById('btn-back-guild');
-        if (btnBackGuild) {
-            btnBackGuild.addEventListener('click', () => {
-                this.showScreen(this.screens.MAIN_MENU);
             });
         }
 
@@ -1619,16 +1610,6 @@ export default class UIManager {
             content.classList.remove('active');
         });
         document.getElementById(`tab-${activeTab}`).classList.add('active');
-
-        // Hide/show back button based on tab
-        const backButton = document.getElementById('btn-back-guild');
-        if (backButton) {
-            if (activeTab === 'blacksmith' || activeTab === 'shop') {
-                backButton.style.display = 'none';
-            } else {
-                backButton.style.display = 'block';
-            }
-        }
 
         // Update screens when switching tabs
         if (activeTab === 'blacksmith') {
