@@ -363,10 +363,19 @@ export default class UIManager {
                         <div class="door-icon">🚪</div>
                         <span>Sortie</span>
                     </div>
+                    
+                    <!-- Filter buttons -->
+                    <div class="blacksmith-filters">
+                        <button class="filter-btn active" data-filter="all">Tout</button>
+                        <button class="filter-btn" data-filter="weapon">⚔️ Armes</button>
+                        <button class="filter-btn" data-filter="armor">🛡️ Armures</button>
+                        <button class="filter-btn" data-filter="accessory">💍 Accessoires</button>
+                    </div>
+                    
                     <div class="blacksmith-container">
-                        <!-- Left: Item List -->
+                        <!-- Left: Item Grid -->
                         <div class="blacksmith-list-panel">
-                            <h3>Équipements</h3>
+                            <h3>Équipements <span id="equipment-count">(0)</span></h3>
                             <div id="blacksmith-items" class="blacksmith-grid"></div>
                         </div>
 
@@ -382,7 +391,6 @@ export default class UIManager {
                             <div id="blacksmith-cost" class="cost-display"></div>
                             <button id="btn-upgrade" class="btn-upgrade" disabled>Améliorer</button>
                         </div>
-                    </div>
                     </div>
                 </div>
 
@@ -929,6 +937,15 @@ export default class UIManager {
                 this.showScreen(this.screens.MAIN_MENU);
             });
         }
+
+        // Filter buttons
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                this.updateBlacksmithScreen(e.target.dataset.filter);
+            });
+        });
 
         document.querySelectorAll('.guild-tab').forEach(btn => {
             btn.addEventListener('click', (e) => {
@@ -1671,12 +1688,25 @@ export default class UIManager {
         crystal.style.opacity = '1';
     }
 
-    updateBlacksmithScreen() {
+    updateBlacksmithScreen(filter = 'all') {
         const list = document.getElementById('blacksmith-items');
         if (!list) return;
-        list.innerHTML = '';
 
-        const items = this.game.economySystem.inventory.filter(item => item.type === 'weapon' || item.type === 'armor' || item.type === 'accessory');
+        let items = this.game.economySystem.inventory.filter(item =>
+            item.type === 'weapon' || item.type === 'armor' || item.type === 'accessory'
+        );
+
+        // Apply filter
+        if (filter !== 'all') {
+            items = items.filter(item => item.type === filter);
+        }
+
+        // Update counter
+        const counter = document.getElementById('equipment-count');
+        if (counter) counter.textContent = `(${items.length})`;
+
+        // Render grid
+        list.innerHTML = '';
 
         if (items.length === 0) {
             list.innerHTML = '<p class="empty-message">Aucun équipement améliorable</p>';
@@ -1688,9 +1718,15 @@ export default class UIManager {
             el.className = 'blacksmith-item-card';
             if (this.selectedBlacksmithItem === item) el.classList.add('selected');
 
+            // Icon based on type
+            const icon = item.type === 'weapon' ? '⚔️' : item.type === 'armor' ? '🛡️' : '💍';
+
             el.innerHTML = `
-                <div class="item-name">${item.name} <span class="item-level">+${item.level}</span></div>
-                <div class="item-type">${item.type}</div>
+                <div class="item-icon">${icon}</div>
+                <div class="item-info">
+                    <div class="item-name">${item.name}</div>
+                    <div class="item-level">+${item.level}</div>
+                </div>
             `;
             el.onclick = () => this.selectBlacksmithItem(item);
             list.appendChild(el);
