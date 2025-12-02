@@ -384,6 +384,10 @@ export default class UIManager {
 
                 <!-- Tab: Échope -->
                 <div id="tab-shop" class="guild-tab-content">
+                    <div class="shop-gold-display" id="shop-gold">
+                        💰 Or: <span id="shop-gold-amount">0</span>
+                    </div>
+                    
                     <h3 style="text-align: center; margin-bottom: 10px;">Votre Inventaire</h3>
                     <div class="shop-inventory-grid" id="shop-player-inventory">
                         <!-- Player inventory will be populated here -->
@@ -1782,20 +1786,23 @@ export default class UIManager {
             inventoryGrid.appendChild(el);
         });
 
-        // Liste d'équipements à vendre (prix 0 pour tests)
+        // Liste d'équipements à vendre (avec prix)
         const shopItems = [
-            { id: 'sword_shop', name: 'Épée de Fer', desc: 'Épée basique', slot: 'weapon', stats: { atk: 10, def: 2 }, price: 0 },
-            { id: 'sword_shop', name: 'Épée de Fer', desc: 'Épée basique', slot: 'weapon', stats: { atk: 10, def: 2 }, price: 0 },
-            { id: 'sword_shop', name: 'Épée de Fer', desc: 'Épée basique', slot: 'weapon', stats: { atk: 10, def: 2 }, price: 0 },
-            { id: 'armor_shop', name: 'Armure de Fer', desc: 'Protection solide', slot: 'armor', stats: { def: 15, maxHp: 50 }, price: 0 },
-            { id: 'armor_shop', name: 'Armure de Fer', desc: 'Protection solide', slot: 'armor', stats: { def: 15, maxHp: 50 }, price: 0 },
-            { id: 'ring_shop', name: 'Anneau de Vie', desc: 'Augmente la vitalité', slot: 'accessory', stats: { maxHp: 30 }, price: 0 },
-            { id: 'ring_shop', name: 'Anneau de Vie', desc: 'Augmente la vitalité', slot: 'accessory', stats: { maxHp: 30 }, price: 0 },
-            { id: 'ring_shop', name: 'Anneau de Vie', desc: 'Augmente la vitalité', slot: 'accessory', stats: { maxHp: 30 }, price: 0 },
+            { id: 'sword_shop', name: 'Épée de Fer', desc: 'Épée basique', slot: 'weapon', stats: { atk: 10, def: 2 }, price: 100 },
+            { id: 'sword_shop', name: 'Épée de Fer', desc: 'Épée basique', slot: 'weapon', stats: { atk: 10, def: 2 }, price: 100 },
+            { id: 'sword_shop', name: 'Épée de Fer', desc: 'Épée basique', slot: 'weapon', stats: { atk: 10, def: 2 }, price: 100 },
+            { id: 'armor_shop', name: 'Armure de Fer', desc: 'Protection solide', slot: 'armor', stats: { def: 15, maxHp: 50 }, price: 150 },
+            { id: 'armor_shop', name: 'Armure de Fer', desc: 'Protection solide', slot: 'armor', stats: { def: 15, maxHp: 50 }, price: 150 },
+            { id: 'ring_shop', name: 'Anneau de Vie', desc: 'Augmente la vitalité', slot: 'accessory', stats: { maxHp: 30 }, price: 80 },
+            { id: 'ring_shop', name: 'Anneau de Vie', desc: 'Augmente la vitalité', slot: 'accessory', stats: { maxHp: 30 }, price: 80 },
+            { id: 'ring_shop', name: 'Anneau de Vie', desc: 'Augmente la vitalité', slot: 'accessory', stats: { maxHp: 30 }, price: 80 },
         ];
 
         shopGrid.innerHTML = '';
         shopItems.forEach((itemData, index) => {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'shop-item-wrapper';
+
             const el = document.createElement('div');
             el.className = 'shop-item-card';
 
@@ -1810,13 +1817,19 @@ export default class UIManager {
                 <div class="item-stats">${statsHtml}</div>
             `;
 
-            // Make entire card clickable
-            el.dataset.index = index;
-            el.addEventListener('click', () => {
+            const priceLabel = document.createElement('div');
+            priceLabel.className = 'buy-price-label';
+            priceLabel.textContent = `${itemData.price} Or`;
+
+            // Make entire wrapper clickable
+            wrapper.dataset.index = index;
+            wrapper.addEventListener('click', () => {
                 this.purchaseItem(shopItems[index]);
             });
 
-            shopGrid.appendChild(el);
+            wrapper.appendChild(el);
+            wrapper.appendChild(priceLabel);
+            shopGrid.appendChild(wrapper);
         });
 
         // Update inventory count in title
@@ -1825,6 +1838,12 @@ export default class UIManager {
         const shopTitles = document.querySelectorAll('#tab-shop h3');
         if (shopTitles[0]) {
             shopTitles[0].innerHTML = `Votre Inventaire <span style="color: ${inventoryCount >= maxInventory * 0.8 ? '#e74c3c' : '#2ecc71'}; font-size: 0.8em;">(${inventoryCount}/${maxInventory})</span>`;
+        }
+
+        // Update gold display
+        const goldAmount = document.getElementById('shop-gold-amount');
+        if (goldAmount) {
+            goldAmount.textContent = this.game.economySystem.resources.gold;
         }
     }
 

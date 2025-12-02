@@ -1,12 +1,35 @@
 /* Shop Styles */
+.shop-gold-display {
+    text-align: center;
+    font-size: 1.5em;
+    font-weight: bold;
+    color: #f39c12;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    border: 2px solid #f39c12;
+}
+
+.shop-gold-display span {
+    color: #fff;
+}
+
 .shop-grid {
     display: grid;
     grid-template-columns: repeat(10, 1fr);
-    grid-template-rows: repeat(5, 80px);
+    grid-template-rows: repeat(5, auto);
     gap: 5px;
     background: rgba(0, 0, 0, 0.2);
     padding: 10px;
     border-radius: 10px;
+}
+
+.shop-item-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
 }
 
 .shop-item-card {
@@ -18,14 +41,23 @@
     flex-direction: column;
     align-items: center;
     justify-content: space-between;
-    cursor: pointer;
     transition: all 0.2s;
+    width: 100%;
+    height: 80px;
 }
 
-.shop-item-card:hover {
+.shop-item-wrapper:hover .shop-item-card {
     background: rgba(255, 255, 255, 0.2);
     transform: scale(1.05);
     border-color: #f1c40f;
+}
+
+.buy-price-label {
+    font-size: 0.7em;
+    color: #f39c12;
+    font-weight: bold;
+    margin-top: 3px;
+    text-align: center;
 }
 
 .shop-item-card .item-name {
