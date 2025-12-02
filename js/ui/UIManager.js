@@ -1772,19 +1772,24 @@ export default class UIManager {
                 <div class="item-name">${itemData.name}</div>
                 <div class="item-type">${itemData.slot}</div>
                 <div class="item-stats">${statsHtml}</div>
-                <button class="btn-buy" data-index="${index}">Acheter (${itemData.price} Or)</button>
             `;
+
+            // Make entire card clickable
+            el.dataset.index = index;
+            el.addEventListener('click', () => {
+                this.purchaseItem(shopItems[index]);
+            });
 
             shopGrid.appendChild(el);
         });
 
-        // Bind purchase buttons
-        document.querySelectorAll('.btn-buy').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const index = parseInt(e.target.dataset.index);
-                this.purchaseItem(shopItems[index]);
-            });
-        });
+        // Add inventory count display
+        const inventoryCount = this.game.economySystem.inventory.length;
+        const maxInventory = this.game.economySystem.maxInventorySize;
+        const shopTitle = document.querySelector('#tab-shop h3');
+        if (shopTitle) {
+            shopTitle.innerHTML = `Équipements Disponibles <span style="color: ${inventoryCount >= maxInventory * 0.8 ? '#e74c3c' : '#2ecc71'}; font-size: 0.8em;">(Inventaire: ${inventoryCount}/${maxInventory})</span>`;
+        }
     }
 
     purchaseItem(itemData) {
