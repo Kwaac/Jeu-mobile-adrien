@@ -384,6 +384,11 @@ export default class UIManager {
 
                 <!-- Tab: Échope -->
                 <div id="tab-shop" class="guild-tab-content">
+                    <div class="shop-exit-btn" id="btn-shop-exit">
+                        <div class="door-icon">🚪</div>
+                        <span>Sortie</span>
+                    </div>
+
                     <div class="shop-gold-display" id="shop-gold">
                         💰 Or: <span id="shop-gold-amount">0</span>
                     </div>
@@ -901,6 +906,15 @@ export default class UIManager {
         const btnBackGuild = document.getElementById('btn-back-guild');
         if (btnBackGuild) {
             btnBackGuild.addEventListener('click', () => {
+                this.showScreen(this.screens.MAIN_MENU);
+            });
+        }
+
+        const btnShopExit = document.getElementById('btn-shop-exit');
+        if (btnShopExit) {
+            btnShopExit.addEventListener('click', () => {
+                // Return to main menu or just switch tab? User said "sortir de l'échope"
+                // Let's go back to main menu for now as it seems to be an "exit"
                 this.showScreen(this.screens.MAIN_MENU);
             });
         }
