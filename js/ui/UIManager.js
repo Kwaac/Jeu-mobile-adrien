@@ -388,12 +388,22 @@ export default class UIManager {
                         💰 Or: <span id="shop-gold-amount">0</span>
                     </div>
                     
-                    <h3 style="text-align: center; margin-bottom: 10px;">Votre Inventaire</h3>
+                    <!-- Special Offers Section -->
+                    <div class="special-offers-section">
+                        <h3 style="text-align: center; margin: 0 0 10px 0; color: #f39c12;">
+                            ⭐ Offres Spéciales <span id="special-timer" style="font-size: 0.7em; color: #95a5a6;"></span>
+                        </h3>
+                        <div class="special-offers-grid" id="special-offers">
+                            <!-- Special items will be populated here -->
+                        </div>
+                    </div>
+                    
+                    <h3 style="text-align: center; margin: 15px 0 10px 0;">Votre Inventaire</h3>
                     <div class="shop-inventory-grid" id="shop-player-inventory">
                         <!-- Player inventory will be populated here -->
                     </div>
                     
-                    <h3 style="text-align: center; margin: 20px 0 10px 0;">Équipements Disponibles</h3>
+                    <h3 style="text-align: center; margin: 15px 0 10px 0;">Équipements Disponibles</h3>
                     <div class="shop-grid" id="shop-items">
                         <!-- Items will be populated here -->
                     </div>
@@ -1754,7 +1764,87 @@ export default class UIManager {
     updateShopScreen() {
         const shopGrid = document.getElementById('shop-items');
         const inventoryGrid = document.getElementById('shop-player-inventory');
+        const specialGrid = document.getElementById('special-offers');
         if (!shopGrid || !inventoryGrid) return;
+
+        // Generate special offers (rotates every 3 hours)
+        if (specialGrid) {
+            const now = Date.now();
+            const threeHours = 3 * 60 * 60 * 1000;
+            const rotationIndex = Math.floor(now / threeHours) % 4; // 4 different rotations
+
+            const allSpecialItems = [
+                // Rotation 0
+                [
+                    { id: 'legendary_sword', name: 'Épée Légendaire', desc: 'Arme de héros', slot: 'weapon', stats: { atk: 50, def: 10 }, price: 5000 },
+                    { id: 'dragon_armor', name: 'Armure du Dragon', desc: 'Protection ultime', slot: 'armor', stats: { def: 60, maxHp: 200 }, price: 8000 },
+                    { id: 'phoenix_ring', name: 'Anneau du Phénix', desc: 'Résurrection', slot: 'accessory', stats: { maxHp: 150, atk: 20 }, price: 6000 },
+                ],
+                // Rotation 1
+                [
+                    { id: 'thunder_blade', name: 'Lame de Foudre', desc: 'Électricité pure', slot: 'weapon', stats: { atk: 45, maxHp: 50 }, price: 4500 },
+                    { id: 'titan_shield', name: 'Bouclier Titan', desc: 'Invincible', slot: 'armor', stats: { def: 70, atk: 10 }, price: 7000 },
+                    { id: 'mana_crystal', name: 'Cristal de Mana', desc: 'Pouvoir magique', slot: 'accessory', stats: { maxHp: 100, def: 20 }, price: 5500 },
+                ],
+                // Rotation 2
+                [
+                    { id: 'void_sword', name: 'Épée du Vide', desc: 'Néant absolu', slot: 'weapon', stats: { atk: 55, def: 5 }, price: 5500 },
+                    { id: 'celestial_armor', name: 'Armure Céleste', desc: 'Bénédiction divine', slot: 'armor', stats: { def: 50, maxHp: 250 }, price: 9000 },
+                    { id: 'eternal_gem', name: 'Gemme Éternelle', desc: 'Immortalité', slot: 'accessory', stats: { maxHp: 200, atk: 15 }, price: 7500 },
+                ],
+                // Rotation 3
+                [
+                    { id: 'demon_blade', name: 'Lame Démoniaque', desc: 'Pouvoir maudit', slot: 'weapon', stats: { atk: 60, maxHp: 30 }, price: 6000 },
+                    { id: 'angel_plate', name: 'Plastron d\'Ange', desc: 'Protection sacrée', slot: 'armor', stats: { def: 55, maxHp: 180 }, price: 7500 },
+                    { id: 'soul_amulet', name: 'Amulette d\'\u00c2me', desc: 'Essence vitale', slot: 'accessory', stats: { maxHp: 120, def: 30 }, price: 6500 },
+                ],
+            ];
+
+            const specialItems = allSpecialItems[rotationIndex];
+
+            // Update timer
+            const timeUntilNext = threeHours - (now % threeHours);
+            const hours = Math.floor(timeUntilNext / (60 * 60 * 1000));
+            const minutes = Math.floor((timeUntilNext % (60 * 60 * 1000)) / (60 * 1000));
+            const timerEl = document.getElementById('special-timer');
+            if (timerEl) {
+                timerEl.textContent = `(Renouvellement dans ${hours}h ${minutes}m)`;
+            }
+
+            // Populate special offers
+            specialGrid.innerHTML = '';
+            specialItems.forEach((itemData, index) => {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'special-item-wrapper';
+
+                const el = document.createElement('div');
+                el.className = 'special-item-card';
+
+                let statsHtml = '';
+                for (let key in itemData.stats) {
+                    statsHtml += `<div>${key.toUpperCase()}: +${itemData.stats[key]}</div>`;
+                }
+
+                el.innerHTML = `
+                    <div class="item-name">${itemData.name}</div>
+                    <div class="item-type">${itemData.slot}</div>
+                    <div class="item-stats">${statsHtml}</div>
+                `;
+
+                const priceLabel = document.createElement('div');
+                priceLabel.className = 'special-price-label';
+                priceLabel.textContent = `${itemData.price} Or`;
+
+                wrapper.dataset.index = index;
+                wrapper.addEventListener('click', () => {
+                    this.purchaseItem(itemData);
+                });
+
+                wrapper.appendChild(el);
+                wrapper.appendChild(priceLabel);
+                specialGrid.appendChild(wrapper);
+            });
+        }
 
         // Populate player inventory
         inventoryGrid.innerHTML = '';
