@@ -335,29 +335,6 @@ export default class UIManager {
                     <button class="guild-tab" data-tab="blacksmith">Forgeron</button>
                     <button class="guild-tab" data-tab="shop">Échope</button>
                 </div>
-            </div>
-            
-            <div class="guild-content">
-                <!-- Tab: Invocation -->
-                <div id="tab-summon" class="guild-tab-content active">
-                    <div class="summon-banner">
-                        <h3>Portail Rare</h3>
-                        <p>Invoquez des héros légendaires !</p>
-                        <div class="banner-visual">🌟</div>
-                    </div>
-                    <div class="summon-actions">
-                        <button id="btn-summon-single" class="btn-summon">
-                            <span class="summon-label">Invocation Simple</span>
-                            <span class="summon-cost">💎 5</span>
-                        </button>
-                        <button id="btn-summon-multi" class="btn-summon disabled" disabled>
-                            <span class="summon-label">Invocation x10</span>
-                            <span class="summon-cost">💎 50</span>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Tab: Forgeron -->
                 <div id="tab-blacksmith" class="guild-tab-content">
                     <div class="shop-exit-btn" id="btn-blacksmith-exit">
                         <div class="door-icon">🚪</div>
@@ -930,6 +907,13 @@ export default class UIManager {
         const btnBlacksmithExit = document.getElementById('btn-blacksmith-exit');
         if (btnBlacksmithExit) {
             btnBlacksmithExit.addEventListener('click', () => {
+                this.showScreen(this.screens.MAIN_MENU);
+            });
+        }
+
+        const btnSummonExit = document.getElementById('btn-summon-exit');
+        if (btnSummonExit) {
+            btnSummonExit.addEventListener('click', () => {
                 this.showScreen(this.screens.MAIN_MENU);
             });
         }
