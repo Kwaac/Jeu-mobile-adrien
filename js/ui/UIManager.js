@@ -1710,6 +1710,10 @@ export default class UIManager {
         const counter = document.getElementById('equipment-count');
         if (counter) counter.textContent = `(${items.length})`;
 
+        // Update gold display
+        const goldAmount = document.getElementById('blacksmith-gold-amount');
+        if (goldAmount) goldAmount.textContent = this.game.economySystem.resources.gold;
+
         // Render grid
         list.innerHTML = '';
 
