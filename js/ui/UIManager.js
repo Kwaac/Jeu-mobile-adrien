@@ -1730,11 +1730,27 @@ export default class UIManager {
             // Icon based on type
             const icon = item.type === 'weapon' ? '⚔️' : item.type === 'armor' ? '🛡️' : '💍';
 
+            // Determine rarity based on total stats
+            const totalStats = Object.values(item.stats).reduce((sum, val) => sum + val, 0);
+            let rarityClass = 'common';
+            if (totalStats >= 100) rarityClass = 'legendary';
+            else if (totalStats >= 70) rarityClass = 'epic';
+            else if (totalStats >= 40) rarityClass = 'rare';
+            else if (totalStats >= 20) rarityClass = 'uncommon';
+
+            // Determine tier based on level
+            let tierClass = 'tier1';
+            if (item.level >= 9) tierClass = 'tier4';
+            else if (item.level >= 6) tierClass = 'tier3';
+            else if (item.level >= 3) tierClass = 'tier2';
+
+            el.classList.add(`rarity-${rarityClass}`);
+
             el.innerHTML = `
                 <div class="item-icon">${icon}</div>
                 <div class="item-info">
                     <div class="item-name">${item.name}</div>
-                    <div class="item-level">+${item.level}</div>
+                    <div class="item-level ${tierClass}">+${item.level}</div>
                 </div>
             `;
             el.onclick = () => this.selectBlacksmithItem(item);
