@@ -364,6 +364,11 @@ export default class UIManager {
                         <span>Sortie</span>
                     </div>
                     
+                    <!-- Gold display -->
+                    <div class="blacksmith-gold-display" id="blacksmith-gold">
+                        💰 Or: <span id="blacksmith-gold-amount">0</span>
+                    </div>
+                    
                     <!-- Filter buttons -->
                     <div class="blacksmith-filters">
                         <button class="filter-btn active" data-filter="all">Tout</button>
