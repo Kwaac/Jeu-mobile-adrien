@@ -1620,6 +1620,16 @@ export default class UIManager {
         });
         document.getElementById(`tab-${activeTab}`).classList.add('active');
 
+        // Hide/show back button based on tab
+        const backButton = document.getElementById('btn-back-guild');
+        if (backButton) {
+            if (activeTab === 'blacksmith' || activeTab === 'shop') {
+                backButton.style.display = 'none';
+            } else {
+                backButton.style.display = 'block';
+            }
+        }
+
         // Update screens when switching tabs
         if (activeTab === 'blacksmith') {
             this.updateBlacksmithScreen();
