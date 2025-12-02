@@ -384,7 +384,12 @@ export default class UIManager {
 
                 <!-- Tab: Échope -->
                 <div id="tab-shop" class="guild-tab-content">
-                    <h3 style="text-align: center; margin-bottom: 20px;">Équipements Disponibles</h3>
+                    <h3 style="text-align: center; margin-bottom: 10px;">Votre Inventaire</h3>
+                    <div class="shop-inventory-grid" id="shop-player-inventory">
+                        <!-- Player inventory will be populated here -->
+                    </div>
+                    
+                    <h3 style="text-align: center; margin: 20px 0 10px 0;">Équipements Disponibles</h3>
                     <div class="shop-grid" id="shop-items">
                         <!-- Items will be populated here -->
                     </div>
@@ -1744,7 +1749,38 @@ export default class UIManager {
 
     updateShopScreen() {
         const shopGrid = document.getElementById('shop-items');
-        if (!shopGrid) return;
+        const inventoryGrid = document.getElementById('shop-player-inventory');
+        if (!shopGrid || !inventoryGrid) return;
+
+        // Populate player inventory
+        inventoryGrid.innerHTML = '';
+        const playerInventory = this.game.economySystem.inventory;
+
+        playerInventory.forEach((item, index) => {
+            const el = document.createElement('div');
+            el.className = 'shop-item-card shop-inventory-item';
+
+            let statsHtml = '';
+            for (let key in item.stats) {
+                statsHtml += `<div>${key.toUpperCase()}: +${item.stats[key]}</div>`;
+            }
+
+            const levelText = item.level > 0 ? ` +${item.level}` : '';
+            const sellPrice = item.level > 0 ? item.level * 50 : 10; // Base price 10 for level 0, 50 per level
+            el.innerHTML = `
+                <div class="item-name">${item.name}${levelText}</div>
+                <div class="item-type">${item.type || item.slot}</div>
+                <div class="item-stats">${statsHtml}</div>
+                <div class="sell-price">Vendre: ${sellPrice} Or</div>
+            `;
+
+            // Make card clickable to sell
+            el.addEventListener('click', () => {
+                this.sellItem(item, index);
+            });
+
+            inventoryGrid.appendChild(el);
+        });
 
         // Liste d'équipements à vendre (prix 0 pour tests)
         const shopItems = [
@@ -1783,25 +1819,25 @@ export default class UIManager {
             shopGrid.appendChild(el);
         });
 
-        // Add inventory count display
+        // Update inventory count in title
         const inventoryCount = this.game.economySystem.inventory.length;
         const maxInventory = this.game.economySystem.maxInventorySize;
-        const shopTitle = document.querySelector('#tab-shop h3');
-        if (shopTitle) {
-            shopTitle.innerHTML = `Équipements Disponibles <span style="color: ${inventoryCount >= maxInventory * 0.8 ? '#e74c3c' : '#2ecc71'}; font-size: 0.8em;">(Inventaire: ${inventoryCount}/${maxInventory})</span>`;
+        const shopTitles = document.querySelectorAll('#tab-shop h3');
+        if (shopTitles[0]) {
+            shopTitles[0].innerHTML = `Votre Inventaire <span style="color: ${inventoryCount >= maxInventory * 0.8 ? '#e74c3c' : '#2ecc71'}; font-size: 0.8em;">(${inventoryCount}/${maxInventory})</span>`;
         }
     }
 
     purchaseItem(itemData) {
         // Check gold
         if (this.game.economySystem.resources.gold < itemData.price) {
-            alert('Pas assez d\'or !');
+            this.showShopModal('Pas assez d\'or !', 'error');
             return;
         }
 
         // Check inventory space
         if (this.game.economySystem.inventory.length >= this.game.economySystem.maxInventorySize) {
-            alert('Inventaire plein !');
+            this.showShopModal('Inventaire plein !', 'error');
             return;
         }
 
@@ -1819,9 +1855,94 @@ export default class UIManager {
 
             // Update UI
             this.updateResourceDisplay();
+            this.updateShopScreen(); // IMPORTANT: Refresh shop to show new item
 
             console.log(`Acheté: ${itemData.name}`);
-            alert(`${itemData.name} acheté !`);
+            this.showShopModal(`${itemData.name} acheté !`, 'success');
+        });
+    }
+
+    sellItem(item, index) {
+        // Check if item is equipped
+        const equippedOnHero = this.game.partyManager.party.find(hero => {
+            return hero && Object.values(hero.equipment || {}).includes(item);
+        });
+
+        if (equippedOnHero) {
+            this.showShopModal('Impossible de vendre un équipement équipé !', 'error');
+            return;
+        }
+
+        // Calculate sell price (50 gold per level, base 10 for level 0)
+        const sellPrice = item.level > 0 ? item.level * 50 : 10;
+
+        // Show custom confirmation modal
+        this.showShopConfirm(
+            `Vendre ${item.name}${item.level > 0 ? ' +' + item.level : ''} pour ${sellPrice} Or ?`,
+            () => {
+                // Remove from inventory
+                this.game.economySystem.inventory.splice(index, 1);
+
+                // Add gold
+                this.game.economySystem.resources.gold += sellPrice;
+
+                // Update UI
+                this.updateResourceDisplay();
+                this.updateShopScreen();
+
+                console.log(`Vendu: ${item.name} pour ${sellPrice} Or`);
+                this.showShopModal(`${item.name} vendu pour ${sellPrice} Or !`, 'success');
+            }
+        );
+    }
+
+    showShopModal(message, type = 'info') {
+        const modal = document.createElement('div');
+        modal.className = 'shop-modal';
+        modal.innerHTML = `
+            <div class="shop-modal-content ${type}">
+                <p>${message}</p>
+                <button class="shop-modal-btn">OK</button>
+            </div>
+        `;
+        document.body.appendChild(modal);
+
+        const btn = modal.querySelector('.shop-modal-btn');
+        btn.addEventListener('click', () => {
+            modal.remove();
+        });
+
+        // Auto-close after 2 seconds
+        setTimeout(() => {
+            if (modal.parentElement) modal.remove();
+        }, 2000);
+    }
+
+    showShopConfirm(message, onConfirm) {
+        const modal = document.createElement('div');
+        modal.className = 'shop-modal';
+        modal.innerHTML = `
+            <div class="shop-modal-content confirm">
+                <p>${message}</p>
+                <div class="shop-modal-buttons">
+                    <button class="shop-modal-btn cancel">Annuler</button>
+                    <button class="shop-modal-btn confirm">Confirmer</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+
+        const cancelBtn = modal.querySelector('.cancel');
+        const confirmBtn = modal.querySelector('.confirm');
+
+        cancelBtn.addEventListener('click', () => {
+            modal.remove();
+        });
+
+        confirmBtn.addEventListener('click', () => {
+            modal.remove();
+            onConfirm();
         });
     }
 }
+

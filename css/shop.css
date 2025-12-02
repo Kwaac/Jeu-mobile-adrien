@@ -33,9 +33,8 @@
     font-weight: bold;
     text-align: center;
     margin-bottom: 3px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    line-height: 1.1;
+    word-wrap: break-word;
 }
 
 .shop-item-card .item-type {
@@ -93,4 +92,151 @@
     font-size: 0.85em;
     font-weight: bold;
     margin-left: 5px;
+}
+
+/* Shop inventory grid */
+.shop-inventory-grid {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    grid-template-rows: repeat(3, 80px);
+    gap: 5px;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 10px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+.shop-inventory-item {
+    border-color: #3498db !important;
+}
+
+.shop-inventory-item:hover {
+    border-color: #e74c3c !important;
+    background: rgba(231, 76, 60, 0.2) !important;
+}
+
+.sell-price {
+    font-size: 0.55em;
+    color: #f39c12;
+    font-weight: bold;
+    margin-top: 3px;
+}
+
+/* Custom Shop Modals */
+.shop-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    animation: fadeIn 0.2s;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.shop-modal-content {
+    background: linear-gradient(135deg, #2c3e50, #34495e);
+    border: 3px solid #f39c12;
+    border-radius: 15px;
+    padding: 30px;
+    min-width: 300px;
+    max-width: 500px;
+    text-align: center;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    animation: slideIn 0.3s;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(-50px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.shop-modal-content.success {
+    border-color: #2ecc71;
+}
+
+.shop-modal-content.error {
+    border-color: #e74c3c;
+}
+
+.shop-modal-content p {
+    color: white;
+    font-size: 1.2em;
+    margin-bottom: 20px;
+    font-weight: bold;
+}
+
+.shop-modal-btn {
+    background: linear-gradient(to bottom, #f39c12, #e67e22);
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 25px;
+    font-size: 1em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 0 #d35400;
+}
+
+.shop-modal-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 0 #d35400;
+}
+
+.shop-modal-btn:active {
+    transform: translateY(4px);
+    box-shadow: 0 0 0 #d35400;
+}
+
+.shop-modal-buttons {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+}
+
+.shop-modal-btn.cancel {
+    background: linear-gradient(to bottom, #95a5a6, #7f8c8d);
+    box-shadow: 0 4px 0 #5a6268;
+}
+
+.shop-modal-btn.cancel:hover {
+    box-shadow: 0 6px 0 #5a6268;
+}
+
+.shop-modal-btn.cancel:active {
+    box-shadow: 0 0 0 #5a6268;
+}
+
+.shop-modal-btn.confirm {
+    background: linear-gradient(to bottom, #2ecc71, #27ae60);
+    box-shadow: 0 4px 0 #1e8449;
+}
+
+.shop-modal-btn.confirm:hover {
+    box-shadow: 0 6px 0 #1e8449;
+}
+
+.shop-modal-btn.confirm:active {
+    box-shadow: 0 0 0 #1e8449;
 }
