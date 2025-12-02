@@ -100,11 +100,27 @@ export default class UIManager {
         equipScreen.id = this.screens.EQUIPMENT;
         equipScreen.className = 'screen equipment-screen';
         equipScreen.innerHTML = `
+            <div class="inventory-header">
+                <div class="header-top-row">
+                    <div class="shop-exit-btn" id="btn-equip-exit">
+                        <div class="door-icon">🚪</div>
+                        <span>Sortie</span>
+                    </div>
+                    <h2>👥 Équipe</h2>
+                    <div></div> <!-- Empty div for grid balance -->
+                </div>
+                <div class="header-bottom-row">
+                    <div class="gold-display">
+                        <span class="resource-icon">🪙</span>
+                        <span id="equip-gold">0</span> Or
+                    </div>
+                </div>
+            </div>
             <div class="inventory-rpg-container team-screen-container">
                 <!-- Colonne Gauche : Équipe & Détails -->
                 <div class="character-sheet-panel party-column">
                     <h3 style="margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
-                        ⚔️ Équipe <span id="party-count" style="font-size: 0.8em; color: #aaa; float: right;">(0/5)</span>
+                        ⚔️ Membres <span id="party-count" style="font-size: 0.8em; color: #aaa; float: right;">(0/5)</span>
                     </h3>
                     
                     <!-- Liste des membres de l'équipe -->
@@ -127,7 +143,6 @@ export default class UIManager {
                     <div id="equipment-grid" class="inventory-grid-rpg available-heroes-grid"></div>
                 </div>
             </div>
-            <button id="btn-back-equip" class="btn-back">← Retour</button>
         `;
         equipScreen.style.display = 'none';
         this.uiLayer.appendChild(equipScreen);
@@ -148,8 +163,20 @@ export default class UIManager {
         shopScreen.id = this.screens.SHOP;
         shopScreen.className = 'screen';
         shopScreen.innerHTML = `
-            <h2 style="font-family: 'Poppins', sans-serif; font-size: 36px; margin-bottom: 30px;">🏪 Boutique</h2>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; max-width: 1000px; width: 90%;">
+            <div class="shop-header">
+                <h2 style="font-family: 'Poppins', sans-serif; font-size: 36px; margin: 0;">🏪 Boutique</h2>
+                <div class="shop-resources">
+                    <div class="resource-pill">
+                        <span class="resource-icon">💎</span>
+                        <span id="shop-gems-amount">0</span>
+                    </div>
+                    <div class="resource-pill">
+                        <span class="resource-icon">🪙</span>
+                        <span id="shop-gold-amount">0</span>
+                    </div>
+                </div>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; max-width: 1000px; width: 90%; margin-top: 20px;">
                 <div class="shop-section">
                     <h3 style="font-family: 'Poppins', sans-serif; color: var(--gold-color); margin-bottom: 20px;">💎 Gemmes Premium</h3>
                     <div style="display: flex; flex-direction: column; gap: 15px;">
@@ -196,10 +223,19 @@ export default class UIManager {
         inventoryScreen.className = 'screen';
         inventoryScreen.innerHTML = `
             <div class="inventory-header">
-                <h2>🎒 Inventaire</h2>
-                <div class="gold-display">
-                    <span class="resource-icon">🪙</span>
-                    <span id="inventory-gold">0</span> Or
+                <div class="header-top-row">
+                    <div class="shop-exit-btn" id="btn-inventory-exit">
+                        <div class="door-icon">🚪</div>
+                        <span>Sortie</span>
+                    </div>
+                    <h2>🎒 Inventaire</h2>
+                    <div></div> <!-- Empty div for grid balance -->
+                </div>
+                <div class="header-bottom-row">
+                    <div class="gold-display">
+                        <span class="resource-icon">🪙</span>
+                        <span id="inventory-gold">0</span> Or
+                    </div>
                 </div>
             </div>
             <div class="inventory-rpg-container">
@@ -255,15 +291,14 @@ export default class UIManager {
                     <div id="rpg-inventory-grid" class="rpg-items-grid"></div>
                 </div>
             </div>
-            <button id="btn-back-inventory" class="btn-back">← Retour</button>
         `;
         inventoryScreen.style.display = 'none';
         this.uiLayer.appendChild(inventoryScreen);
 
         // Attach inventory event listeners immediately after creation
-        const invBackBtn = inventoryScreen.querySelector('#btn-back-inventory');
-        if (invBackBtn) {
-            invBackBtn.addEventListener('click', () => {
+        const invExitBtn = inventoryScreen.querySelector('#btn-inventory-exit');
+        if (invExitBtn) {
+            invExitBtn.addEventListener('click', () => {
                 this.showScreen(this.screens.MAIN_MENU);
             });
         }
@@ -328,18 +363,46 @@ export default class UIManager {
         guildScreen.id = this.screens.GUILD;
         guildScreen.className = 'screen';
         guildScreen.innerHTML = `
-            <div class="guild-header">
-                <h2>🏰 La Guilde</h2>
-                <div class="guild-tabs">
-                    <button class="guild-tab active" data-tab="summon">Invocation</button>
-                    <button class="guild-tab" data-tab="blacksmith">Forgeron</button>
-                    <button class="guild-tab" data-tab="shop">Échope</button>
-                </div>
-                <div id="tab-blacksmith" class="guild-tab-content">
-                    <div class="shop-exit-btn" id="btn-blacksmith-exit">
+            <div class="inventory-header">
+                <div class="header-top-row">
+                    <div class="shop-exit-btn" id="btn-guild-exit">
                         <div class="door-icon">🚪</div>
                         <span>Sortie</span>
                     </div>
+                    <h2>🏰 La Guilde</h2>
+                    <div></div> <!-- Empty div for grid balance -->
+                </div>
+                <div class="header-bottom-row">
+                    <div class="guild-tabs">
+                        <button class="guild-tab active" data-tab="summon">Invocation</button>
+                        <button class="guild-tab" data-tab="blacksmith">Forgeron</button>
+                        <button class="guild-tab" data-tab="shop">Échope</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="guild-content">
+                <!-- Tab: Invocation -->
+                <div id="tab-summon" class="guild-tab-content active">
+                    <div class="summon-banner">
+                        <h3>Portail Rare</h3>
+                        <p>Invoquez des héros légendaires !</p>
+                        <div class="banner-visual">🌟</div>
+                    </div>
+                    <div class="summon-actions">
+                        <button id="btn-summon-single" class="btn-summon">
+                            <span class="summon-label">Invocation Simple</span>
+                            <span class="summon-cost">💎 5</span>
+                        </button>
+                        <button id="btn-summon-multi" class="btn-summon">
+                            <span class="summon-label">Invocation x10</span>
+                            <span class="summon-cost">💎 50</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tab: Forgeron -->
+                <div id="tab-blacksmith" class="guild-tab-content">
                     
                     <!-- Gold display -->
                     <div class="blacksmith-gold-display" id="blacksmith-gold">
@@ -378,11 +441,6 @@ export default class UIManager {
 
                 <!-- Tab: Échope -->
                 <div id="tab-shop" class="guild-tab-content">
-                    <div class="shop-exit-btn" id="btn-shop-exit">
-                        <div class="door-icon">🚪</div>
-                        <span>Sortie</span>
-                    </div>
-
                     <div class="shop-gold-display" id="shop-gold">
                         💰 Or: <span id="shop-gold-amount">0</span>
                     </div>
@@ -409,6 +467,8 @@ export default class UIManager {
                 </div>
             </div>
             
+            <button id="btn-back-guild" class="btn-back">← Retour</button>
+
             <!-- Summon Animation Overlay -->
             <div id="summon-overlay" class="summon-overlay" style="display: none;">
                 <div class="summon-crystal">💎</div>
@@ -870,7 +930,7 @@ export default class UIManager {
             this.showScreen(this.screens.SHOP);
         });
 
-        document.getElementById('btn-back-equip').addEventListener('click', () => {
+        document.getElementById('btn-equip-exit').addEventListener('click', () => {
             this.showScreen(this.screens.MAIN_MENU);
         });
 
@@ -895,25 +955,9 @@ export default class UIManager {
             });
         }
 
-        const btnShopExit = document.getElementById('btn-shop-exit');
-        if (btnShopExit) {
-            btnShopExit.addEventListener('click', () => {
-                // Return to main menu or just switch tab? User said "sortir de l'échope"
-                // Let's go back to main menu for now as it seems to be an "exit"
-                this.showScreen(this.screens.MAIN_MENU);
-            });
-        }
-
-        const btnBlacksmithExit = document.getElementById('btn-blacksmith-exit');
-        if (btnBlacksmithExit) {
-            btnBlacksmithExit.addEventListener('click', () => {
-                this.showScreen(this.screens.MAIN_MENU);
-            });
-        }
-
-        const btnSummonExit = document.getElementById('btn-summon-exit');
-        if (btnSummonExit) {
-            btnSummonExit.addEventListener('click', () => {
+        const btnGuildExit = document.getElementById('btn-guild-exit');
+        if (btnGuildExit) {
+            btnGuildExit.addEventListener('click', () => {
                 this.showScreen(this.screens.MAIN_MENU);
             });
         }
@@ -937,6 +981,13 @@ export default class UIManager {
         if (btnSummonSingle) {
             btnSummonSingle.addEventListener('click', () => {
                 this.performSummon();
+            });
+        }
+
+        const btnSummonMulti = document.getElementById('btn-summon-multi');
+        if (btnSummonMulti) {
+            btnSummonMulti.addEventListener('click', () => {
+                this.performMultiSummon();
             });
         }
 
@@ -1039,6 +1090,20 @@ export default class UIManager {
         if (gemsEl) gemsEl.textContent = this.game.economySystem.resources.gems || 0;
         if (goldEl) goldEl.textContent = this.game.economySystem.resources.gold || 0;
         if (energyEl) energyEl.textContent = this.game.economySystem.resources.energy || 100;
+
+        // Update shop screen resources
+        const shopGemsEl = document.getElementById('shop-gems-amount');
+        const shopGoldEl = document.getElementById('shop-gold-amount');
+        if (shopGemsEl) shopGemsEl.textContent = this.game.economySystem.resources.gems || 0;
+        if (shopGoldEl) shopGoldEl.textContent = this.game.economySystem.resources.gold || 0;
+
+        // Update inventory screen gold
+        const invGoldEl = document.getElementById('inventory-gold');
+        if (invGoldEl) invGoldEl.textContent = this.game.economySystem.resources.gold || 0;
+
+        // Update equipment screen gold
+        const equipGoldEl = document.getElementById('equip-gold');
+        if (equipGoldEl) equipGoldEl.textContent = this.game.economySystem.resources.gold || 0;
     }
 
     updateBattleInfo(text) {
@@ -1595,6 +1660,16 @@ export default class UIManager {
         });
         document.getElementById(`tab-${activeTab}`).classList.add('active');
 
+        // Hide/show back button based on tab
+        const backButton = document.getElementById('btn-back-guild');
+        if (backButton) {
+            if (activeTab === 'blacksmith' || activeTab === 'shop') {
+                backButton.style.display = 'none';
+            } else {
+                backButton.style.display = 'block';
+            }
+        }
+
         // Update screens when switching tabs
         if (activeTab === 'blacksmith') {
             this.updateBlacksmithScreen();
@@ -1608,6 +1683,18 @@ export default class UIManager {
 
         if (result.success) {
             this.showSummonAnimation(result.unit);
+            this.updateResourceDisplay(); // Update gems
+        } else {
+            alert(result.error);
+        }
+    }
+
+    performMultiSummon() {
+        const result = this.game.gachaSystem.summonMulti();
+
+        if (result.success) {
+            // Show animation for all 10 units
+            this.showMultiSummonAnimation(result.units);
             this.updateResourceDisplay(); // Update gems
         } else {
             alert(result.error);
@@ -1635,6 +1722,61 @@ export default class UIManager {
             crystal.style.display = 'none';
             this.showSummonResult(unit);
         }, 1500);
+    }
+
+    showMultiSummonAnimation(units) {
+        const overlay = document.getElementById('summon-overlay');
+        const crystal = overlay.querySelector('.summon-crystal');
+        const resultCard = document.getElementById('summon-result-card');
+        const closeBtn = document.getElementById('btn-close-summon');
+
+        overlay.style.display = 'flex';
+        crystal.style.display = 'block';
+        resultCard.style.display = 'none';
+        closeBtn.style.display = 'none';
+
+        // Animation du cristal
+        setTimeout(() => {
+            crystal.style.transform = 'scale(1.5) rotate(360deg)';
+            crystal.style.opacity = '0';
+        }, 1000);
+
+        // Afficher les résultats après l'animation
+        setTimeout(() => {
+            crystal.style.display = 'none';
+            this.showMultiSummonResults(units);
+        }, 1500);
+    }
+
+    showMultiSummonResults(units) {
+        const resultCard = document.getElementById('summon-result-card');
+        const closeBtn = document.getElementById('btn-close-summon');
+
+        // Créer une grille pour afficher les 10 unités
+        const colors = {
+            'fire': '#e74c3c', 'water': '#3498db', 'earth': '#27ae60',
+            'thunder': '#f39c12', 'light': '#ecf0f1', 'dark': '#34495e', 'none': '#95a5a6'
+        };
+
+        let html = '<div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; max-width: 600px;">';
+
+        units.forEach(unit => {
+            const color = colors[unit.element] || '#95a5a6';
+            html += `
+                <div style="background: ${color}; padding: 10px; border-radius: 8px; text-align: center;">
+                    <div style="font-size: 2em;">${unit.getAvatar()}</div>
+                    <div style="font-size: 0.8em; margin-top: 5px;">${unit.name}</div>
+                    <div style="color: #ffd700; font-size: 0.9em;">${unit.getRarityStars()}</div>
+                </div>
+            `;
+        });
+
+        html += '</div>';
+        html += '<p style="margin-top: 15px; font-size: 1.1em;">🎉 10 héros obtenus !</p>';
+
+        resultCard.innerHTML = html;
+        resultCard.style.display = 'block';
+        closeBtn.style.display = 'block';
     }
 
     showSummonResult(unit) {

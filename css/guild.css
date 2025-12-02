@@ -1,582 +1,318 @@
-/* Guild Screen Styles */
-#guild-screen {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    background: #2c3e50;
-    color: white;
+/* Guild Screen Layout */
+.guild-header {
+    background: linear-gradient(180deg, #2c3e50 0%, #1a252f 100%);
+    padding: 15px;
+    border-bottom: 2px solid #34495e;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    position: sticky;
+    top: 0;
+    z-index: 100;
 }
 
-.guild-header {
-    padding: 20px;
-    background: rgba(0, 0, 0, 0.3);
-    text-align: center;
+.header-top-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.guild-header h2 {
+    margin: 0;
+    color: #ecf0f1;
+    font-size: 1.5em;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.shop-exit-btn {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    color: white;
+    padding: 8px 15px;
+    border-radius: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: bold;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: transform 0.2s;
+}
+
+.shop-exit-btn:active {
+    transform: scale(0.95);
 }
 
 .guild-tabs {
     display: flex;
     justify-content: center;
     gap: 10px;
-    margin-top: 15px;
+    margin-bottom: 0;
 }
 
 .guild-tab {
     background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: #aaa;
+    border: none;
     padding: 10px 20px;
-    border-radius: 20px;
+    color: #95a5a6;
+    border-radius: 10px;
     cursor: pointer;
-    font-family: 'Poppins', sans-serif;
-    transition: all 0.2s;
+    font-weight: bold;
+    transition: all 0.3s;
 }
 
 .guild-tab.active {
-    background: #f1c40f;
-    color: #2c3e50;
+    background: #3498db;
+    color: white;
+    box-shadow: 0 0 15px rgba(52, 152, 219, 0.4);
+}
+
+.guild-resources {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-top: 10px;
+    padding: 12px 0 8px 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.resource-pill {
+    background: rgba(0, 0, 0, 0.4);
+    padding: 8px 16px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
     font-weight: bold;
-    border-color: #f1c40f;
-    transform: scale(1.05);
+    font-size: 1.1em;
+}
+
+.resource-pill .resource-icon {
+    font-size: 1.2em;
+}
+
+.resource-pill #guild-gems-amount {
+    color: #9b59b6;
+}
+
+.resource-pill #guild-gold-amount {
+    color: #f1c40f;
 }
 
 .guild-content {
-    flex: 1;
     padding: 20px;
+    height: calc(100% - 130px);
     overflow-y: auto;
-    position: relative;
 }
 
 .guild-tab-content {
     display: none;
-    animation: fadeIn 0.3s ease;
+    height: 100%;
 }
 
 .guild-tab-content.active {
     display: block;
 }
 
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
 /* Summon Tab */
 .summon-banner {
-    background: linear-gradient(135deg, #8e44ad, #c0392b);
+    background: linear-gradient(135deg, #8e44ad, #2980b9);
     border-radius: 15px;
     padding: 30px;
     text-align: center;
-    margin-bottom: 30px;
+    margin-bottom: 20px;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
     position: relative;
     overflow: hidden;
 }
 
-.banner-visual {
-    font-size: 4em;
-    margin-top: 10px;
-    animation: float 3s infinite ease-in-out;
-}
-
-@keyframes float {
-
-    0%,
-    100% {
-        transform: translateY(0);
-    }
-
-    50% {
-        transform: translateY(-10px);
-    }
+.summon-banner h3 {
+    font-size: 2em;
+    margin: 0 0 10px 0;
+    color: #fff;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
 }
 
 .summon-actions {
     display: flex;
-    flex-direction: column;
-    gap: 15px;
-    align-items: center;
+    justify-content: center;
+    gap: 20px;
 }
 
 .btn-summon {
-    background: linear-gradient(to right, #f1c40f, #f39c12);
+    background: linear-gradient(180deg, #3498db, #2980b9);
     border: none;
-    border-radius: 10px;
     padding: 15px 30px;
-    width: 100%;
-    max-width: 300px;
+    border-radius: 10px;
     color: white;
     cursor: pointer;
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
     align-items: center;
-    font-weight: bold;
-    font-size: 1.1em;
-    box-shadow: 0 4px 0 #d35400;
-    transition: all 0.1s;
+    min-width: 150px;
+    transition: transform 0.2s;
 }
 
 .btn-summon:active {
-    transform: translateY(4px);
-    box-shadow: 0 0 0 #d35400;
+    transform: scale(0.95);
 }
 
-.btn-summon.disabled {
-    background: #95a5a6;
-    box-shadow: 0 4px 0 #7f8c8d;
-    cursor: not-allowed;
-    opacity: 0.7;
-}
-
-/* Summon Overlay & Animation */
-.summon-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.95);
-    z-index: 1000;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    color: white;
-}
-
-.summon-crystal {
-    font-size: 5em;
-    animation: pulse-glow 1s infinite;
-    transition: all 0.5s;
-}
-
-@keyframes pulse-glow {
-    0% {
-        transform: scale(1);
-        text-shadow: 0 0 20px #fff;
-    }
-
-    50% {
-        transform: scale(1.1);
-        text-shadow: 0 0 40px #fff, 0 0 80px #f1c40f;
-    }
-
-    100% {
-        transform: scale(1);
-        text-shadow: 0 0 20px #fff;
-    }
-}
-
-.summon-result-card {
-    background: #fff;
-    color: #333;
-    padding: 30px;
-    border-radius: 15px;
-    text-align: center;
-    width: 80%;
-    max-width: 350px;
-    animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    position: relative;
-}
-
-@keyframes popIn {
-    from {
-        transform: scale(0);
-        opacity: 0;
-    }
-
-    to {
-        transform: scale(1);
-        opacity: 1;
-    }
-}
-
-.summon-flash {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: white;
-    border-radius: 15px;
-    animation: flash 0.5s ease-out forwards;
-    pointer-events: none;
-}
-
-@keyframes flash {
-    0% {
-        opacity: 1;
-    }
-
-    100% {
-        opacity: 0;
-    }
-}
-
-.new-badge {
-    background: #e74c3c;
-    color: white;
-    display: inline-block;
-    padding: 5px 10px;
-    border-radius: 5px;
-    font-weight: bold;
-    font-size: 0.8em;
-    margin-bottom: 15px;
-    animation: bounce 1s infinite;
-}
-
-.summon-stats {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 10px;
-    background: #f8f9fa;
-    padding: 10px;
-    border-radius: 8px;
-    font-size: 0.9em;
-}
-
-#btn-close-summon {
-    margin-top: 30px;
-    background: transparent;
-    border: 2px solid white;
-    color: white;
-    padding: 10px 30px;
-    border-radius: 20px;
-    cursor: pointer;
-    font-size: 1em;
-    transition: all 0.2s;
-}
-
-#btn-close-summon:hover {
-    background: white;
-    color: black;
-}
-
-/* Placeholders */
-.placeholder-content {
-    text-align: center;
-    padding: 50px 20px;
-    color: #bdc3c7;
-    border: 2px dashed rgba(255, 255, 255, 0.1);
-    border-radius: 10px;
-}
-
-.placeholder-text {
-    color: #95a5a6;
-    font-style: italic;
-}
-
-.error-text {
-    color: #e74c3c;
-    font-size: 0.9em;
-}
-
-/* Blacksmith Filters */
+/* Blacksmith Styles */
 .blacksmith-filters {
     display: flex;
-    gap: 8px;
+    gap: 10px;
     justify-content: center;
-    margin: 60px 0 15px 0;
-    flex-wrap: wrap;
-    padding: 0 10px;
+    margin-bottom: 20px;
 }
 
 .filter-btn {
     background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: #aaa;
-    padding: 8px 15px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 8px 16px;
     border-radius: 20px;
+    color: #bdc3c7;
     cursor: pointer;
-    font-size: 0.9em;
-    transition: all 0.2s;
-    font-family: 'Poppins', sans-serif;
-}
-
-.filter-btn:hover {
-    background: rgba(255, 255, 255, 0.15);
-    border-color: rgba(255, 255, 255, 0.3);
 }
 
 .filter-btn.active {
-    background: #f39c12;
+    background: #e67e22;
+    color: white;
+    border-color: #e67e22;
+}
+
+.blacksmith-container {
+    display: flex;
+    gap: 20px;
+    height: calc(100% - 60px);
 }
 
 .blacksmith-list-panel {
-    flex: 1;
-    background: rgba(30, 39, 46, 0.8);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 15px;
-    padding: 15px;
-    display: flex;
-    flex-direction: column;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-    backdrop-filter: blur(10px);
-    overflow: hidden;
+    flex: 2;
+    overflow-y: auto;
+    padding-right: 10px;
 }
 
-.blacksmith-list-panel h3 {
-    text-align: center;
-    color: #f39c12;
-    margin: 0 0 15px 0;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    border-bottom: 2px solid rgba(243, 156, 18, 0.3);
-    padding-bottom: 10px;
-    font-size: 1em;
-}
-
-#equipment-count {
-    color: #95a5a6;
-    font-size: 0.9em;
-    font-weight: normal;
-}
-
-.blacksmith-upgrade-panel {
-    flex: 1;
-    background: rgba(30, 39, 46, 0.8);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 15px;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    text-align: center;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-    backdrop-filter: blur(10px);
-}
-
-/* Grid Layout - Mobile First (2 columns) */
 .blacksmith-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
+    grid-template-columns: repeat(5, 1fr);
+    grid-auto-rows: minmax(120px, auto);
+    max-height: calc(120px * 5 + 15px * 4);
     overflow-y: auto;
     padding-right: 5px;
+    gap: 15px;
 }
 
-/* Tablet: 3 columns */
-@media (min-width: 768px) {
-    .blacksmith-grid {
-        grid-template-columns: repeat(3, 1fr);
-    }
-}
-
-/* Desktop: 4 columns */
-@media (min-width: 1024px) {
-    .blacksmith-grid {
-        grid-template-columns: repeat(4, 1fr);
-    }
-}
-
-/* Item Cards - Compact & Visual */
 .blacksmith-item-card {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
-    border: 2px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    padding: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid #34495e;
+    border-radius: 10px;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
     cursor: pointer;
     transition: all 0.2s;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    min-height: 110px;
-    justify-content: center;
 }
 
 .blacksmith-item-card:hover {
-    transform: translateY(-3px);
-    border-color: #f1c40f;
-    box-shadow: 0 5px 15px rgba(241, 196, 15, 0.2);
-    background: rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.1);
 }
 
 .blacksmith-item-card.selected {
     border-color: #f1c40f;
-    background: linear-gradient(135deg, rgba(241, 196, 15, 0.2), rgba(230, 126, 34, 0.1));
-    box-shadow: 0 0 20px rgba(241, 196, 15, 0.4);
+    background: rgba(241, 196, 15, 0.1);
 }
 
 .item-icon {
-    font-size: 2.5em;
-    margin-bottom: 8px;
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+    font-size: 2em;
 }
 
 .item-info {
-    width: 100%;
+    flex: 1;
 }
 
 .item-name {
-    font-size: 0.85em;
-    font-weight: 500;
-    margin-bottom: 6px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    padding: 0 5px;
+    font-weight: bold;
+    margin-bottom: 5px;
 }
 
 .item-level {
-    color: #f1c40f;
-    font-weight: bold;
-    font-size: 0.95em;
-    background: rgba(0, 0, 0, 0.4);
-    padding: 3px 10px;
+    font-size: 0.9em;
+    padding: 2px 8px;
     border-radius: 10px;
     display: inline-block;
 }
 
-.empty-message {
-    grid-column: 1 / -1;
-    text-align: center;
-    color: #95a5a6;
-    padding: 40px 20px;
-    font-style: italic;
+/* Rarity Borders */
+.blacksmith-item-card.rarity-common {
+    border-color: #95a5a6;
 }
 
-.upgrade-stats {
-    background: rgba(0, 0, 0, 0.3);
-    padding: 20px;
-    border-radius: 10px;
-    margin: 20px 0;
-    width: 100%;
-    text-align: left;
-    border: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.upgrade-stats div {
-    margin: 8px 0;
-    font-size: 0.95em;
-}
-
-.stat-boost {
-    color: #2ecc71;
-    font-weight: bold;
-    text-shadow: 0 0 5px rgba(46, 204, 113, 0.3);
-}
-
-.bonus-indicator {
-    color: #3498db;
-    font-size: 0.9em;
-    margin-left: 5px;
-}
-
-.tier-up-badge {
-    display: inline-block;
-    background: linear-gradient(135deg, #f39c12, #e74c3c);
-    color: white;
-    padding: 8px 15px;
-    border-radius: 20px;
-    font-weight: bold;
-    margin: 10px 0;
-    animation: pulse 1.5s infinite;
-}
-
-@keyframes pulse {
-
-    0%,
-    100% {
-        transform: scale(1);
-    }
-
-    50% {
-        transform: scale(1.05);
-    }
-}
-
-.materials-section {
-    margin: 15px 0;
-    width: 100%;
-    background: rgba(0, 0, 0, 0.2);
-    padding: 15px;
-    border-radius: 10px;
-}
-
-.materials-section h4 {
-    margin: 0 0 10px 0;
-    color: #3498db;
-    font-size: 0.9em;
-}
-
-.material-slot {
-    display: flex;
-    justify-content: center;
-    margin-top: 10px;
-}
-
-.material-card {
-    background: rgba(255, 255, 255, 0.1);
-    border: 2px dashed rgba(255, 255, 255, 0.3);
-    padding: 15px;
-    border-radius: 10px;
-    width: 100%;
-    text-align: center;
-}
-
-.material-card.selected {
-    border-style: solid;
+.blacksmith-item-card.rarity-uncommon {
     border-color: #2ecc71;
-    background: rgba(46, 204, 113, 0.1);
+    box-shadow: 0 0 5px rgba(46, 204, 113, 0.2);
 }
 
-.cost-display {
-    font-size: 1.4em;
-    margin: 20px 0;
+.blacksmith-item-card.rarity-rare {
+    border-color: #3498db;
+    box-shadow: 0 0 8px rgba(52, 152, 219, 0.3);
+}
+
+.blacksmith-item-card.rarity-epic {
+    border-color: #9b59b6;
+    box-shadow: 0 0 10px rgba(155, 89, 182, 0.4);
+}
+
+.blacksmith-item-card.rarity-legendary {
+    border-color: #f39c12;
+    box-shadow: 0 0 15px rgba(243, 156, 18, 0.5);
+}
+
+/* Tier Colors */
+.item-level.tier1 {
+    color: #bdc3c7;
+}
+
+.item-level.tier2 {
+    color: #3498db;
+}
+
+.item-level.tier3 {
+    color: #9b59b6;
+}
+
+.item-level.tier4 {
+    color: #f39c12;
     font-weight: bold;
-    background: rgba(0, 0, 0, 0.4);
-    padding: 10px 20px;
-    border-radius: 30px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.cost-ok {
-    color: #2ecc71;
-}
-
-.cost-error {
-    color: #e74c3c;
+.blacksmith-upgrade-panel {
+    flex: 1;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 15px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: sticky;
+    top: 0;
 }
 
 .btn-upgrade {
-    background: linear-gradient(to bottom, #e67e22, #d35400);
+    background: #2ecc71;
     border: none;
-    color: white;
     padding: 15px 40px;
-    border-radius: 30px;
+    border-radius: 25px;
+    color: white;
     font-size: 1.2em;
     font-weight: bold;
     cursor: pointer;
-    transition: all 0.2s;
-    box-shadow: 0 4px 0 #a04000;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    width: 80%;
-    margin-top: 10px;
-}
-
-.btn-upgrade:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 0 #a04000;
-}
-
-.btn-upgrade:active {
-    transform: translateY(4px);
-    box-shadow: 0 0 0 #a04000;
+    margin-top: auto;
+    width: 100%;
 }
 
 .btn-upgrade:disabled {
     background: #7f8c8d;
-    box-shadow: none;
     cursor: not-allowed;
-    opacity: 0.5;
-    transform: none;
+    opacity: 0.7;
 }

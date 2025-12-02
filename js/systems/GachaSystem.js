@@ -45,10 +45,37 @@ export default class GachaSystem {
     }
 
     /**
-     * Invocation multiple (10 invocations) - Placeholder
+     * Invocation multiple (10 invocations)
+     * @returns {Object} Résultat { success: boolean, units: Unit[], error: string }
      */
     summonMulti() {
-        // À implémenter plus tard
-        return { success: false, error: "Non implémenté" };
+        const multiCost = this.summonCost * 10; // 50 gemmes
+
+        // 1. Vérifier les ressources
+        if (this.game.economySystem.resources.gems < multiCost) {
+            return {
+                success: false,
+                error: "Pas assez de gemmes ! (50 gemmes requises)"
+            };
+        }
+
+        // 2. Consommer les gemmes
+        this.game.economySystem.spendResource('gems', multiCost);
+
+        // 3. Effectuer 10 invocations
+        const units = [];
+        for (let i = 0; i < 10; i++) {
+            const unitStats = getRandomUnit();
+            const newUnit = new Unit(unitStats.name, true, unitStats);
+            this.game.partyManager.addUnit(newUnit);
+            units.push(newUnit);
+        }
+
+        console.log(`[Gacha] Invocation x10 réussie : ${units.length} héros obtenus`);
+
+        return {
+            success: true,
+            units: units
+        };
     }
 }

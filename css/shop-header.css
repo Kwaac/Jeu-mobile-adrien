@@ -1,0 +1,38 @@
+/* Shop Header with Resources */
+.shop-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 90%;
+    max-width: 1000px;
+    margin-bottom: 20px;
+}
+
+.shop-resources {
+    display: flex;
+    gap: 15px;
+}
+
+.shop-resources .resource-pill {
+    background: rgba(0, 0, 0, 0.4);
+    padding: 8px 16px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    font-weight: bold;
+    font-size: 1.1em;
+}
+
+.shop-resources .resource-pill .resource-icon {
+    font-size: 1.2em;
+}
+
+.shop-resources .resource-pill #shop-gems-amount {
+    color: #9b59b6;
+}
+
+.shop-resources .resource-pill #shop-gold-amount {
+    color: #f1c40f;
+}

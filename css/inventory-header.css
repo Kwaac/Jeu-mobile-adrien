@@ -1,0 +1,96 @@
+/* Header styles for Inventory and Equipment screens */
+.inventory-header {
+    background: linear-gradient(180deg, #2c3e50 0%, #1a252f 100%);
+    padding: 10px 15px;
+    border-bottom: 2px solid #34495e;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.inventory-header .header-top-row {
+    display: grid;
+    grid-template-columns: 100px 1fr 100px;
+    /* Increased side columns for larger button */
+    align-items: center;
+    width: 100%;
+}
+
+.inventory-header .header-bottom-row {
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
+    width: 100%;
+}
+
+/* Override shop-exit-btn absolute positioning */
+.inventory-header .shop-exit-btn {
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    margin: 0;
+    transform: none;
+    width: 75px;
+    /* Increased to 75px */
+    height: 75px;
+    /* Increased to 75px */
+    padding: 0;
+    justify-self: start;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border-radius: 50%;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+}
+
+.inventory-header .shop-exit-btn .door-icon {
+    font-size: 2.2em;
+    /* Increased icon size */
+    margin-bottom: 2px;
+    line-height: 1;
+}
+
+.inventory-header .shop-exit-btn span {
+    font-size: 0.7em;
+    /* Increased text size */
+    margin-top: 0;
+    line-height: 1;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.inventory-header .shop-exit-btn:hover {
+    transform: scale(1.05);
+}
+
+.inventory-header .shop-exit-btn:active {
+    transform: scale(0.95);
+}
+
+.inventory-header h2 {
+    margin: 0;
+    color: #ecf0f1;
+    font-size: 1.4em;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    text-align: center;
+    justify-self: center;
+    white-space: nowrap;
+}
+
+.gold-display {
+    background: rgba(0, 0, 0, 0.5);
+    padding: 5px 15px;
+    border-radius: 20px;
+    border: 1px solid #ffd700;
+    color: #ffd700;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 1em;
+    justify-content: center;
+    white-space: nowrap;
+}

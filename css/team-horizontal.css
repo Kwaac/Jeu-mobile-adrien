@@ -1,0 +1,161 @@
+/* ===================================
+   ÉCRAN ÉQUIPE - LAYOUT HORIZONTAL
+   =================================== */
+
+.team-screen-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 15px;
+    height: calc(100vh - 200px);
+    overflow: hidden;
+}
+
+/* Section Équipe Horizontale */
+.team-horizontal-section {
+    background: rgba(20, 20, 30, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 15px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+}
+
+.team-horizontal-section h3 {
+    margin: 0 0 15px 0;
+    color: #ecf0f1;
+    font-size: 1.2em;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.party-list-horizontal {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 15px;
+}
+
+.party-slot-horizontal {
+    aspect-ratio: 1;
+    background: rgba(0, 0, 0, 0.4);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    padding: 10px;
+    position: relative;
+}
+
+.party-slot-horizontal:hover {
+    border-color: #677eea;
+    background: rgba(103, 126, 234, 0.2);
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(103, 126, 234, 0.4);
+}
+
+.party-slot-horizontal.filled {
+    border-color: #2ecc71;
+}
+
+.party-slot-horizontal.filled:hover {
+    border-color: #27ae60;
+}
+
+.party-slot-horizontal.empty {
+    border-style: dashed;
+    opacity: 0.5;
+    cursor: default;
+}
+
+.party-slot-horizontal.empty:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+.party-slot-horizontal .hero-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    margin-bottom: 8px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.party-slot-horizontal .hero-name {
+    font-size: 0.9em;
+    text-align: center;
+    color: #fff;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+}
+
+.party-slot-horizontal .hero-level {
+    font-size: 0.8em;
+    color: #aaa;
+    margin-top: 2px;
+}
+
+.party-slot-horizontal .hero-stars {
+    font-size: 0.7em;
+    color: #ffd700;
+    margin-top: 4px;
+}
+
+.party-slot-horizontal .remove-btn {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: #e74c3c;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    font-size: 14px;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.party-slot-horizontal:hover .remove-btn {
+    display: flex;
+}
+
+.party-slot-horizontal .remove-btn:hover {
+    background: #c0392b;
+    transform: scale(1.1);
+}
+
+/* Section Héros Disponibles */
+.available-heroes-section {
+    flex: 1;
+    background: rgba(20, 25, 40, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+}
+
+.available-heroes-section h3 {
+    margin: 0 0 15px 0;
+    color: #ecf0f1;
+    font-size: 1.2em;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.available-heroes-section .available-heroes-grid {
+    flex: 1;
+    overflow-y: auto;
+}

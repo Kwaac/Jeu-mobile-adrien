@@ -677,7 +677,14 @@ transform: translateY(-50%);
 /* Grille Héros Disponibles */
 .available-heroes-grid {
     /* Hérite de .inventory-grid-rpg */
-    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    grid-auto-rows: minmax(120px, auto);
+    gap: 10px;
+    max-height: calc(120px * 10 + 9 * 10px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 10px;
 }
 
 .hero-card-compact {
