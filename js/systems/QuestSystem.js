@@ -78,4 +78,34 @@ export default class QuestSystem {
         this.activeQuest = null;
         this.game.endBattle(true); // true = victory
     }
+
+    /**
+     * Sérialise l'état des quêtes pour la sauvegarde
+     * @returns {Object} État sérialisé
+     */
+    toJSON() {
+        return {
+            activeQuestId: this.activeQuest ? this.activeQuest.id : null,
+            currentWave: this.currentWave
+        };
+    }
+
+    /**
+     * Restaure l'état des quêtes depuis une sauvegarde
+     * @param {Object} data - Données sauvegardées
+     */
+    fromJSON(data) {
+        if (!data) return;
+
+        // Restaurer la quête active si elle existe
+        if (data.activeQuestId) {
+            this.activeQuest = this.quests.find(q => q.id === data.activeQuestId);
+            this.currentWave = data.currentWave || 0;
+        } else {
+            this.activeQuest = null;
+            this.currentWave = 0;
+        }
+
+        console.log('[QuestSystem] State restored from save');
+    }
 }

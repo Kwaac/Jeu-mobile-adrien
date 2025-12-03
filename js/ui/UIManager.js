@@ -12,11 +12,18 @@ export default class UIManager {
             INVENTORY: 'inventory-screen',
             QUEST_SELECT: 'quest-screen',
             EVOLUTION: 'evolution-screen',
-            GUILD: 'guild-screen'
+            GUILD: 'guild-screen',
+            AUTH: 'auth-screen'
         };
 
         this.initScreens();
-        this.showScreen(this.screens.MAIN_MENU);
+
+        // Show Auth Screen if not logged in, otherwise Main Menu
+        if (this.game.onlineSystem && this.game.onlineSystem.isOnline) {
+            this.showScreen(this.screens.MAIN_MENU);
+        } else {
+            this.showAuthScreen();
+        }
 
         // Hide debug overlay after initialization
         const debugOverlay = document.getElementById('debug-overlay');
@@ -37,7 +44,10 @@ export default class UIManager {
         mainMenu.className = 'screen';
         mainMenu.innerHTML = `
             <div class="menu-header">
-                <h2 style="font-family: 'Poppins', sans-serif; font-size: 24px; margin: 0;">⚔️ Brave RPG</h2>
+                <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                    <h2 style="font-family: 'Poppins', sans-serif; font-size: 24px; margin: 0;">🌳 The Dying World Tree</h2>
+                    <button id="btn-logout" style="background: none; border: 1px solid rgba(255,255,255,0.3); color: white; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 12px;">Déconnexion</button>
+                </div>
                 <div class="resources-display">
                     <div class="resource-item">
                         <span class="resource-icon">💎</span>
@@ -53,7 +63,7 @@ export default class UIManager {
                     </div>
                 </div>
             </div>
-            <h1>Brave RPG</h1>
+            <h1>The Dying World Tree</h1>
             <div class="menu-cards">
                 <div class="menu-card" id="card-battle">
                     <div class="menu-card-content">
@@ -482,6 +492,12 @@ export default class UIManager {
         this.uiLayer.appendChild(guildScreen);
 
         this.bindEvents();
+
+        // Bind logout button
+        const logoutBtn = document.getElementById('btn-logout');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', () => this.handleLogout());
+        }
     }
 
     updateEquipmentScreen() {
@@ -2255,6 +2271,261 @@ export default class UIManager {
             modal.remove();
             onConfirm();
         });
+    }
+
+    // --- AUTHENTICATION METHODS ---
+
+    /**
+     * Shows the authentication screen
+     */
+    showAuthScreen() {
+        // Check if already logged in
+        if (this.game.onlineSystem && this.game.onlineSystem.isOnline) {
+            this.showScreen(this.screens.MAIN_MENU);
+            return;
+        }
+
+        let authScreen = document.getElementById('auth-screen');
+
+        if (!authScreen) {
+            authScreen = this.createAuthScreen();
+            this.uiLayer.appendChild(authScreen);
+        }
+
+        // Hide all other screens
+        Object.values(this.screens).forEach(screenId => {
+            const screen = document.getElementById(screenId);
+            if (screen) screen.style.display = 'none';
+        });
+
+        authScreen.style.display = 'flex';
+        this.currentScreen = 'auth-screen';
+    }
+
+    /**
+     * Creates the authentication screen HTML
+     */
+    createAuthScreen() {
+        const authScreen = document.createElement('div');
+        authScreen.id = 'auth-screen';
+        authScreen.className = 'auth-screen';
+
+        authScreen.innerHTML = `
+            <div class="auth-container">
+                <div class="auth-header">
+                    <h1 class="auth-title">🌳 The Dying World Tree</h1>
+                    <p class="auth-subtitle">Connectez-vous pour sauvegarder votre progression</p>
+                </div>
+
+                <div class="auth-tabs">
+                    <button class="auth-tab active" data-tab="login">Connexion</button>
+                    <button class="auth-tab" data-tab="register">Inscription</button>
+                </div>
+
+                <!-- Error/Success Messages -->
+                <div class="auth-error" id="auth-error"></div>
+                <div class="auth-success" id="auth-success"></div>
+
+                <!-- Login Form -->
+                <form class="auth-form active" id="login-form">
+                    <div class="auth-input-group">
+                        <label class="auth-label" for="login-email">Email</label>
+                        <input type="email" id="login-email" class="auth-input" placeholder="votre@email.com" required>
+                    </div>
+                    <div class="auth-input-group">
+                        <label class="auth-label" for="login-password">Mot de passe</label>
+                        <input type="password" id="login-password" class="auth-input" placeholder="••••••••" required>
+                    </div>
+                    <button type="submit" class="auth-button" id="btn-login">
+                        Se connecter
+                    </button>
+                </form>
+
+                <!-- Register Form -->
+                <form class="auth-form" id="register-form">
+                    <div class="auth-input-group">
+                        <label class="auth-label" for="register-username">Nom d'utilisateur</label>
+                        <input type="text" id="register-username" class="auth-input" placeholder="Votre pseudo" required>
+                    </div>
+                    <div class="auth-input-group">
+                        <label class="auth-label" for="register-email">Email</label>
+                        <input type="email" id="register-email" class="auth-input" placeholder="votre@email.com" required>
+                    </div>
+                    <div class="auth-input-group">
+                        <label class="auth-label" for="register-password">Mot de passe</label>
+                        <input type="password" id="register-password" class="auth-input" placeholder="••••••••" required minlength="6">
+                    </div>
+                    <button type="submit" class="auth-button" id="btn-register">
+                        Créer un compte
+                    </button>
+                </form>
+
+                <div class="auth-footer">
+                    <button class="auth-guest-button" id="btn-guest">
+                        Continuer sans compte
+                    </button>
+                </div>
+            </div>
+        `;
+
+        // Bind events
+        this.bindAuthEvents(authScreen);
+
+        return authScreen;
+    }
+
+    /**
+     * Binds authentication screen events
+     */
+    bindAuthEvents(authScreen) {
+        // Tab switching
+        const tabs = authScreen.querySelectorAll('.auth-tab');
+        tabs.forEach(tab => {
+            tab.addEventListener('click', (e) => {
+                e.preventDefault(); // Prevent form submission if inside form
+                // Update tab active state
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+
+                // Update form visibility
+                const targetTab = tab.dataset.tab;
+                authScreen.querySelectorAll('.auth-form').forEach(form => {
+                    form.classList.remove('active');
+                });
+                authScreen.querySelector(`#${targetTab}-form`).classList.add('active');
+
+                // Clear messages
+                this.hideAuthMessage();
+            });
+        });
+
+        // Login form
+        const loginForm = authScreen.querySelector('#login-form');
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await this.handleLogin();
+        });
+
+        // Register form
+        const registerForm = authScreen.querySelector('#register-form');
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await this.handleRegister();
+        });
+
+        // Guest button
+        const guestBtn = authScreen.querySelector('#btn-guest');
+        guestBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            this.showScreen(this.screens.MAIN_MENU);
+        });
+    }
+
+    /**
+     * Handles user login
+     */
+    async handleLogin() {
+        const email = document.getElementById('login-email').value;
+        const password = document.getElementById('login-password').value;
+        const btn = document.getElementById('btn-login');
+
+        this.hideAuthMessage();
+        btn.disabled = true;
+        btn.innerHTML = 'Connexion...<span class="auth-loading"></span>';
+
+        try {
+            const result = await this.game.onlineSystem.login(email, password);
+
+            if (result.success) {
+                this.showAuthSuccess('Connexion réussie ! Bienvenue ' + result.user.username);
+                setTimeout(() => {
+                    this.showScreen(this.screens.MAIN_MENU);
+                }, 1500);
+            } else {
+                this.showAuthError(result.error || 'Erreur de connexion');
+            }
+        } catch (error) {
+            this.showAuthError('Erreur de connexion au serveur');
+            console.error(error);
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = 'Se connecter';
+        }
+    }
+
+    /**
+     * Handles user registration
+     */
+    async handleRegister() {
+        const username = document.getElementById('register-username').value;
+        const email = document.getElementById('register-email').value;
+        const password = document.getElementById('register-password').value;
+        const btn = document.getElementById('btn-register');
+
+        this.hideAuthMessage();
+        btn.disabled = true;
+        btn.innerHTML = 'Création...<span class="auth-loading"></span>';
+
+        try {
+            const result = await this.game.onlineSystem.register(username, email, password);
+
+            if (result.success) {
+                this.showAuthSuccess('Compte créé ! Bienvenue ' + result.user.username);
+                setTimeout(() => {
+                    this.showScreen(this.screens.MAIN_MENU);
+                }, 1500);
+            } else {
+                this.showAuthError(result.error || 'Erreur lors de la création du compte');
+            }
+        } catch (error) {
+            this.showAuthError('Erreur de connexion au serveur');
+            console.error(error);
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = 'Créer un compte';
+        }
+    }
+
+    /**
+     * Handles user logout
+     */
+    async handleLogout() {
+        if (confirm('Voulez-vous vraiment vous déconnecter ?')) {
+            await this.game.onlineSystem.logout();
+            this.showAuthScreen();
+        }
+    }
+
+    /**
+     * Shows error message
+     */
+    showAuthError(message) {
+        const errorEl = document.getElementById('auth-error');
+        if (errorEl) {
+            errorEl.textContent = message;
+            errorEl.classList.add('show');
+        }
+    }
+
+    /**
+     * Shows success message
+     */
+    showAuthSuccess(message) {
+        const successEl = document.getElementById('auth-success');
+        if (successEl) {
+            successEl.textContent = message;
+            successEl.classList.add('show');
+        }
+    }
+
+    /**
+     * Hides all auth messages
+     */
+    hideAuthMessage() {
+        const errorEl = document.getElementById('auth-error');
+        const successEl = document.getElementById('auth-success');
+        if (errorEl) errorEl.classList.remove('show');
+        if (successEl) successEl.classList.remove('show');
     }
 }
 

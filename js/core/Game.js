@@ -6,6 +6,9 @@ import PartyManager from '../systems/PartyManager.js';
 import EvolutionSystem from '../systems/EvolutionSystem.js';
 import GachaSystem from '../systems/GachaSystem.js';
 import BlacksmithSystem from '../systems/BlacksmithSystem.js';
+import SaveSystem from '../systems/SaveSystem.js';
+import OnlineSystem from '../systems/OnlineSystem.js';
+import PVPSystem from '../systems/PVPSystem.js';
 import UIManager from '../ui/UIManager.js';
 
 export default class Game {
@@ -31,6 +34,9 @@ export default class Game {
             }
         });
 
+        // Initialize SaveSystem first
+        this.saveSystem = new SaveSystem(this);
+
         this.economySystem = new EconomySystem(this);
         this.partyManager = new PartyManager(this);
         this.lootManager = new LootManager(this);
@@ -39,7 +45,18 @@ export default class Game {
         this.evolutionSystem = new EvolutionSystem(this);
         this.gachaSystem = new GachaSystem(this);
         this.blacksmithSystem = new BlacksmithSystem(this);
+
+        // Online systems
+        this.onlineSystem = new OnlineSystem(this);
+        this.pvpSystem = new PVPSystem(this);
+
         this.uiManager = new UIManager(this);
+
+        // Load saved game after all systems are initialized
+        this.saveSystem.load();
+
+        // Start auto-save
+        this.saveSystem.startAutoSave();
 
         this.resize();
         window.addEventListener('resize', () => this.resize());
@@ -61,6 +78,18 @@ export default class Game {
         }
         this.battleSystem.reset();
         this.uiManager.showScreen(this.uiManager.screens.MAIN_MENU);
+
+        // Save after battle
+        this.triggerSave();
+    }
+
+    /**
+     * Déclenche une sauvegarde manuelle (appelé sur événements critiques)
+     */
+    triggerSave() {
+        if (this.saveSystem) {
+            this.saveSystem.save();
+        }
     }
 
     resize() {

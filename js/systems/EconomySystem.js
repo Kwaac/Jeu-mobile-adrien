@@ -76,4 +76,59 @@ export default class EconomySystem {
         // Placeholder for UI update
         // In a real app, this would update DOM elements in #ui-layer
     }
+
+    /**
+     * Sérialise l'état économique pour la sauvegarde
+     * @returns {Object} État sérialisé
+     */
+    toJSON() {
+        return {
+            resources: { ...this.resources },
+            inventory: this.inventory.map(item => ({
+                id: item.id,
+                name: item.name,
+                description: item.description,
+                slot: item.slot,
+                stats: { ...item.stats },
+                type: item.type
+            })),
+            maxInventorySize: this.maxInventorySize
+        };
+    }
+
+    /**
+     * Restaure l'état économique depuis une sauvegarde
+     * @param {Object} data - Données sauvegardées
+     */
+    fromJSON(data) {
+        if (!data) return;
+
+        // Restaurer les ressources
+        if (data.resources) {
+            this.resources = { ...data.resources };
+        }
+
+        // Restaurer l'inventaire
+        if (data.inventory) {
+            this.inventory = [];
+            data.inventory.forEach(itemData => {
+                const item = new Equipment(
+                    itemData.id,
+                    itemData.name,
+                    itemData.description,
+                    itemData.slot,
+                    itemData.stats
+                );
+                item.type = itemData.type;
+                this.inventory.push(item);
+            });
+        }
+
+        if (data.maxInventorySize !== undefined) {
+            this.maxInventorySize = data.maxInventorySize;
+        }
+
+        console.log('[EconomySystem] State restored from save');
+        this.updateUI();
+    }
 }

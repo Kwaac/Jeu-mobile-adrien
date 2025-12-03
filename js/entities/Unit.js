@@ -8,18 +8,6 @@ export default class Unit {
         Object.assign(this, stats);
 
         // Rank/Evolution system
-        this.unitId = stats.unitId || 'unknown';
-        this.baseRarity = stats.baseRarity || 3;
-        this.currentRarity = stats.currentRarity || stats.baseRarity || 3;
-        this.maxRarity = stats.maxRarity || 6;
-        this.evolutionCount = stats.evolutionCount || 0;
-
-        // Ensure core stats exist
-        this.hp = this.hp || 100;
-        this.maxHp = this.hp;
-        this.atk = this.atk || 10;
-        this.def = this.def || 5;
-        this.bbGauge = 0;
         this.maxBbGauge = this.maxBbGauge || 100;
 
         // Progression system
@@ -183,7 +171,7 @@ export default class Unit {
 
     executeBB(targets) {
         // Basic BB: AOE Attack
-        console.log(`${this.name} utilise son BRAVE BURST !`);
+        console.log(`${this.name} utilise son ULTIMATE BURST !`);
         this.bbGauge = 0;
 
         let totalDamage = 0;

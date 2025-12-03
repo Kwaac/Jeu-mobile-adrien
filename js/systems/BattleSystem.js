@@ -371,8 +371,8 @@ export default class BattleSystem {
             ctx.textAlign = 'center';
             ctx.strokeStyle = 'black';
             ctx.lineWidth = 3;
-            ctx.strokeText('BRAVE BURST!', this.game.width / 2, 80);
-            ctx.fillText('BRAVE BURST!', this.game.width / 2, 80);
+            ctx.strokeText('ULTIMATE BURST!', this.game.width / 2, 80);
+            ctx.fillText('ULTIMATE BURST!', this.game.width / 2, 80);
 
             // Instruction text
             ctx.font = '24px Arial';
