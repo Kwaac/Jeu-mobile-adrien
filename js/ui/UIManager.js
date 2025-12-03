@@ -13,7 +13,9 @@ export default class UIManager {
             QUEST_SELECT: 'quest-screen',
             EVOLUTION: 'evolution-screen',
             GUILD: 'guild-screen',
-            AUTH: 'auth-screen'
+            AUTH: 'auth-screen',
+            VILLAGE: 'village-screen',
+            CRAFTING: 'crafting-screen'
         };
 
         this.initScreens();
@@ -100,6 +102,20 @@ export default class UIManager {
                         <p>Achetez des gemmes</p>
                     </div>
                 </div>
+                <div class="menu-card" id="card-village">
+                    <div class="menu-card-content">
+                        <div class="menu-card-icon">🏘️</div>
+                        <h3>Village</h3>
+                        <p>Gérez vos bâtiments</p>
+                    </div>
+                </div>
+                <div class="menu-card" id="card-crafting">
+                    <div class="menu-card-content">
+                        <div class="menu-card-icon">⚒️</div>
+                        <h3>Forge</h3>
+                        <p>Raffinez vos objets</p>
+                    </div>
+                </div>
             </div>
         `;
         mainMenu.style.display = 'none';
@@ -126,31 +142,17 @@ export default class UIManager {
                     </div>
                 </div>
             </div>
-            <div class="inventory-rpg-container team-screen-container">
-                <!-- Colonne Gauche : Équipe & Détails -->
-                <div class="character-sheet-panel party-column">
-                    <h3 style="margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
-                        ⚔️ Membres <span id="party-count" style="font-size: 0.8em; color: #aaa; float: right;">(0/5)</span>
-                    </h3>
-                    
-                    <!-- Liste des membres de l'équipe -->
-                    <div id="party-units" class="party-list-vertical"></div>
-                    
-                    <!-- Panneau de détails du héros sélectionné -->
-                    <div id="hero-details-panel" class="hero-details-panel" style="display:none; margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1);">
-                        <div class="hero-preview-large">
-                            <!-- Avatar et infos injectés via JS -->
-                        </div>
-                        <button id="btn-remove-party" class="btn-action-rpg" style="width: 100%; margin-top: 15px; background: #e74c3c;">Retirer de l'équipe</button>
-                    </div>
+            <div class="team-screen-container">
+                <!-- Section Équipe Horizontale -->
+                <div class="team-horizontal-section">
+                    <h3>⚔️ Équipe de Combat <span id="party-count" style="font-size: 0.8em; color: #aaa; float: right;">(0/5)</span></h3>
+                    <div id="party-units" class="party-list-horizontal"></div>
                 </div>
                 
-                <!-- Colonne Droite : Héros Disponibles -->
-                <div class="inventory-grid-panel available-heroes-column">
-                    <div class="inventory-header">
-                        <h3>Héros Disponibles <span id="total-hero-count" style="font-size: 0.8em; color: #aaa;">(0/50)</span></h3>
-                    </div>
-                    <div id="equipment-grid" class="inventory-grid-rpg available-heroes-grid"></div>
+                <!-- Section Héros Disponibles -->
+                <div class="available-heroes-section">
+                    <h3>Héros Disponibles <span id="total-hero-count" style="font-size: 0.8em; color: #aaa;">(0/50)</span></h3>
+                    <div id="equipment-grid" class="available-heroes-grid"></div>
                 </div>
             </div>
         `;
@@ -477,7 +479,7 @@ export default class UIManager {
                 </div>
             </div>
             
-            <button id="btn-back-guild" class="btn-back">← Retour</button>
+
 
             <!-- Summon Animation Overlay -->
             <div id="summon-overlay" class="summon-overlay" style="display: none;">
@@ -490,6 +492,57 @@ export default class UIManager {
         `;
         guildScreen.style.display = 'none';
         this.uiLayer.appendChild(guildScreen);
+
+        // Create Village Screen
+        const villageScreen = document.createElement('div');
+        villageScreen.id = 'village-screen';
+        villageScreen.className = 'screen village-screen';
+        villageScreen.innerHTML = `
+            <div class="village-header">
+                <div class="shop-exit-btn" id="btn-village-exit">
+                    <div class="door-icon">🚪</div>
+                    <span>Sortie</span>
+                </div>
+                <h2>🏘️ Village</h2>
+                <div class="village-resources">
+                    <!-- Resources will be injected here -->
+                </div>
+            </div>
+            <div class="buildings-container">
+                <div class="buildings-grid">
+                    <!-- Buildings will be injected here -->
+                </div>
+            </div>
+        `;
+        villageScreen.style.display = 'none';
+        this.uiLayer.appendChild(villageScreen);
+
+        // Create Crafting Screen
+        const craftingScreen = document.createElement('div');
+        craftingScreen.id = 'crafting-screen';
+        craftingScreen.className = 'screen crafting-screen';
+        craftingScreen.innerHTML = `
+            <div class="village-header">
+                <div class="shop-exit-btn" id="btn-crafting-exit">
+                    <div class="door-icon">🚪</div>
+                    <span>Sortie</span>
+                </div>
+                <h2>⚒️ Forge Mystique</h2>
+                <div class="village-resources">
+                    <!-- Resources will be injected here -->
+                </div>
+            </div>
+            <div class="crafting-container">
+                <div class="item-list">
+                    <!-- Item list will be injected here -->
+                </div>
+                <div class="refine-panel">
+                    <!-- Refine panel will be injected here -->
+                </div>
+            </div>
+        `;
+        craftingScreen.style.display = 'none';
+        this.uiLayer.appendChild(craftingScreen);
 
         this.bindEvents();
 
@@ -527,45 +580,44 @@ export default class UIManager {
         for (let i = 0; i < maxPartySize; i++) {
             const unit = party[i];
             const slotEl = document.createElement('div');
-            slotEl.className = 'party-unit-card-row';
+            slotEl.className = 'party-slot-horizontal';
 
             if (unit) {
                 // Filled slot
+                slotEl.classList.add('filled');
+                slotEl.classList.add(`rarity-${unit.rarity || 1}`);
                 const colors = {
                     'fire': '#e74c3c', 'water': '#3498db', 'earth': '#27ae60',
                     'thunder': '#f39c12', 'light': '#ecf0f1', 'dark': '#34495e', 'none': '#95a5a6'
                 };
 
                 slotEl.innerHTML = `
-                    <div class="unit-avatar" style="background-color: ${colors[unit.element] || colors['none']}"></div>
-                    <div class="unit-info">
-                        <div class="unit-name">${unit.name}</div>
-                        <div class="unit-level">Niv. ${unit.level} - ${unit.getRarityStars()}</div>
-                    </div>
-                    <div class="unit-status">✅</div>
+                    <img class="hero-avatar" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Crect width='80' height='80' fill='${encodeURIComponent(colors[unit.element] || colors['none'])}'/%3E%3C/svg%3E" alt="${unit.name}">
+                    <div class="hero-name">${unit.name}</div>
+                    <div class="hero-level">Niv. ${unit.level}</div>
+                    <div class="hero-stars">${unit.getRarityStars()}</div>
+                    <button class="remove-btn" title="Retirer">✖</button>
                 `;
 
-                slotEl.onclick = () => {
-                    this.renderHeroDetails(unit);
-                    // Update selection visual
-                    document.querySelectorAll('.party-unit-card-row').forEach(el => el.classList.remove('selected'));
-                    slotEl.classList.add('selected');
+                // Remove button handler
+                const removeBtn = slotEl.querySelector('.remove-btn');
+                removeBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    this.game.partyManager.removeFromParty(unit);
+                    this.updateEquipmentScreen();
                 };
 
-                // Select first unit by default if none selected
-                if (i === 0 && !document.querySelector('.party-unit-card-row.selected')) {
-                    setTimeout(() => slotEl.click(), 0);
-                }
+                // Click to view details (optional - could open a modal)
+                slotEl.onclick = () => {
+                    console.log('Selected unit:', unit.name);
+                };
+
             } else {
                 // Empty slot
-                slotEl.style.opacity = '0.5';
-                slotEl.style.cursor = 'default';
+                slotEl.classList.add('empty');
                 slotEl.innerHTML = `
-                    <div class="unit-avatar" style="background: rgba(255,255,255,0.1); border-style: dashed;"></div>
-                    <div class="unit-info">
-                        <div class="unit-name" style="color: #aaa;">Emplacement vide</div>
-                        <div class="unit-level">Ajoutez un héros</div>
-                    </div>
+                    <div style="font-size: 2em; opacity: 0.3;">+</div>
+                    <div class="hero-name" style="color: #666;">Vide</div>
                 `;
             }
 
@@ -573,66 +625,6 @@ export default class UIManager {
         }
     }
 
-    renderHeroDetails(unit) {
-        const detailsPanel = document.getElementById('hero-details-panel');
-        if (!detailsPanel) return;
-
-        detailsPanel.style.display = 'block';
-
-        const colors = {
-            'fire': '#e74c3c', 'water': '#3498db', 'earth': '#27ae60',
-            'thunder': '#f39c12', 'light': '#ecf0f1', 'dark': '#34495e', 'none': '#95a5a6'
-        };
-
-        const previewContainer = detailsPanel.querySelector('.hero-preview-large');
-        previewContainer.innerHTML = `
-            <div class="hero-avatar-large" style="background-color: ${colors[unit.element] || colors['none']}"></div>
-            <h3 style="margin: 0; color: #fff;">${unit.name}</h3>
-            <div style="color: #ffd700; margin-bottom: 5px;">${unit.getRarityStars()}</div>
-            <div style="color: #ffd700; margin-bottom: 5px;">${unit.getRarityStars()}</div>
-            <div style="color: #aaa; font-size: 0.9em; margin-bottom: 5px;">Niveau ${unit.level}</div>
-            
-            <!-- XP Bar -->
-            <div class="xp-container" style="width: 100%; height: 6px; background: #333; border-radius: 3px; margin-bottom: 15px; position: relative;">
-                <div class="xp-bar" style="width: ${(unit.xp / unit.xpToNextLevel) * 100}%; height: 100%; background: #3498db; border-radius: 3px;"></div>
-                <div style="position: absolute; top: -15px; right: 0; font-size: 0.7em; color: #aaa;">${unit.xp} / ${unit.xpToNextLevel} XP</div>
-            </div>
-            
-            <div class="hero-stats-grid">
-                <div class="stat-item">
-                    <span style="color: #e74c3c;">HP</span>
-                    <span class="stat-value">${unit.hp}/${unit.getStat('maxHp')}</span>
-                </div>
-                <div class="stat-item">
-                    <span style="color: #3498db;">ATK</span>
-                    <span class="stat-value">${unit.atk}</span>
-                </div>
-                <div class="stat-item">
-                    <span style="color: #2ecc71;">DEF</span>
-                    <span class="stat-value">${unit.def}</span>
-                </div>
-            </div>
-            ${unit.canEvolve() ? `<button id="btn-evolve-unit-panel" class="btn-evolve" style="margin-top: 15px; width: 100%; padding: 10px; background: linear-gradient(to right, #f1c40f, #f39c12); border: none; border-radius: 5px; color: white; font-weight: bold; cursor: pointer;">🌟 Évoluer</button>` : ''}
-        `;
-
-        if (unit.canEvolve()) {
-            setTimeout(() => {
-                const btn = document.getElementById('btn-evolve-unit-panel');
-                if (btn) {
-                    btn.onclick = () => this.openEvolutionScreen(unit);
-                }
-            }, 0);
-        }
-
-        const removeBtn = document.getElementById('btn-remove-party');
-        if (removeBtn) {
-            removeBtn.onclick = () => {
-                this.game.partyManager.removeFromParty(unit);
-                this.updateEquipmentScreen();
-                detailsPanel.style.display = 'none';
-            };
-        }
-    }
 
     renderAvailableHeroes() {
         const gridContainer = document.getElementById('equipment-grid');
@@ -650,9 +642,12 @@ export default class UIManager {
             return;
         }
 
-        availableUnits.forEach(unit => {
+        availableUnits.forEach((unit, index) => {
+            // TEMP: Force rarity 7 for the first unit for verification
+            if (index === 0) unit.rarity = 7;
+
             const unitCard = document.createElement('div');
-            unitCard.className = 'hero-card-compact';
+            unitCard.className = `hero-card-compact rarity-${unit.rarity || 1}`;
 
             const colors = {
                 'fire': '#e74c3c', 'water': '#3498db', 'earth': '#27ae60',
@@ -663,6 +658,7 @@ export default class UIManager {
                 <div class="hero-avatar" style="background-color: ${colors[unit.element] || colors['none']}"></div>
                 <div class="hero-name">${unit.name}</div>
                 <div class="hero-level">Niv. ${unit.level}</div>
+                <div class="hero-stars">${unit.getRarityStars()}</div>
             `;
 
             unitCard.onclick = () => {
@@ -1075,6 +1071,36 @@ export default class UIManager {
         document.getElementById('btn-evolve').addEventListener('click', () => {
             this.performEvolution();
         });
+
+        // Village Events
+        const cardVillage = document.getElementById('card-village');
+        if (cardVillage) {
+            cardVillage.addEventListener('click', () => {
+                this.openVillageScreen();
+            });
+        }
+
+        const btnVillageExit = document.getElementById('btn-village-exit');
+        if (btnVillageExit) {
+            btnVillageExit.addEventListener('click', () => {
+                this.showScreen(this.screens.MAIN_MENU);
+            });
+        }
+
+        // Crafting Events
+        const cardCrafting = document.getElementById('card-crafting');
+        if (cardCrafting) {
+            cardCrafting.addEventListener('click', () => {
+                this.openCraftingScreen();
+            });
+        }
+
+        const btnCraftingExit = document.getElementById('btn-crafting-exit');
+        if (btnCraftingExit) {
+            btnCraftingExit.addEventListener('click', () => {
+                this.showScreen(this.screens.MAIN_MENU);
+            });
+        }
     }
 
     showScreen(screenId) {
@@ -1676,15 +1702,7 @@ export default class UIManager {
         });
         document.getElementById(`tab-${activeTab}`).classList.add('active');
 
-        // Hide/show back button based on tab
-        const backButton = document.getElementById('btn-back-guild');
-        if (backButton) {
-            if (activeTab === 'blacksmith' || activeTab === 'shop') {
-                backButton.style.display = 'none';
-            } else {
-                backButton.style.display = 'block';
-            }
-        }
+
 
         // Update screens when switching tabs
         if (activeTab === 'blacksmith') {
@@ -2526,6 +2544,456 @@ export default class UIManager {
         const successEl = document.getElementById('auth-success');
         if (errorEl) errorEl.classList.remove('show');
         if (successEl) successEl.classList.remove('show');
+    }
+
+    // ==================== VILLAGE METHODS ====================
+
+    /**
+     * Shows notification message
+     */
+    showNotification(message) {
+        const notification = document.createElement('div');
+        notification.className = 'notification';
+        notification.textContent = message;
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(46, 204, 113, 0.9);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            font-weight: bold;
+            z-index: 10000;
+            animation: slideIn 0.3s ease;
+        `;
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+            notification.style.animation = 'slideOut 0.3s ease';
+            setTimeout(() => notification.remove(), 300);
+        }, 3000);
+    }
+
+    /**
+     * Opens the village screen
+     */
+    openVillageScreen() {
+        this.showScreen('village-screen');
+        this.updateVillageScreen();
+    }
+
+    /**
+     * Updates the village screen
+     */
+    updateVillageScreen() {
+        const screen = document.getElementById('village-screen');
+        if (!screen) return;
+
+        // Update resources display
+        this.updateVillageResources();
+
+        // Update buildings grid
+        this.updateBuildingsGrid();
+    }
+
+    /**
+     * Updates village resources display
+     */
+    updateVillageResources() {
+        const container = document.querySelector('.village-resources');
+        if (!container) return;
+
+        const resources = this.game.economySystem.resources;
+
+        container.innerHTML = `
+            <div class="resource-display">
+                <span class="resource-icon">💰</span>
+                <span class="resource-amount">${resources.gold.toLocaleString()}</span>
+            </div>
+            <div class="resource-display">
+                <span class="resource-icon">💎</span>
+                <span class="resource-amount">${resources.crystals.toLocaleString()}</span>
+            </div>
+            <div class="resource-display">
+                <span class="resource-icon">⚗️</span>
+                <span class="resource-amount">${resources.essences.toLocaleString()}</span>
+            </div>
+            <div class="resource-display">
+                <span class="resource-icon">🔮</span>
+                <span class="resource-amount">${resources.fragments.toLocaleString()}</span>
+            </div>
+        `;
+    }
+
+    /**
+     * Updates buildings grid
+     */
+    async updateBuildingsGrid() {
+        const grid = document.querySelector('.buildings-grid');
+        if (!grid) return;
+
+        const { BUILDING_DATABASE, getAllBuildingIds, getProduction } = await import('../data/BuildingDatabase.js');
+        const buildingIds = getAllBuildingIds();
+
+        grid.innerHTML = '';
+
+        buildingIds.forEach(buildingId => {
+            const buildingData = BUILDING_DATABASE[buildingId];
+            const buildingState = this.game.villageSystem.buildings[buildingId];
+
+            const card = document.createElement('div');
+            card.className = 'building-card';
+
+            if (buildingState.level === 0) {
+                card.classList.add('locked');
+            }
+            if (buildingState.isUpgrading) {
+                card.classList.add('upgrading');
+            }
+
+            // Calculate production if applicable
+            let productionHtml = '';
+            if (buildingData.benefits.type === 'production' && buildingState.level > 0) {
+                const production = getProduction(buildingId, buildingState.level);
+                const resourceIcon = buildingData.benefits.resource === 'crystals' ? '💎' :
+                    buildingData.benefits.resource === 'essences' ? '⚗️' : '💰';
+                productionHtml = `<div class="building-production">${resourceIcon} +${production}/h</div>`;
+            }
+
+            // Timer if upgrading
+            let timerHtml = '';
+            if (buildingState.isUpgrading) {
+                const remaining = this.game.villageSystem.getRemainingUpgradeTime(buildingId);
+                timerHtml = `<div class="building-timer">${this.formatTime(remaining)}</div>`;
+            }
+
+            // Collect button if has resources
+            let collectHtml = '';
+            if (buildingData.benefits.type === 'production' && buildingState.level > 0) {
+                const generated = this.game.villageSystem.calculateGeneratedResources(buildingId);
+                if (generated > 0) {
+                    collectHtml = `<button class="collect-button">Collecter (${generated})</button>`;
+                }
+            }
+
+            card.innerHTML = `
+                <div class="building-icon">${buildingData.icon}</div>
+                <div class="building-name">${buildingData.name}</div>
+                <div class="building-level">Niveau ${buildingState.level}/${buildingData.maxLevel}</div>
+                ${productionHtml}
+                ${timerHtml}
+                ${collectHtml}
+            `;
+
+            // Click handlers
+            if (collectHtml) {
+                const collectBtn = card.querySelector('.collect-button');
+                collectBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    this.collectBuildingResources(buildingId);
+                };
+            }
+
+            card.onclick = () => {
+                if (buildingState.level > 0 || buildingId === 'town_hall') {
+                    this.openBuildingDetail(buildingId);
+                }
+            };
+
+            grid.appendChild(card);
+        });
+    }
+
+    /**
+     * Collects resources from a building
+     */
+    async collectBuildingResources(buildingId) {
+        const amount = this.game.villageSystem.collectResources(buildingId);
+        if (amount > 0) {
+            const { BUILDING_DATABASE } = await import('../data/BuildingDatabase.js');
+            const buildingData = BUILDING_DATABASE[buildingId];
+            const resourceName = buildingData.benefits.resource;
+            this.showNotification(`+${amount} ${resourceName} collectés !`);
+            this.updateVillageScreen();
+        }
+    }
+
+    /**
+     * Opens building detail modal
+     */
+    async openBuildingDetail(buildingId) {
+        const { BUILDING_DATABASE, getUpgradeCost, getUpgradeTime, getProduction, getCapacity } = await import('../data/BuildingDatabase.js');
+        const buildingData = BUILDING_DATABASE[buildingId];
+        const buildingState = this.game.villageSystem.buildings[buildingId];
+
+        // Create modal
+        const modal = document.createElement('div');
+        modal.className = 'building-detail-modal';
+        modal.style.display = 'block';
+
+        const cost = getUpgradeCost(buildingId, buildingState.level);
+        const upgradeTime = getUpgradeTime(buildingId, buildingState.level);
+        const canUpgrade = this.game.villageSystem.canUpgradeBuilding(buildingId);
+
+        // Build stats HTML
+        let statsHtml = '';
+        if (buildingData.benefits.type === 'production') {
+            const currentProd = getProduction(buildingId, buildingState.level);
+            const nextProd = getProduction(buildingId, buildingState.level + 1);
+            const currentCap = getCapacity(buildingId, buildingState.level);
+            const nextCap = getCapacity(buildingId, buildingState.level + 1);
+
+            statsHtml = `
+                <div class="stat-row">
+                    <span class="stat-label">Production/h</span>
+                    <span class="stat-value">${currentProd} → ${nextProd}</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Capacité</span>
+                    <span class="stat-value">${currentCap} → ${nextCap}</span>
+                </div>
+            `;
+        }
+
+        // Build cost HTML
+        let costHtml = '';
+        const resources = this.game.economySystem.resources;
+        if (buildingState.level < buildingData.maxLevel) {
+            costHtml = `
+                <div class="upgrade-cost">
+                    <div class="cost-title">Coût d'amélioration</div>
+                    <div class="cost-item ${resources.gold >= cost.gold ? '' : 'insufficient'}">
+                        💰 Or: ${cost.gold.toLocaleString()}
+                    </div>
+                    ${cost.crystals > 0 ? `<div class="cost-item ${resources.crystals >= cost.crystals ? '' : 'insufficient'}">
+                        💎 Cristaux: ${cost.crystals.toLocaleString()}
+                    </div>` : ''}
+                    ${cost.essences > 0 ? `<div class="cost-item ${resources.essences >= cost.essences ? '' : 'insufficient'}">
+                        ⚗️ Essences: ${cost.essences.toLocaleString()}
+                    </div>` : ''}
+                    <div class="cost-item">
+                        ⏱️ Temps: ${this.formatTime(upgradeTime)}
+                    </div>
+                </div>
+            `;
+        }
+
+        modal.innerHTML = `
+            <div class="modal-header">
+                <div class="modal-title">
+                    <span>${buildingData.icon}</span>
+                    ${buildingData.name}
+                </div>
+                <button class="modal-close">✖</button>
+            </div>
+            <div class="building-description">${buildingData.description}</div>
+            <div class="building-stats">
+                <div class="stat-row">
+                    <span class="stat-label">Niveau actuel</span>
+                    <span class="stat-value">${buildingState.level}/${buildingData.maxLevel}</span>
+                </div>
+                ${statsHtml}
+            </div>
+            ${costHtml}
+            ${buildingState.level < buildingData.maxLevel ? `
+                <button class="upgrade-button" ${!canUpgrade ? 'disabled' : ''}>
+                    ${buildingState.isUpgrading ? 'En cours...' : 'Améliorer'}
+                </button>
+            ` : '<p style="text-align: center; color: #ffd700;">✨ Niveau maximum atteint !</p>'}
+        `;
+
+        document.body.appendChild(modal);
+
+        // Event handlers
+        const closeBtn = modal.querySelector('.modal-close');
+        closeBtn.onclick = () => modal.remove();
+
+        const upgradeBtn = modal.querySelector('.upgrade-button');
+        if (upgradeBtn && !upgradeBtn.disabled) {
+            upgradeBtn.onclick = () => {
+                if (this.game.villageSystem.upgradeBuilding(buildingId)) {
+                    this.showNotification(`${buildingData.name} amélioration démarrée !`);
+                    modal.remove();
+                    this.updateVillageScreen();
+                }
+            };
+        }
+
+        // Close on background click
+        modal.onclick = (e) => {
+            if (e.target === modal) modal.remove();
+        };
+    }
+
+    /**
+     * Opens the crafting screen
+     */
+    openCraftingScreen() {
+        this.showScreen('crafting-screen');
+        this.updateCraftingScreen();
+    }
+
+    /**
+     * Updates the crafting screen
+     */
+    updateCraftingScreen() {
+        this.updateCraftingItemList();
+        this.updateCraftingPanel();
+    }
+
+    /**
+     * Updates the item list for crafting
+     */
+    updateCraftingItemList() {
+        const list = document.querySelector('.item-list');
+        if (!list) return;
+
+        const items = this.game.economySystem.inventory.filter(item =>
+            item.type === 'weapon' || item.type === 'armor' || item.type === 'accessory'
+        );
+
+        list.innerHTML = '<h3>Objets à raffiner</h3>';
+
+        if (items.length === 0) {
+            list.innerHTML += '<p style="color: #95a5a6; text-align: center; margin-top: 20px;">Aucun objet dans l\'inventaire</p>';
+            return;
+        }
+
+        items.forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'item-card';
+            if (this.selectedCraftItem === item) {
+                card.classList.add('selected');
+            }
+
+            let statsHtml = '';
+            for (let stat in item.stats) {
+                statsHtml += `<span>${stat.toUpperCase()}: ${item.stats[stat]}</span>`;
+            }
+
+            card.innerHTML = `
+                <div class="item-header">
+                    <div class="item-name">${item.name}</div>
+                    <div class="item-stars">${item.getStarDisplay()}</div>
+                </div>
+                <div class="item-stats">${statsHtml}</div>
+            `;
+
+            card.onclick = () => {
+                this.selectedCraftItem = item;
+                this.updateCraftingScreen();
+            };
+
+            list.appendChild(card);
+        });
+    }
+
+    /**
+     * Updates the crafting panel
+     */
+    async updateCraftingPanel() {
+        const panel = document.querySelector('.refine-panel');
+        if (!panel) return;
+
+        if (!this.selectedCraftItem) {
+            panel.innerHTML = '<p style="color: #95a5a6; text-align: center; margin-top: 50px;">Sélectionnez un objet à raffiner</p>';
+            return;
+        }
+
+        const item = this.selectedCraftItem;
+        const refineInfo = this.game.craftingSystem.getRefineInfo(item);
+
+        if (!refineInfo) {
+            panel.innerHTML = '<p style="color: #e74c3c;">Erreur lors du chargement des informations</p>';
+            return;
+        }
+
+        // Current and new stats
+        let currentStatsHtml = '';
+        let newStatsHtml = '';
+        for (let stat in item.stats) {
+            currentStatsHtml += `<div>${stat.toUpperCase()}: ${item.stats[stat]}</div>`;
+            if (refineInfo.newStats) {
+                newStatsHtml += `<div>${stat.toUpperCase()}: ${refineInfo.newStats[stat]}</div>`;
+            }
+        }
+
+        // Requirements
+        let reqHtml = '';
+        if (refineInfo.cost) {
+            const resources = this.game.economySystem.resources;
+            reqHtml = `
+                <div class="refine-requirements">
+                    <h4>Ressources requises</h4>
+                    <div class="cost-item ${resources.gold >= refineInfo.cost.gold ? '' : 'insufficient'}">
+                        💰 Or: ${refineInfo.cost.gold.toLocaleString()}
+                    </div>
+                    <div class="cost-item ${resources.crystals >= refineInfo.cost.crystals ? '' : 'insufficient'}">
+                        💎 Cristaux: ${refineInfo.cost.crystals.toLocaleString()}
+                    </div>
+                    <div class="cost-item ${resources.essences >= refineInfo.cost.essences ? '' : 'insufficient'}">
+                        ⚗️ Essences: ${refineInfo.cost.essences.toLocaleString()}
+                    </div>
+                    ${refineInfo.cost.fragments > 0 ? `<div class="cost-item ${resources.fragments >= refineInfo.cost.fragments ? '' : 'insufficient'}">
+                        🔮 Fragments: ${refineInfo.cost.fragments.toLocaleString()}
+                    </div>` : ''}
+                    <div class="cost-item">
+                        ⏱️ Temps: ${this.formatTime(refineInfo.time)}
+                    </div>
+                    <div class="cost-item ${refineInfo.currentForgeLevel >= refineInfo.requiredForgeLevel ? '' : 'insufficient'}">
+                        ⚒️ Forge niveau ${refineInfo.requiredForgeLevel} requis (actuellement ${refineInfo.currentForgeLevel})
+                    </div>
+                </div>
+            `;
+        }
+
+        panel.innerHTML = `
+            <div class="refine-preview">
+                <h3>Raffinage</h3>
+                <div style="display: flex; justify-content: space-around; align-items: center; margin: 30px 0;">
+                    <div style="text-align: center;">
+                        <div style="font-size: 2em; color: #ffd700; margin-bottom: 10px;">${item.getStarDisplay()}</div>
+                        <div style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 10px;">
+                            ${currentStatsHtml}
+                        </div>
+                    </div>
+                    <div class="refine-arrow">→</div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 2em; color: #ffd700; margin-bottom: 10px;">${'★'.repeat(item.stars + 1)}</div>
+                        <div style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 10px;">
+                            ${newStatsHtml}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            ${reqHtml}
+            <button class="refine-button" ${!refineInfo.canRefine ? 'disabled' : ''}>
+                ${item.stars >= 7 ? 'Niveau maximum' : refineInfo.canRefine ? 'Raffiner' : 'Ressources insuffisantes'}
+            </button>
+        `;
+
+        const refineBtn = panel.querySelector('.refine-button');
+        if (refineBtn && !refineBtn.disabled) {
+            refineBtn.onclick = () => {
+                if (this.game.craftingSystem.refineItem(item)) {
+                    this.showNotification(`Raffinage de ${item.name} démarré !`);
+                    this.selectedCraftItem = null;
+                    this.updateCraftingScreen();
+                }
+            };
+        }
+    }
+
+    /**
+     * Formats time in seconds to readable format
+     */
+    formatTime(seconds) {
+        if (seconds < 60) return `${seconds}s`;
+        if (seconds < 3600) return `${Math.floor(seconds / 60)}m ${seconds % 60}s`;
+        const hours = Math.floor(seconds / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        return `${hours}h ${minutes}m`;
     }
 }
 

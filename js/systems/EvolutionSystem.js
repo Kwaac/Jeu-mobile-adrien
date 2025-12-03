@@ -3,6 +3,26 @@ import { getStatsForRarity, RARITY_MULTIPLIERS } from '../data/UnitDatabase.js';
 export default class EvolutionSystem {
     constructor(game) {
         this.game = game;
+
+        // Table des exigences de Sanctuaire par rareté
+        this.sanctuaryRequirements = {
+            2: 1,   // 1★ → 2★ nécessite Sanctuaire niveau 1
+            3: 2,   // 2★ → 3★ nécessite Sanctuaire niveau 2
+            4: 3,   // 3★ → 4★ nécessite Sanctuaire niveau 3
+            5: 5,   // 4★ → 5★ nécessite Sanctuaire niveau 5
+            6: 7,   // 5★ → 6★ nécessite Sanctuaire niveau 7
+            7: 9    // 6★ → 7★ nécessite Sanctuaire niveau 9
+        };
+
+        // Coût en fragments par rareté
+        this.fragmentCosts = {
+            2: 10,
+            3: 25,
+            4: 50,
+            5: 100,
+            6: 200,
+            7: 400
+        };
     }
 
     /**
@@ -36,6 +56,18 @@ export default class EvolutionSystem {
             };
         }
 
+        // Vérifier le niveau du Sanctuaire
+        const nextRarity = unit.currentRarity + 1;
+        const requiredSanctuaryLevel = this.sanctuaryRequirements[nextRarity] || 1;
+        const currentSanctuaryLevel = this.game.villageSystem.getBuildingLevel('sanctuary');
+
+        if (currentSanctuaryLevel < requiredSanctuaryLevel) {
+            return {
+                possible: false,
+                reason: `Sanctuaire niveau ${requiredSanctuaryLevel} requis (actuellement ${currentSanctuaryLevel})`
+            };
+        }
+
         // Vérifier les duplicatas (besoin de 2 pour évoluer)
         const duplicates = this.findDuplicates(unit);
         if (duplicates.length < 2) {
@@ -54,10 +86,21 @@ export default class EvolutionSystem {
             };
         }
 
+        // Vérifier les fragments
+        const fragmentCost = this.fragmentCosts[nextRarity] || 0;
+        if (this.game.economySystem.resources.fragments < fragmentCost) {
+            return {
+                possible: false,
+                reason: `Fragments insuffisants (${fragmentCost} requis, ${this.game.economySystem.resources.fragments} disponibles)`
+            };
+        }
+
         return {
             possible: true,
             duplicates: duplicates.slice(0, 2), // On prend les 2 premiers
-            cost: cost
+            cost: cost,
+            fragmentCost: fragmentCost,
+            sanctuaryLevel: currentSanctuaryLevel
         };
     }
 
@@ -118,13 +161,22 @@ export default class EvolutionSystem {
             return false;
         }
 
+        // Consommer les fragments
+        const nextRarity = unit.currentRarity + 1;
+        const fragmentCost = this.fragmentCosts[nextRarity] || 0;
+        if (fragmentCost > 0) {
+            if (!this.game.economySystem.spendResource('fragments', fragmentCost)) {
+                console.error('Échec de la dépense de fragments');
+                return false;
+            }
+        }
+
         // Retirer les matériaux de l'inventaire
         for (const material of materialUnits) {
             this.game.partyManager.removeUnit(material);
         }
 
-        // Augmenter la rareté
-        const nextRarity = unit.currentRarity + 1;
+        // Augmenter la rareté (nextRarity déjà déclaré ci-dessus)
         const newStats = getStatsForRarity(unit.unitId, nextRarity);
 
         // Mettre à jour l'unité

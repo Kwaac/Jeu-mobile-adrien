@@ -7,21 +7,25 @@ export default class EconomySystem {
             zel: 0,
             karma: 0,
             gems: 0,
-            gold: 100000
+            gold: 100000,
+            // Nouvelles ressources pour le village
+            crystals: 100,    // Pour le craft
+            essences: 50,     // Pour l'alchimie
+            fragments: 20     // Pour les évolutions
         };
         this.maxInventorySize = 50; // Limite d'inventaire
         this.inventory = [];
 
         // Add dummy items - type must match slot for filtering
-        const sword = new Equipment('sword1', 'Épée rouillée', 'Vieille épée', 'weapon', { atk: 5 });
+        const sword = new Equipment('sword1', 'Épée rouillée', 'Vieille épée', 'weapon', { atk: 5 }, 1);
         sword.type = 'weapon'; // Ensure type is set for filtering
         this.addItem(sword);
 
-        const armor = new Equipment('armor1', 'Armure de cuir', 'Protection basique', 'armor', { def: 3 });
+        const armor = new Equipment('armor1', 'Armure de cuir', 'Protection basique', 'armor', { def: 3 }, 1);
         armor.type = 'armor';
         this.addItem(armor);
 
-        const accessory = new Equipment('acc1', 'Anneau de Vie', 'Donne de la vitalité', 'accessory', { maxHp: 50 });
+        const accessory = new Equipment('acc1', 'Anneau de Vie', 'Donne de la vitalité', 'accessory', { maxHp: 50 }, 1);
         accessory.type = 'accessory';
         this.addItem(accessory);
     }
@@ -90,6 +94,8 @@ export default class EconomySystem {
                 description: item.description,
                 slot: item.slot,
                 stats: { ...item.stats },
+                baseStats: { ...item.baseStats },
+                stars: item.stars || 1,
                 type: item.type
             })),
             maxInventorySize: this.maxInventorySize
@@ -117,7 +123,8 @@ export default class EconomySystem {
                     itemData.name,
                     itemData.description,
                     itemData.slot,
-                    itemData.stats
+                    itemData.baseStats || itemData.stats,
+                    itemData.stars || 1
                 );
                 item.type = itemData.type;
                 this.inventory.push(item);

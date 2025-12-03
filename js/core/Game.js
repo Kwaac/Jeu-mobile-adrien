@@ -9,6 +9,8 @@ import BlacksmithSystem from '../systems/BlacksmithSystem.js';
 import SaveSystem from '../systems/SaveSystem.js';
 import OnlineSystem from '../systems/OnlineSystem.js';
 import PVPSystem from '../systems/PVPSystem.js';
+import VillageSystem from '../systems/VillageSystem.js';
+import CraftingSystem from '../systems/CraftingSystem.js';
 import UIManager from '../ui/UIManager.js';
 
 export default class Game {
@@ -45,6 +47,10 @@ export default class Game {
         this.evolutionSystem = new EvolutionSystem(this);
         this.gachaSystem = new GachaSystem(this);
         this.blacksmithSystem = new BlacksmithSystem(this);
+
+        // Village and crafting systems
+        this.villageSystem = new VillageSystem(this);
+        this.craftingSystem = new CraftingSystem(this);
 
         // Online systems
         this.onlineSystem = new OnlineSystem(this);
@@ -120,6 +126,10 @@ export default class Game {
         if (this.state === 'BATTLE') {
             this.battleSystem.update(deltaTime);
         }
+
+        // Update village and crafting systems (timers)
+        this.villageSystem.update(deltaTime);
+        this.craftingSystem.update(deltaTime);
     }
 
     draw() {

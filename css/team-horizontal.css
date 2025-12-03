@@ -158,4 +158,94 @@
 .available-heroes-section .available-heroes-grid {
     flex: 1;
     overflow-y: auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 15px;
+    padding: 5px;
+}
+
+/* Rarity Borders */
+.hero-card-compact.rarity-1 {
+    border: 2px solid #bdc3c7;
+}
+
+/* Common - Gray */
+.hero-card-compact.rarity-2 {
+    border: 2px solid #2ecc71;
+    box-shadow: 0 0 5px rgba(46, 204, 113, 0.3);
+}
+
+/* Uncommon - Green */
+.hero-card-compact.rarity-3 {
+    border: 2px solid #3498db;
+    box-shadow: 0 0 8px rgba(52, 152, 219, 0.4);
+}
+
+/* Rare - Blue */
+.hero-card-compact.rarity-4 {
+    border: 2px solid #9b59b6;
+    box-shadow: 0 0 10px rgba(155, 89, 182, 0.5);
+}
+
+/* Epic - Purple */
+.hero-card-compact.rarity-5 {
+    border: 2px solid #f1c40f;
+    box-shadow: 0 0 15px rgba(241, 196, 15, 0.6);
+}
+
+/* Legendary - Gold */
+
+/* Stars Styling */
+.hero-card-compact .hero-stars {
+    font-size: 0.7em;
+    color: #ffd700;
+    margin-top: 4px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+/* Rarity Borders for Party Slots */
+.party-slot-horizontal.rarity-1 {
+    border-color: #bdc3c7;
+}
+
+.party-slot-horizontal.rarity-2 {
+    border-color: #2ecc71;
+    box-shadow: 0 0 5px rgba(46, 204, 113, 0.3);
+}
+
+.party-slot-horizontal.rarity-3 {
+    border-color: #3498db;
+    box-shadow: 0 0 8px rgba(52, 152, 219, 0.4);
+}
+
+.party-slot-horizontal.rarity-4 {
+    border-color: #9b59b6;
+    box-shadow: 0 0 10px rgba(155, 89, 182, 0.5);
+}
+
+.party-slot-horizontal.rarity-5 {
+    border-color: #f1c40f;
+    box-shadow: 0 0 15px rgba(241, 196, 15, 0.6);
+}
+
+/* Rarity 6 - Mythic (Red) */
+.hero-card-compact.rarity-6 {
+    border: 2px solid #ff4757;
+    box-shadow: 0 0 15px rgba(255, 71, 87, 0.6);
+}
+
+.party-slot-horizontal.rarity-6 {
+    border-color: #ff4757;
+    box-shadow: 0 0 15px rgba(255, 71, 87, 0.6);
+}
+
+/* Rarity 7 - Divine (Cyan) */
+.hero-card-compact.rarity-7 {
+    border: 2px solid #00f2ff;
+    box-shadow: 0 0 15px rgba(0, 242, 255, 0.6);
+}
+
+.party-slot-horizontal.rarity-7 {
+    border-color: #00f2ff;
+    box-shadow: 0 0 15px rgba(0, 242, 255, 0.6);
 }

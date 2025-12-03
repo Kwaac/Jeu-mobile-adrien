@@ -68,6 +68,10 @@ export default class SaveSystem {
             // Progression des quêtes
             quests: this.game.questSystem.toJSON(),
 
+            // Village et crafting
+            village: this.game.villageSystem.toJSON(),
+            crafting: this.game.craftingSystem.toJSON(),
+
             // Métadonnées pour future expansion
             metadata: {
                 lastSave: new Date().toISOString(),
@@ -102,6 +106,15 @@ export default class SaveSystem {
 
             if (data.quests) {
                 this.game.questSystem.fromJSON(data.quests);
+            }
+
+            // Restaurer le village et le crafting
+            if (data.village) {
+                this.game.villageSystem.fromJSON(data.village);
+            }
+
+            if (data.crafting) {
+                this.game.craftingSystem.fromJSON(data.crafting);
             }
 
             console.log('[SaveSystem] Game state restored successfully');
