@@ -1,0 +1,358 @@
+/* ===================================
+   STORY MODE - ZONE & STAGE SELECTION
+   =================================== */
+
+.story-screen {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    overflow: hidden;
+}
+
+/* Header */
+.story-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background: rgba(0, 0, 0, 0.3);
+    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.story-header h2 {
+    color: #fff;
+    font-size: 24px;
+    margin: 0;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.story-back-btn {
+    padding: 10px 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.story-back-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+/* Zone Selection Grid */
+.zone-selection {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.zones-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Zone Card */
+.zone-card {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.zone-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.zone-card:hover::before {
+    opacity: 1;
+}
+
+.zone-card:hover {
+    transform: translateY(-5px);
+    border-color: rgba(102, 126, 234, 0.5);
+    box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
+}
+
+.zone-card.locked {
+    opacity: 0.5;
+    cursor: not-allowed;
+    filter: grayscale(0.7);
+}
+
+.zone-card.locked:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+.zone-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.zone-number {
+    font-size: 14px;
+    color: #667eea;
+    font-weight: bold;
+}
+
+.zone-lock-icon {
+    font-size: 20px;
+    color: #ff6b6b;
+}
+
+.zone-unlock-icon {
+    font-size: 20px;
+    color: #51cf66;
+}
+
+.zone-card-title {
+    font-size: 20px;
+    font-weight: bold;
+    color: #fff;
+    margin: 10px 0;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.zone-card-description {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.7);
+    margin: 10px 0;
+    line-height: 1.4;
+}
+
+.zone-card-theme {
+    font-size: 12px;
+    color: #667eea;
+    font-style: italic;
+    margin: 5px 0;
+}
+
+.zone-card-progress {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.zone-progress-bar {
+    width: 100%;
+    height: 8px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-top: 8px;
+}
+
+.zone-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #51cf66 0%, #37b24d 100%);
+    transition: width 0.3s ease;
+}
+
+.zone-progress-text {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.6);
+    margin-top: 5px;
+}
+
+/* Stage Selection */
+.stage-selection {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    display: none;
+}
+
+.stage-selection.active {
+    display: block;
+}
+
+.zone-info {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.zone-info-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.zone-info-title {
+    font-size: 24px;
+    font-weight: bold;
+    color: #fff;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.zone-info-energy {
+    font-size: 16px;
+    color: #ffd43b;
+    font-weight: bold;
+}
+
+.zone-info-description {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.7);
+    margin-top: 10px;
+}
+
+/* Stages Grid */
+.stages-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 15px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Stage Card */
+.stage-card {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    position: relative;
+}
+
+.stage-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(102, 126, 234, 0.5);
+    box-shadow: 0 6px 16px rgba(102, 126, 234, 0.3);
+}
+
+.stage-card.locked {
+    opacity: 0.4;
+    cursor: not-allowed;
+    filter: grayscale(0.8);
+}
+
+.stage-card.locked:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+.stage-card.completed {
+    border-color: rgba(81, 207, 102, 0.5);
+}
+
+.stage-card.completed::after {
+    content: '✓';
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    color: #51cf66;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.stage-card.boss {
+    background: linear-gradient(135deg, rgba(255, 107, 107, 0.1) 0%, rgba(255, 59, 48, 0.1) 100%);
+    border-color: rgba(255, 107, 107, 0.5);
+}
+
+.stage-card.boss .stage-name {
+    color: #ff6b6b;
+}
+
+.stage-number {
+    font-size: 14px;
+    color: #667eea;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.stage-name {
+    font-size: 16px;
+    font-weight: bold;
+    color: #fff;
+    margin: 8px 0;
+}
+
+.stage-energy {
+    font-size: 12px;
+    color: #ffd43b;
+    margin-top: 8px;
+}
+
+.stage-lock-icon {
+    font-size: 24px;
+    color: #ff6b6b;
+    margin: 10px 0;
+}
+
+.boss-icon {
+    font-size: 32px;
+    margin: 10px 0;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .zones-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    .stages-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+
+    .story-header h2 {
+        font-size: 20px;
+    }
+
+    .zone-card-title {
+        font-size: 18px;
+    }
+
+    .zone-info-title {
+        font-size: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .story-header {
+        padding: 10px 15px;
+    }
+
+    .zone-selection,
+    .stage-selection {
+        padding: 15px;
+    }
+
+    .stages-grid {
+        grid-template-columns: 1fr;
+    }
+}

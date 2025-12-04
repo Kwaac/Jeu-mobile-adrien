@@ -93,20 +93,36 @@ export const BUILDING_DATABASE = {
             description: 'Débloque le raffinage d\'objets à des niveaux supérieurs'
         }
     },
+    'blacksmith': {
+        id: 'blacksmith',
+        name: 'Forgeron',
+        description: 'Amélioration et raffinage d\'équipements. Accès direct depuis le village.',
+        icon: '🔨',
+        maxLevel: 1,
+        baseCost: { gold: 0, crystals: 0, essences: 0 },
+        costMultiplier: 1.0,
+        buildTime: 0,
+        upgradeTimeBase: 0,
+        upgradeTimeMultiplier: 1.0,
+        benefits: {
+            type: 'access',
+            description: 'Accès à l\'amélioration et au raffinage d\'équipements'
+        }
+    },
     'sanctuary': {
         id: 'sanctuary',
-        name: 'Sanctuaire d\'Évolution',
-        description: 'Débloque les évolutions de héros. Niveau requis pour évoluer vers des raretés supérieures.',
-        icon: '⛩️',
-        maxLevel: 10,
-        baseCost: { gold: 1500, crystals: 15, essences: 10 },
-        costMultiplier: 1.6,
-        buildTime: 240, // 4 minutes
-        upgradeTimeBase: 480, // 8 minutes
-        upgradeTimeMultiplier: 1.5,
+        name: 'Sanctuaire',
+        description: 'Invocation et évolution de héros. Accès direct depuis le village.',
+        icon: '🏛️',
+        maxLevel: 1,
+        baseCost: { gold: 0, crystals: 0, essences: 0 },
+        costMultiplier: 1.0,
+        buildTime: 0,
+        upgradeTimeBase: 0,
+        upgradeTimeMultiplier: 1.0,
         benefits: {
-            type: 'unlock',
-            description: 'Débloque les évolutions de héros vers des raretés supérieures'
+            type: 'access',
+            description: 'Accès à l\'invocation et à l\'évolution de héros'
         }
     },
     'warehouse': {

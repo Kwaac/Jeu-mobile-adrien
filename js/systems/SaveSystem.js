@@ -65,8 +65,8 @@ export default class SaveSystem {
             // Données de l'équipe et unités
             party: this.game.partyManager.toJSON(),
 
-            // Progression des quêtes
-            quests: this.game.questSystem.toJSON(),
+            // Progression de l'histoire
+            story: this.game.storySystem.toJSON(),
 
             // Village et crafting
             village: this.game.villageSystem.toJSON(),
@@ -104,8 +104,13 @@ export default class SaveSystem {
                 this.game.partyManager.fromJSON(data.party);
             }
 
-            if (data.quests) {
-                this.game.questSystem.fromJSON(data.quests);
+            // Support ancien format (quests) et nouveau format (story)
+            if (data.story) {
+                this.game.storySystem.fromJSON(data.story);
+            } else if (data.quests) {
+                // Migration depuis l'ancien système de quêtes
+                console.log('[SaveSystem] Migrating from old quest system');
+                this.game.storySystem.fromJSON(null); // Initialise avec valeurs par défaut
             }
 
             // Restaurer le village et le crafting

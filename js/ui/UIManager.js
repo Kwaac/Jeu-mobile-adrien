@@ -11,6 +11,7 @@ export default class UIManager {
             SHOP: 'shop-screen',
             INVENTORY: 'inventory-screen',
             QUEST_SELECT: 'quest-screen',
+            STORY: 'story-screen',
             EVOLUTION: 'evolution-screen',
             GUILD: 'guild-screen',
             AUTH: 'auth-screen',
@@ -72,6 +73,13 @@ export default class UIManager {
                         <div class="menu-card-icon">⚔️</div>
                         <h3>Combat</h3>
                         <p>Partez en quête et affrontez vos ennemis</p>
+                    </div>
+                </div>
+                <div class="menu-card" id="card-story">
+                    <div class="menu-card-content">
+                        <div class="menu-card-icon">📖</div>
+                        <h3>Histoire</h3>
+                        <p>Progressez à travers 7 zones épiques</p>
                     </div>
                 </div>
                 <div class="menu-card" id="card-equip">
@@ -544,6 +552,36 @@ export default class UIManager {
         `;
         craftingScreen.style.display = 'none';
         this.uiLayer.appendChild(craftingScreen);
+
+        // Create Story Screen
+        const storyScreen = document.createElement('div');
+        storyScreen.id = 'story-screen';
+        storyScreen.className = 'screen story-screen';
+        storyScreen.innerHTML = `
+            <div class="story-header">
+                <h2>📖 Mode Histoire</h2>
+                <button class="story-back-btn" id="btn-story-back">Retour</button>
+            </div>
+            
+            <!-- Zone Selection View -->
+            <div class="zone-selection" id="zone-selection">
+                <div class="zones-grid" id="zones-grid">
+                    <!-- Zones will be injected here -->
+                </div>
+            </div>
+            
+            <!-- Stage Selection View -->
+            <div class="stage-selection" id="stage-selection">
+                <div class="zone-info" id="zone-info">
+                    <!-- Zone info will be injected here -->
+                </div>
+                <div class="stages-grid" id="stages-grid">
+                    <!-- Stages will be injected here -->
+                </div>
+            </div>
+        `;
+        storyScreen.style.display = 'none';
+        this.uiLayer.appendChild(storyScreen);
 
         this.bindEvents();
 
@@ -1100,6 +1138,31 @@ export default class UIManager {
         if (btnCraftingExit) {
             btnCraftingExit.addEventListener('click', () => {
                 this.showScreen(this.screens.MAIN_MENU);
+            });
+        }
+
+        // Story Mode Events
+        const cardStory = document.getElementById('card-story');
+        if (cardStory) {
+            cardStory.addEventListener('click', () => {
+                this.openStoryScreen();
+            });
+        }
+
+        const btnStoryBack = document.getElementById('btn-story-back');
+        if (btnStoryBack) {
+            btnStoryBack.addEventListener('click', () => {
+                // If in stage selection, go back to zone selection
+                const zoneSelection = document.getElementById('zone-selection');
+                const stageSelection = document.getElementById('stage-selection');
+
+                if (stageSelection && stageSelection.style.display !== 'none') {
+                    // Currently in stage selection, go back to zone selection
+                    this.updateStoryScreen();
+                } else {
+                    // Currently in zone selection, go back to main menu
+                    this.showScreen(this.screens.MAIN_MENU);
+                }
             });
         }
     }
@@ -3026,6 +3089,159 @@ export default class UIManager {
     /**
      * Formats time in seconds to readable format
      */
+    // ========== STORY MODE METHODS ==========
+
+    /**
+     * Opens the story screen and displays zones
+     */
+    openStoryScreen() {
+        this.showScreen(this.screens.STORY);
+        this.updateStoryScreen();
+    }
+
+    /**
+     * Updates the story screen (shows zone selection)
+     */
+    updateStoryScreen() {
+        // Show zone selection, hide stage selection
+        const zoneSelection = document.getElementById('zone-selection');
+        const stageSelection = document.getElementById('stage-selection');
+
+        if (zoneSelection) zoneSelection.style.display = 'block';
+        if (stageSelection) stageSelection.style.display = 'none';
+
+        this.renderZoneSelection();
+    }
+
+    /**
+     * Renders all zones with their unlock status
+     */
+    renderZoneSelection() {
+        const zonesGrid = document.getElementById('zones-grid');
+        if (!zonesGrid) return;
+
+        zonesGrid.innerHTML = '';
+
+        const zones = this.game.storySystem.getAllZonesWithStatus();
+
+        zones.forEach(zone => {
+            const zoneCard = document.createElement('div');
+            zoneCard.className = 'zone-card';
+            if (!zone.unlocked) zoneCard.classList.add('locked');
+            if (zone.progress.completed) zoneCard.classList.add('completed');
+
+            // Calculate progress
+            const stages = this.game.storySystem.getZoneStagesWithStatus(zone.id);
+            const completedStages = stages ? stages.filter(s => s.completed).length : 0;
+            const totalStages = 11; // 10 stages + 1 boss
+            const progressPercent = Math.floor((completedStages / totalStages) * 100);
+
+            zoneCard.innerHTML = `
+                <div class="zone-card-header">
+                    <span class="zone-number">Zone ${zone.id}</span>
+                    <span class="${zone.unlocked ? 'zone-unlock-icon' : 'zone-lock-icon'}">
+                        ${zone.unlocked ? '✓' : '🔒'}
+                    </span>
+                </div>
+                <h3 class="zone-card-title">${zone.name}</h3>
+                <p class="zone-card-description">${zone.description}</p>
+                <p class="zone-card-theme">${zone.theme}</p>
+                <div class="zone-card-progress">
+                    <div class="zone-progress-text">${completedStages} / ${totalStages} étapes</div>
+                    <div class="zone-progress-bar">
+                        <div class="zone-progress-fill" style="width: ${progressPercent}%"></div>
+                    </div>
+                </div>
+            `;
+
+            if (zone.unlocked) {
+                zoneCard.onclick = () => this.showZoneStages(zone.id);
+            }
+
+            zonesGrid.appendChild(zoneCard);
+        });
+    }
+
+    /**
+     * Shows the stages for a specific zone
+     */
+    showZoneStages(zoneId) {
+        const zoneSelection = document.getElementById('zone-selection');
+        const stageSelection = document.getElementById('stage-selection');
+
+        if (zoneSelection) zoneSelection.style.display = 'none';
+        if (stageSelection) stageSelection.style.display = 'block';
+
+        this.renderStageSelection(zoneId);
+    }
+
+    /**
+     * Renders the stages for a specific zone
+     */
+    renderStageSelection(zoneId) {
+        const zoneInfo = document.getElementById('zone-info');
+        const stagesGrid = document.getElementById('stages-grid');
+
+        if (!zoneInfo || !stagesGrid) return;
+
+        const zoneData = this.game.storySystem.getZoneData(zoneId);
+        const stages = this.game.storySystem.getZoneStagesWithStatus(zoneId);
+
+        if (!zoneData || !stages) return;
+
+        // Render zone info
+        zoneInfo.innerHTML = `
+            <div class="zone-info-header">
+                <h3 class="zone-info-title">${zoneData.name}</h3>
+                <span class="zone-info-energy">⚡ ${zoneData.energyCost} énergie/étape</span>
+            </div>
+            <p class="zone-info-description">${zoneData.description}</p>
+        `;
+
+        // Render stages
+        stagesGrid.innerHTML = '';
+
+        stages.forEach(stage => {
+            const stageCard = document.createElement('div');
+            stageCard.className = 'stage-card';
+            if (!stage.unlocked) stageCard.classList.add('locked');
+            if (stage.completed) stageCard.classList.add('completed');
+            if (stage.isBoss) stageCard.classList.add('boss');
+
+            const stageIcon = stage.isBoss ? '👹' : stage.unlocked ? '⚔️' : '🔒';
+
+            stageCard.innerHTML = `
+                <div class="stage-number">Étape ${stage.stageId}</div>
+                <div class="${stage.isBoss ? 'boss-icon' : 'stage-icon'}">${stageIcon}</div>
+                <h4 class="stage-name">${stage.name}</h4>
+                <p class="stage-energy">⚡ ${stage.energyCost}</p>
+            `;
+
+            if (stage.unlocked) {
+                stageCard.onclick = () => this.startStage(zoneId, stage.stageId);
+            }
+
+            stagesGrid.appendChild(stageCard);
+        });
+    }
+
+    /**
+     * Starts a specific stage
+     */
+    startStage(zoneId, stageId) {
+        console.log(`[UIManager] Starting Zone ${zoneId}, Stage ${stageId}`);
+
+        const success = this.game.storySystem.startStage(zoneId, stageId);
+
+        if (success) {
+            this.game.startBattle();
+        } else {
+            alert('Impossible de démarrer cette étape.');
+        }
+    }
+
+    // ========== END STORY MODE METHODS ==========
+
     formatTime(seconds) {
         if (seconds < 60) return `${seconds} s`;
         if (seconds < 3600) return `${Math.floor(seconds / 60)}m ${seconds % 60} s`;

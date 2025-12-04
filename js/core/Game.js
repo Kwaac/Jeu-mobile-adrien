@@ -1,6 +1,6 @@
 import BattleSystem from '../systems/BattleSystem.js?v=3';
 import EconomySystem from '../systems/EconomySystem.js';
-import QuestSystem from '../systems/QuestSystem.js';
+import StorySystem from '../systems/StorySystem.js';
 import LootManager from '../systems/LootManager.js';
 import PartyManager from '../systems/PartyManager.js';
 import EvolutionSystem from '../systems/EvolutionSystem.js';
@@ -42,7 +42,7 @@ export default class Game {
         this.economySystem = new EconomySystem(this);
         this.partyManager = new PartyManager(this);
         this.lootManager = new LootManager(this);
-        this.questSystem = new QuestSystem(this);
+        this.storySystem = new StorySystem(this);
         this.battleSystem = new BattleSystem(this);
         this.evolutionSystem = new EvolutionSystem(this);
         this.gachaSystem = new GachaSystem(this);

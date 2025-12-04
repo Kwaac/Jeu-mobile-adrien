@@ -308,7 +308,7 @@ export default class BattleSystem {
         });
 
         setTimeout(() => {
-            this.game.questSystem.nextWave();
+            this.game.storySystem.nextWave();
         }, 1500);
     }
 
