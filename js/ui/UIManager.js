@@ -504,9 +504,10 @@ export default class UIManager {
                     <span>Sortie</span>
                 </div>
                 <h2>🏘️ Village</h2>
-                <div class="village-resources">
-                    <!-- Resources will be injected here -->
-                </div>
+                <!-- Resources moved to separate container -->
+            </div>
+            <div class="village-resources-container">
+                <!-- Resources will be injected here -->
             </div>
             <div class="buildings-container">
                 <div class="buildings-grid">
@@ -522,7 +523,7 @@ export default class UIManager {
         craftingScreen.id = 'crafting-screen';
         craftingScreen.className = 'screen crafting-screen';
         craftingScreen.innerHTML = `
-            <div class="village-header">
+            < div class="village-header" >
                 <div class="shop-exit-btn" id="btn-crafting-exit">
                     <div class="door-icon">🚪</div>
                     <span>Sortie</span>
@@ -531,7 +532,7 @@ export default class UIManager {
                 <div class="village-resources">
                     <!-- Resources will be injected here -->
                 </div>
-            </div>
+            </div >
             <div class="crafting-container">
                 <div class="item-list">
                     <!-- Item list will be injected here -->
@@ -562,10 +563,10 @@ export default class UIManager {
         const allUnits = this.game.partyManager.getAllUnits();
 
         const partyCountEl = document.getElementById('party-count');
-        if (partyCountEl) partyCountEl.textContent = `(${party.length}/5)`;
+        if (partyCountEl) partyCountEl.textContent = `(${party.length} / 5)`;
 
         const totalCountEl = document.getElementById('total-hero-count');
-        if (totalCountEl) totalCountEl.textContent = `(${allUnits.length}/50)`;
+        if (totalCountEl) totalCountEl.textContent = `(${allUnits.length} / 50)`;
     }
 
     renderPartySlots() {
@@ -585,19 +586,19 @@ export default class UIManager {
             if (unit) {
                 // Filled slot
                 slotEl.classList.add('filled');
-                slotEl.classList.add(`rarity-${unit.rarity || 1}`);
+                slotEl.classList.add(`rarity - ${unit.rarity || 1} `);
                 const colors = {
                     'fire': '#e74c3c', 'water': '#3498db', 'earth': '#27ae60',
                     'thunder': '#f39c12', 'light': '#ecf0f1', 'dark': '#34495e', 'none': '#95a5a6'
                 };
 
                 slotEl.innerHTML = `
-                    <img class="hero-avatar" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Crect width='80' height='80' fill='${encodeURIComponent(colors[unit.element] || colors['none'])}'/%3E%3C/svg%3E" alt="${unit.name}">
+            < img class="hero-avatar" src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Crect width='80' height='80' fill='${encodeURIComponent(colors[unit.element] || colors['none'])}'/%3E%3C/svg%3E" alt = "${unit.name}" >
                     <div class="hero-name">${unit.name}</div>
                     <div class="hero-level">Niv. ${unit.level}</div>
                     <div class="hero-stars">${unit.getRarityStars()}</div>
                     <button class="remove-btn" title="Retirer">✖</button>
-                `;
+        `;
 
                 // Remove button handler
                 const removeBtn = slotEl.querySelector('.remove-btn');
@@ -616,9 +617,9 @@ export default class UIManager {
                 // Empty slot
                 slotEl.classList.add('empty');
                 slotEl.innerHTML = `
-                    <div style="font-size: 2em; opacity: 0.3;">+</div>
-                    <div class="hero-name" style="color: #666;">Vide</div>
-                `;
+            < div style = "font-size: 2em; opacity: 0.3;" > +</div >
+                <div class="hero-name" style="color: #666;">Vide</div>
+        `;
             }
 
             partyContainer.appendChild(slotEl);
@@ -644,10 +645,10 @@ export default class UIManager {
 
         availableUnits.forEach((unit, index) => {
             // TEMP: Force rarity 7 for the first unit for verification
-            if (index === 0) unit.rarity = 7;
+            // if (index === 0) unit.rarity = 7;
 
             const unitCard = document.createElement('div');
-            unitCard.className = `hero-card-compact rarity-${unit.rarity || 1}`;
+            unitCard.className = `hero - card - compact rarity - ${unit.rarity || 1} `;
 
             const colors = {
                 'fire': '#e74c3c', 'water': '#3498db', 'earth': '#27ae60',
@@ -655,11 +656,11 @@ export default class UIManager {
             };
 
             unitCard.innerHTML = `
-                <div class="hero-avatar" style="background-color: ${colors[unit.element] || colors['none']}"></div>
+            < div class="hero-avatar" style = "background-color: ${colors[unit.element] || colors['none']}" ></div >
                 <div class="hero-name">${unit.name}</div>
                 <div class="hero-level">Niv. ${unit.level}</div>
                 <div class="hero-stars">${unit.getRarityStars()}</div>
-            `;
+        `;
 
             unitCard.onclick = () => {
                 const result = this.game.partyManager.addToParty(unit);
@@ -719,8 +720,8 @@ export default class UIManager {
             : '';
 
         card.innerHTML = `
-            <div class="char-name">${unit.name}</div>
-            <div class="char-element">${unit.element} ${unit.getRarityStars()}</div>
+            < div class="char-name" > ${unit.name}</div >
+                <div class="char-element">${unit.element} ${unit.getRarityStars()}</div>
             ${evolutionBadge}
         `;
 
@@ -783,14 +784,14 @@ export default class UIManager {
         const maxHp = unit.getStat('maxHp');
 
         const evolutionButton = unit.canEvolve()
-            ? `<button id="btn-evolve-unit" class="btn-evolve" style="margin-top: 16px; width: 100%;">🌟 Évoluer (${unit.getRarityStars()} → ${'★'.repeat(unit.currentRarity + 1)})</button>`
+            ? `< button id = "btn-evolve-unit" class="btn-evolve" style = "margin-top: 16px; width: 100%;" >🌟 Évoluer(${unit.getRarityStars()} → ${'★'.repeat(unit.currentRarity + 1)})</button > `
             : '';
 
         statsDisplay.innerHTML = `
-            <div class="stat-row level-row">
+            < div class="stat-row level-row" >
                 <span class="stat-label">⭐ Niveau :</span>
                 <span class="stat-value">${unit.level}</span>
-            </div>
+            </div >
             <div class="stat-row xp-row">
                 <span class="stat-label">📊 XP :</span>
                 <span class="stat-value">${unit.xp} / ${unit.xpToNextLevel}</span>
@@ -833,15 +834,15 @@ export default class UIManager {
         const equipment = unit.getEquipment();
 
         ['weapon', 'armor', 'accessory'].forEach(slot => {
-            const slotEl = document.getElementById(`slot-${slot}`);
-            const unequipBtn = document.querySelector(`.btn-unequip[data-slot="${slot}"]`);
+            const slotEl = document.getElementById(`slot - ${slot} `);
+            const unequipBtn = document.querySelector(`.btn - unequip[data - slot="${slot}"]`);
 
             if (equipment[slot]) {
                 const statsStr = this.getItemStatsString(equipment[slot]);
                 slotEl.innerHTML = `
-                    <div class="equipped-name">${equipment[slot].name}</div>
-                    <div class="equipped-desc">${statsStr}</div>
-                `;
+            < div class="equipped-name" > ${equipment[slot].name}</div >
+                <div class="equipped-desc">${statsStr}</div>
+        `;
                 slotEl.classList.add('equipped');
                 unequipBtn.style.display = 'inline-block';
                 unequipBtn.onclick = () => {
@@ -873,10 +874,10 @@ export default class UIManager {
             itemCard.className = 'inventory-item';
             const statsStr = this.getItemStatsString(item);
             itemCard.innerHTML = `
-                <div class="item-name">${item.name}</div>
+            < div class="item-name" > ${item.name}</div >
                 <div class="item-desc">${statsStr}</div>
                 <div class="item-type">${item.type}</div>
-            `;
+        `;
 
             itemCard.addEventListener('click', () => {
                 if (unit.equip(item)) {
@@ -892,9 +893,9 @@ export default class UIManager {
     getItemStatsString(item) {
         if (!item || !item.stats) return '';
         const stats = [];
-        if (item.stats.atk) stats.push(`ATK +${item.stats.atk}`);
-        if (item.stats.def) stats.push(`DEF +${item.stats.def}`);
-        if (item.stats.maxHp) stats.push(`HP +${item.stats.maxHp}`);
+        if (item.stats.atk) stats.push(`ATK + ${item.stats.atk} `);
+        if (item.stats.def) stats.push(`DEF + ${item.stats.def} `);
+        if (item.stats.maxHp) stats.push(`HP + ${item.stats.maxHp} `);
         return stats.join(', ');
     }
 
@@ -911,15 +912,15 @@ export default class UIManager {
             el.style.alignItems = 'center';
 
             el.innerHTML = `
-                <div>
+            < div >
                     <h3>${quest.name}</h3>
                     <p>${quest.description}</p>
-                </div>
-                <button>Commencer (${quest.energyCost} Énergie)</button>
-            `;
+                </div >
+            <button>Commencer (${quest.energyCost} Énergie)</button>
+        `;
 
             el.querySelector('button').addEventListener('click', () => {
-                console.log(`Clic sur commencer la quête : ${quest.name}`);
+                console.log(`Clic sur commencer la quête: ${quest.name} `);
                 this.game.startBattle();
                 this.game.questSystem.startQuest(quest.id);
             });
@@ -1157,8 +1158,8 @@ export default class UIManager {
         const el = document.createElement('div');
         el.textContent = amount;
         el.style.position = 'absolute';
-        el.style.left = `${x + 20}px`;
-        el.style.top = `${y}px`;
+        el.style.left = `${x + 20} px`;
+        el.style.top = `${y} px`;
         el.style.color = color;
         el.style.fontSize = '24px';
         el.style.fontWeight = 'bold';
@@ -1171,11 +1172,11 @@ export default class UIManager {
             const style = document.createElement('style');
             style.id = 'anim-style';
             style.textContent = `
-                @keyframes floatUp {
-                    0% { transform: translateY(0); opacity: 1; }
-                    100% { transform: translateY(-50px); opacity: 0; }
-                }
-            `;
+        @keyframes floatUp {
+            0 % { transform: translateY(0); opacity: 1; }
+            100 % { transform: translateY(-50px); opacity: 0; }
+        }
+        `;
             document.head.appendChild(style);
         }
 
@@ -1202,12 +1203,12 @@ export default class UIManager {
             const style = document.createElement('style');
             style.id = 'msg-anim-style';
             style.textContent = `
-                @keyframes fadeOut {
-                    0% { opacity: 1; transform: scale(1); }
-                    80% { opacity: 1; transform: scale(1.1); }
-                    100% { opacity: 0; transform: scale(1.2); }
-                }
-            `;
+        @keyframes fadeOut {
+            0 % { opacity: 1; transform: scale(1); }
+            80 % { opacity: 1; transform: scale(1.1); }
+            100 % { opacity: 0; transform: scale(1.2); }
+        }
+        `;
             document.head.appendChild(style);
         }
 
@@ -1234,7 +1235,7 @@ export default class UIManager {
 
         // Display current unit stats
         beforeDiv.innerHTML = `
-            <div class="unit-preview">
+            < div class="unit-preview" >
                 <h4>${unit.name}</h4>
                 <p class="rarity-stars">${unit.getRarityStars()}</p>
                 <p>Niveau ${unit.level}</p>
@@ -1243,8 +1244,8 @@ export default class UIManager {
                     <p>ATK: ${unit.atk}</p>
                     <p>DEF: ${unit.def}</p>
                 </div>
-            </div>
-        `;
+            </div >
+            `;
 
         // Check if evolution is possible
         const check = this.game.evolutionSystem.canPerformEvolution(unit);
@@ -1253,7 +1254,7 @@ export default class UIManager {
             // Show preview of evolved stats
             const preview = this.game.evolutionSystem.getEvolutionPreview(unit);
             afterDiv.innerHTML = `
-                <div class="unit-preview">
+            < div class="unit-preview" >
                     <h4>${unit.name}</h4>
                     <p class="rarity-stars">${'★'.repeat(preview.nextRarity)}</p>
                     <p>Niveau 1</p>
@@ -1262,32 +1263,32 @@ export default class UIManager {
                         <p>ATK: ${preview.nextStats.atk} <span class="stat-increase">+${preview.nextStats.atk - preview.currentStats.atk}</span></p>
                         <p>DEF: ${preview.nextStats.def} <span class="stat-increase">+${preview.nextStats.def - preview.currentStats.def}</span></p>
                     </div>
-                </div>
+                </div >
             `;
 
             // Show materials
             materialsDiv.innerHTML = `
-                <p>✓ 2 Duplicatas disponibles</p>
-            `;
+            < p >✓ 2 Duplicatas disponibles</p >
+                `;
 
             // Show cost
             costDiv.innerHTML = `
-                <p>💰 Coût: ${check.cost.toLocaleString()} Or</p>
-            `;
+                < p >💰 Coût: ${check.cost.toLocaleString()} Or</p >
+                    `;
 
             // Enable button
             evolveBtn.disabled = false;
         } else {
             // Show why evolution is not possible
             afterDiv.innerHTML = `
-                <div class="unit-preview">
-                    <p>Évolution impossible</p>
-                </div>
+                    < div class="unit-preview" >
+                        <p>Évolution impossible</p>
+                </div >
             `;
 
             materialsDiv.innerHTML = `
-                <p class="error">✗ ${check.reason}</p>
-            `;
+            < p class="error" >✗ ${check.reason}</p >
+                `;
 
             costDiv.innerHTML = '';
             evolveBtn.disabled = true;
@@ -1389,7 +1390,7 @@ export default class UIManager {
 
         // Update main display
         this.updateHeroEquipmentDisplay(unit);
-        console.log(`Héros sélectionné: ${unit.name}`);
+        console.log(`Héros sélectionné: ${unit.name} `);
     }
 
     updateHeroEquipmentDisplay(unit) {
@@ -1410,7 +1411,7 @@ export default class UIManager {
         // Update Slots
         const slots = ['weapon', 'armor', 'accessory'];
         slots.forEach(slot => {
-            const slotEl = document.getElementById(`rpg-slot-${slot}`);
+            const slotEl = document.getElementById(`rpg - slot - ${slot} `);
             if (!slotEl) return;
 
             const itemImg = slotEl.querySelector('.slot-item-img');
@@ -1435,7 +1436,7 @@ export default class UIManager {
                 slotEl.onclick = () => {
                     this.unequipItemFromHero(unit, slot);
                 };
-                slotEl.title = `${item.name} (Niv. ${item.level || 1}) - Cliquez pour déséquiper`;
+                slotEl.title = `${item.name} (Niv.${item.level || 1}) - Cliquez pour déséquiper`;
                 slotEl.classList.add('equipped');
             } else {
                 // Empty slot
@@ -1466,10 +1467,10 @@ export default class UIManager {
             const hpBonus = totalHp - baseHp;
 
             statsEl.innerHTML = `
-                <div class="rpg-stat-row">
+            < div class="rpg-stat-row" >
                     <span class="rpg-stat-label">HP</span>
                     <span class="rpg-stat-value">${totalHp} ${hpBonus > 0 ? `<span class="rpg-stat-bonus">(+${hpBonus})</span>` : ''}</span>
-                </div>
+                </div >
                 <div class="rpg-stat-row">
                     <span class="rpg-stat-label">ATK</span>
                     <span class="rpg-stat-value">${totalAtk} ${atkBonus > 0 ? `<span class="rpg-stat-bonus">(+${atkBonus})</span>` : ''}</span>
@@ -1478,7 +1479,7 @@ export default class UIManager {
                     <span class="rpg-stat-label">DEF</span>
                     <span class="rpg-stat-value">${totalDef} ${defBonus > 0 ? `<span class="rpg-stat-bonus">(+${defBonus})</span>` : ''}</span>
                 </div>
-            `;
+        `;
         }
     }
 
@@ -1563,12 +1564,12 @@ export default class UIManager {
             if (item.type === 'accessory') icon = '💍';
 
             itemCard.innerHTML = `
-                <div class="rpg-item-icon">${icon}</div>
+            < div class="rpg-item-icon" > ${icon}</div >
                 <div class="rpg-item-level">Niv.${item.level || 1}</div>
-            `;
+        `;
 
             // Add tooltip
-            itemCard.title = `${item.name}\n${item.type.toUpperCase()}\n${this.getItemStatsString(item)}\n${item.description || ''}`;
+            itemCard.title = `${item.name} \n${item.type.toUpperCase()} \n${this.getItemStatsString(item)} \n${item.description || ''} `;
 
             // Add click event to equip on selected hero
             itemCard.addEventListener('click', () => {
@@ -1592,7 +1593,7 @@ export default class UIManager {
 
         const beforeEl = document.getElementById('evo-before');
         beforeEl.innerHTML = `
-            <div class="character-card">
+            < div class="character-card" >
                 <div class="char-name">${unit.name}</div>
                 <div class="char-element">${unit.element} ${unit.getRarityStars()}</div>
                 <div class="char-stats">
@@ -1606,7 +1607,7 @@ export default class UIManager {
         const afterEl = document.getElementById('evo-after');
         if (preview) {
             afterEl.innerHTML = `
-                <div class="character-card">
+            < div class="character-card" >
                     <div class="char-name">${unit.name}</div>
                     <div class="char-element">${unit.element} ${'⭐'.repeat(preview.nextRarity)}</div>
                     <div class="char-stats">
@@ -1615,7 +1616,7 @@ export default class UIManager {
                         DEF: <span class="stat-boost">${preview.nextStats.def} (+${preview.nextStats.def - unit.def})</span>
                     </div>
                 </div>
-            `;
+        `;
         } else {
             afterEl.innerHTML = '<p>Évolution impossible</p>';
         }
@@ -1638,9 +1639,9 @@ export default class UIManager {
                 const el = document.createElement('div');
                 el.className = 'material-card';
                 el.innerHTML = `
-                    <div class="char-name">${dup.name}</div>
-                    <div class="char-level">Niv. ${dup.level}</div>
-                `;
+            < div class="char-name" > ${dup.name}</div >
+                <div class="char-level">Niv. ${dup.level}</div>
+        `;
                 // Auto-select first 2
                 if (this.selectedMaterials.length < 2) {
                     this.selectedMaterials.push(dup);
@@ -1673,7 +1674,7 @@ export default class UIManager {
         const success = this.game.evolutionSystem.evolveUnit(unit, this.selectedMaterials);
 
         if (success) {
-            alert(`Félicitations ! ${unit.name} a évolué !`);
+            alert(`Félicitations! ${unit.name} a évolué!`);
             this.showScreen(this.screens.EQUIPMENT); // Return to team screen
             this.updateEquipmentScreen(); // Refresh
         } else {
@@ -1700,7 +1701,7 @@ export default class UIManager {
         document.querySelectorAll('.guild-tab-content').forEach(content => {
             content.classList.remove('active');
         });
-        document.getElementById(`tab-${activeTab}`).classList.add('active');
+        document.getElementById(`tab - ${activeTab} `).classList.add('active');
 
 
 
@@ -1797,11 +1798,11 @@ export default class UIManager {
         units.forEach(unit => {
             const color = colors[unit.element] || '#95a5a6';
             html += `
-                <div style="background: ${color}; padding: 10px; border-radius: 8px; text-align: center;">
+            < div style = "background: ${color}; padding: 10px; border-radius: 8px; text-align: center;" >
                     <div style="font-size: 2em;">${unit.getAvatar()}</div>
                     <div style="font-size: 0.8em; margin-top: 5px;">${unit.name}</div>
                     <div style="color: #ffd700; font-size: 0.9em;">${unit.getRarityStars()}</div>
-                </div>
+                </div >
             `;
         });
 
@@ -1823,7 +1824,7 @@ export default class UIManager {
         };
 
         resultCard.innerHTML = `
-            <div class="summon-flash"></div>
+            < div class="summon-flash" ></div >
             <div class="hero-avatar-large" style="background-color: ${colors[unit.element]}; width: 100px; height: 100px; margin: 0 auto 15px;"></div>
             <h2>${unit.name}</h2>
             <div style="color: #ffd700; font-size: 1.5em; margin-bottom: 10px;">${unit.getRarityStars()}</div>
@@ -1895,15 +1896,15 @@ export default class UIManager {
             else if (item.level >= 6) tierClass = 'tier3';
             else if (item.level >= 3) tierClass = 'tier2';
 
-            el.classList.add(`rarity-${rarityClass}`);
+            el.classList.add(`rarity - ${rarityClass} `);
 
             el.innerHTML = `
-                <div class="item-icon">${icon}</div>
+            < div class="item-icon" > ${icon}</div >
                 <div class="item-info">
                     <div class="item-name">${item.name}</div>
                     <div class="item-level ${tierClass}">+${item.level}</div>
                 </div>
-            `;
+        `;
             el.onclick = () => this.selectBlacksmithItem(item);
             list.appendChild(el);
         });
@@ -1931,20 +1932,20 @@ export default class UIManager {
         for (let key in item.stats) {
             const bonus = this.game.blacksmithSystem.getStatBonus(item.level + 1, key);
             const bonusText = bonus.type === 'percent'
-                ? `+${Math.floor(bonus.value * 100)}%`
-                : `+${bonus.value}`;
+                ? `+ ${Math.floor(bonus.value * 100)}% `
+                : `+ ${bonus.value} `;
 
-            statsHtml += `<div>${key.toUpperCase()}: ${item.stats[key]} → <span class="stat-boost">${nextStats[key]}</span> <span class="bonus-indicator">(${bonusText})</span></div>`;
+            statsHtml += `< div > ${key.toUpperCase()}: ${item.stats[key]} → <span class="stat-boost">${nextStats[key]}</span> <span class="bonus-indicator">(${bonusText})</span></div > `;
         }
 
         const tierBadge = isTierUp
-            ? `<span class="tier-up-badge">🌟 PALIER ${nextTier} 🌟</span>`
+            ? `< span class="tier-up-badge" >🌟 PALIER ${nextTier} 🌟</span > `
             : '';
 
         previewEl.innerHTML = `
-            <h3>${item.name} +${item.level} → +${item.level + 1}</h3>
-            ${tierBadge}
-            <div class="upgrade-stats">${statsHtml}</div>
+            < h3 > ${item.name} +${item.level} → +${item.level + 1}</h3 >
+                ${tierBadge}
+        <div class="upgrade-stats">${statsHtml}</div>
         `;
 
         // Check Requirements
@@ -1959,13 +1960,13 @@ export default class UIManager {
                 // Auto-select first material
                 this.selectedBlacksmithMaterial = materials[0];
                 materialSlot.innerHTML = `
-                    <div class="material-card selected">
+            < div class="material-card selected" >
                         <div class="item-name">${this.selectedBlacksmithMaterial.name}</div>
                         <div class="item-level">+${this.selectedBlacksmithMaterial.level}</div>
-                    </div>
-                `;
+                    </div >
+            `;
             } else {
-                materialSlot.innerHTML = `<p class="error-text">Aucun doublon +${item.level} trouvé</p>`;
+                materialSlot.innerHTML = `< p class="error-text" > Aucun doublon + ${item.level} trouvé</p > `;
             }
         } else {
             materialsSection.style.display = 'none';
@@ -2059,14 +2060,14 @@ export default class UIManager {
 
                 let statsHtml = '';
                 for (let key in itemData.stats) {
-                    statsHtml += `<div>${key.toUpperCase()}: +${itemData.stats[key]}</div>`;
+                    statsHtml += `< div > ${key.toUpperCase()}: +${itemData.stats[key]}</div > `;
                 }
 
                 el.innerHTML = `
-                    <div class="item-name">${itemData.name}</div>
+            < div class="item-name" > ${itemData.name}</div >
                     <div class="item-type">${itemData.slot}</div>
                     <div class="item-stats">${statsHtml}</div>
-                `;
+        `;
 
                 const priceLabel = document.createElement('div');
                 priceLabel.className = 'special-price-label';
@@ -2093,17 +2094,17 @@ export default class UIManager {
 
             let statsHtml = '';
             for (let key in item.stats) {
-                statsHtml += `<div>${key.toUpperCase()}: +${item.stats[key]}</div>`;
+                statsHtml += `< div > ${key.toUpperCase()}: +${item.stats[key]}</div > `;
             }
 
-            const levelText = item.level > 0 ? ` +${item.level}` : '';
+            const levelText = item.level > 0 ? ` + ${item.level} ` : '';
             const sellPrice = item.level > 0 ? item.level * 50 : 10; // Base price 10 for level 0, 50 per level
             el.innerHTML = `
-                <div class="item-name">${item.name}${levelText}</div>
+            < div class="item-name" > ${item.name}${levelText}</div >
                 <div class="item-type">${item.type || item.slot}</div>
                 <div class="item-stats">${statsHtml}</div>
                 <div class="sell-price">Vendre: ${sellPrice} Or</div>
-            `;
+        `;
 
             // Make card clickable to sell
             el.addEventListener('click', () => {
@@ -2135,14 +2136,14 @@ export default class UIManager {
 
             let statsHtml = '';
             for (let key in itemData.stats) {
-                statsHtml += `<div>${key.toUpperCase()}: +${itemData.stats[key]}</div>`;
+                statsHtml += `< div > ${key.toUpperCase()}: +${itemData.stats[key]}</div > `;
             }
 
             el.innerHTML = `
-                <div class="item-name">${itemData.name}</div>
+            < div class="item-name" > ${itemData.name}</div >
                 <div class="item-type">${itemData.slot}</div>
                 <div class="item-stats">${statsHtml}</div>
-            `;
+        `;
 
             const priceLabel = document.createElement('div');
             priceLabel.className = 'buy-price-label';
@@ -2164,7 +2165,7 @@ export default class UIManager {
         const maxInventory = this.game.economySystem.maxInventorySize;
         const shopTitles = document.querySelectorAll('#tab-shop h3');
         if (shopTitles[0]) {
-            shopTitles[0].innerHTML = `Votre Inventaire <span style="color: ${inventoryCount >= maxInventory * 0.8 ? '#e74c3c' : '#2ecc71'}; font-size: 0.8em;">(${inventoryCount}/${maxInventory})</span>`;
+            shopTitles[0].innerHTML = `Votre Inventaire < span style = "color: ${inventoryCount >= maxInventory * 0.8 ? '#e74c3c' : '#2ecc71'}; font-size: 0.8em;" > (${inventoryCount} /${maxInventory})</span > `;
         }
 
         // Update gold display
@@ -2203,8 +2204,8 @@ export default class UIManager {
             this.updateResourceDisplay();
             this.updateShopScreen(); // IMPORTANT: Refresh shop to show new item
 
-            console.log(`Acheté: ${itemData.name}`);
-            this.showShopModal(`${itemData.name} acheté !`, 'success');
+            console.log(`Acheté: ${itemData.name} `);
+            this.showShopModal(`${itemData.name} acheté!`, 'success');
         });
     }
 
@@ -2224,7 +2225,7 @@ export default class UIManager {
 
         // Show custom confirmation modal
         this.showShopConfirm(
-            `Vendre ${item.name}${item.level > 0 ? ' +' + item.level : ''} pour ${sellPrice} Or ?`,
+            `Vendre ${item.name}${item.level > 0 ? ' +' + item.level : ''} pour ${sellPrice} Or ? `,
             () => {
                 // Remove from inventory
                 this.game.economySystem.inventory.splice(index, 1);
@@ -2237,7 +2238,7 @@ export default class UIManager {
                 this.updateShopScreen();
 
                 console.log(`Vendu: ${item.name} pour ${sellPrice} Or`);
-                this.showShopModal(`${item.name} vendu pour ${sellPrice} Or !`, 'success');
+                this.showShopModal(`${item.name} vendu pour ${sellPrice} Or!`, 'success');
             }
         );
     }
@@ -2246,11 +2247,11 @@ export default class UIManager {
         const modal = document.createElement('div');
         modal.className = 'shop-modal';
         modal.innerHTML = `
-            <div class="shop-modal-content ${type}">
+            < div class="shop-modal-content ${type}" >
                 <p>${message}</p>
                 <button class="shop-modal-btn">OK</button>
-            </div>
-        `;
+            </div >
+            `;
         document.body.appendChild(modal);
 
         const btn = modal.querySelector('.shop-modal-btn');
@@ -2268,14 +2269,14 @@ export default class UIManager {
         const modal = document.createElement('div');
         modal.className = 'shop-modal';
         modal.innerHTML = `
-            <div class="shop-modal-content confirm">
+            < div class="shop-modal-content confirm" >
                 <p>${message}</p>
                 <div class="shop-modal-buttons">
                     <button class="shop-modal-btn cancel">Annuler</button>
                     <button class="shop-modal-btn confirm">Confirmer</button>
                 </div>
-            </div>
-        `;
+            </div >
+            `;
         document.body.appendChild(modal);
 
         const cancelBtn = modal.querySelector('.cancel');
@@ -2308,6 +2309,7 @@ export default class UIManager {
         if (!authScreen) {
             authScreen = this.createAuthScreen();
             this.uiLayer.appendChild(authScreen);
+            this.bindAuthEvents(authScreen);
         }
 
         // Hide all other screens
@@ -2340,7 +2342,7 @@ export default class UIManager {
                     <button class="auth-tab" data-tab="register">Inscription</button>
                 </div>
 
-                <!-- Error/Success Messages -->
+                <!-- Error / Success Messages -->
                 <div class="auth-error" id="auth-error"></div>
                 <div class="auth-success" id="auth-success"></div>
 
@@ -2383,11 +2385,8 @@ export default class UIManager {
                         Continuer sans compte
                     </button>
                 </div>
-            </div>
-        `;
-
-        // Bind events
-        this.bindAuthEvents(authScreen);
+            </div >
+            `;
 
         return authScreen;
     }
@@ -2419,24 +2418,30 @@ export default class UIManager {
 
         // Login form
         const loginForm = authScreen.querySelector('#login-form');
-        loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            await this.handleLogin();
-        });
+        if (loginForm) {
+            loginForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                await this.handleLogin();
+            });
+        }
 
         // Register form
         const registerForm = authScreen.querySelector('#register-form');
-        registerForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            await this.handleRegister();
-        });
+        if (registerForm) {
+            registerForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                await this.handleRegister();
+            });
+        }
 
         // Guest button
         const guestBtn = authScreen.querySelector('#btn-guest');
-        guestBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            this.showScreen(this.screens.MAIN_MENU);
-        });
+        if (guestBtn) {
+            guestBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.showScreen(this.screens.MAIN_MENU);
+            });
+        }
     }
 
     /**
@@ -2556,16 +2561,16 @@ export default class UIManager {
         notification.className = 'notification';
         notification.textContent = message;
         notification.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: rgba(46, 204, 113, 0.9);
-            color: white;
-            padding: 15px 25px;
-            border-radius: 10px;
-            font-weight: bold;
-            z-index: 10000;
-            animation: slideIn 0.3s ease;
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: rgba(46, 204, 113, 0.9);
+        color: white;
+        padding: 15px 25px;
+        border - radius: 10px;
+        font - weight: bold;
+        z - index: 10000;
+        animation: slideIn 0.3s ease;
         `;
         document.body.appendChild(notification);
 
@@ -2601,7 +2606,7 @@ export default class UIManager {
      * Updates village resources display
      */
     updateVillageResources() {
-        const container = document.querySelector('.village-resources');
+        const container = document.querySelector('.village-resources-container');
         if (!container) return;
 
         const resources = this.game.economySystem.resources;
@@ -2609,18 +2614,22 @@ export default class UIManager {
         container.innerHTML = `
             <div class="resource-display">
                 <span class="resource-icon">💰</span>
+                <span class="resource-label">Or</span>
                 <span class="resource-amount">${resources.gold.toLocaleString()}</span>
             </div>
             <div class="resource-display">
                 <span class="resource-icon">💎</span>
+                <span class="resource-label">Cristaux</span>
                 <span class="resource-amount">${resources.crystals.toLocaleString()}</span>
             </div>
             <div class="resource-display">
                 <span class="resource-icon">⚗️</span>
+                <span class="resource-label">Essences</span>
                 <span class="resource-amount">${resources.essences.toLocaleString()}</span>
             </div>
             <div class="resource-display">
                 <span class="resource-icon">🔮</span>
+                <span class="resource-label">Fragments</span>
                 <span class="resource-amount">${resources.fragments.toLocaleString()}</span>
             </div>
         `;
@@ -2658,14 +2667,14 @@ export default class UIManager {
                 const production = getProduction(buildingId, buildingState.level);
                 const resourceIcon = buildingData.benefits.resource === 'crystals' ? '💎' :
                     buildingData.benefits.resource === 'essences' ? '⚗️' : '💰';
-                productionHtml = `<div class="building-production">${resourceIcon} +${production}/h</div>`;
+                productionHtml = `< div class="building-production" > ${resourceIcon} +${production} /h</div > `;
             }
 
             // Timer if upgrading
             let timerHtml = '';
             if (buildingState.isUpgrading) {
                 const remaining = this.game.villageSystem.getRemainingUpgradeTime(buildingId);
-                timerHtml = `<div class="building-timer">${this.formatTime(remaining)}</div>`;
+                timerHtml = `< div class="building-timer" > ${this.formatTime(remaining)}</div > `;
             }
 
             // Collect button if has resources
@@ -2678,13 +2687,13 @@ export default class UIManager {
             }
 
             card.innerHTML = `
-                <div class="building-icon">${buildingData.icon}</div>
+            <div class="building-icon">${buildingData.icon}</div>
                 <div class="building-name">${buildingData.name}</div>
                 <div class="building-level">Niveau ${buildingState.level}/${buildingData.maxLevel}</div>
                 ${productionHtml}
                 ${timerHtml}
                 ${collectHtml}
-            `;
+        `;
 
             // Click handlers
             if (collectHtml) {
@@ -2696,7 +2705,7 @@ export default class UIManager {
             }
 
             card.onclick = () => {
-                if (buildingState.level > 0 || buildingId === 'town_hall') {
+                if (buildingState.level > 0 || buildingId === 'town_hall' || buildingId === 'sanctuary' || buildingId === 'forge') {
                     this.openBuildingDetail(buildingId);
                 }
             };
@@ -2714,7 +2723,7 @@ export default class UIManager {
             const { BUILDING_DATABASE } = await import('../data/BuildingDatabase.js');
             const buildingData = BUILDING_DATABASE[buildingId];
             const resourceName = buildingData.benefits.resource;
-            this.showNotification(`+${amount} ${resourceName} collectés !`);
+            this.showNotification(`+ ${amount} ${resourceName} collectés!`);
             this.updateVillageScreen();
         }
     }
@@ -2745,15 +2754,15 @@ export default class UIManager {
             const nextCap = getCapacity(buildingId, buildingState.level + 1);
 
             statsHtml = `
-                <div class="stat-row">
+            < div class="stat-row" >
                     <span class="stat-label">Production/h</span>
                     <span class="stat-value">${currentProd} → ${nextProd}</span>
-                </div>
-                <div class="stat-row">
-                    <span class="stat-label">Capacité</span>
-                    <span class="stat-value">${currentCap} → ${nextCap}</span>
-                </div>
-            `;
+                </div >
+            <div class="stat-row">
+                <span class="stat-label">Capacité</span>
+                <span class="stat-value">${currentCap} → ${nextCap}</span>
+            </div>
+        `;
         }
 
         // Build cost HTML
@@ -2761,32 +2770,34 @@ export default class UIManager {
         const resources = this.game.economySystem.resources;
         if (buildingState.level < buildingData.maxLevel) {
             costHtml = `
-                <div class="upgrade-cost">
+            < div class="upgrade-cost" >
                     <div class="cost-title">Coût d'amélioration</div>
                     <div class="cost-item ${resources.gold >= cost.gold ? '' : 'insufficient'}">
                         💰 Or: ${cost.gold.toLocaleString()}
                     </div>
                     ${cost.crystals > 0 ? `<div class="cost-item ${resources.crystals >= cost.crystals ? '' : 'insufficient'}">
                         💎 Cristaux: ${cost.crystals.toLocaleString()}
-                    </div>` : ''}
+                    </div>` : ''
+                }
                     ${cost.essences > 0 ? `<div class="cost-item ${resources.essences >= cost.essences ? '' : 'insufficient'}">
                         ⚗️ Essences: ${cost.essences.toLocaleString()}
-                    </div>` : ''}
-                    <div class="cost-item">
-                        ⏱️ Temps: ${this.formatTime(upgradeTime)}
-                    </div>
-                </div>
+                    </div>` : ''
+                }
+        <div class="cost-item">
+            ⏱️ Temps: ${this.formatTime(upgradeTime)}
+        </div>
+                </div >
             `;
         }
 
         modal.innerHTML = `
-            <div class="modal-header">
+            < div class="modal-header" >
                 <div class="modal-title">
                     <span>${buildingData.icon}</span>
                     ${buildingData.name}
                 </div>
                 <button class="modal-close">✖</button>
-            </div>
+            </div >
             <div class="building-description">${buildingData.description}</div>
             <div class="building-stats">
                 <div class="stat-row">
@@ -2800,7 +2811,10 @@ export default class UIManager {
                 <button class="upgrade-button" ${!canUpgrade ? 'disabled' : ''}>
                     ${buildingState.isUpgrading ? 'En cours...' : 'Améliorer'}
                 </button>
-            ` : '<p style="text-align: center; color: #ffd700;">✨ Niveau maximum atteint !</p>'}
+            ` : '<p style="text-align: center; color: #ffd700;">✨ Niveau maximum atteint !</p>'
+            }
+            
+            ${this.getBuildingActionButtons(buildingId)}
         `;
 
         document.body.appendChild(modal);
@@ -2813,9 +2827,22 @@ export default class UIManager {
         if (upgradeBtn && !upgradeBtn.disabled) {
             upgradeBtn.onclick = () => {
                 if (this.game.villageSystem.upgradeBuilding(buildingId)) {
-                    this.showNotification(`${buildingData.name} amélioration démarrée !`);
+                    this.showNotification(`${buildingData.name} amélioration démarrée!`);
                     modal.remove();
                     this.updateVillageScreen();
+                }
+            };
+        }
+
+        const enterBtn = modal.querySelector('.btn-enter-building');
+        if (enterBtn) {
+            enterBtn.onclick = () => {
+                modal.remove();
+                if (buildingId === 'sanctuary') {
+                    this.showScreen(this.screens.EQUIPMENT);
+                    this.showNotification('Sélectionnez une unité à évoluer');
+                } else if (buildingId === 'forge') {
+                    this.openCraftingScreen();
                 }
             };
         }
@@ -2824,6 +2851,16 @@ export default class UIManager {
         modal.onclick = (e) => {
             if (e.target === modal) modal.remove();
         };
+    }
+
+    getBuildingActionButtons(buildingId) {
+        if (buildingId === 'sanctuary') {
+            return `< button class="btn-enter-building" style = "margin-top: 10px; width: 100%; padding: 10px; background: #9b59b6; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer;" > Entrer dans le Sanctuaire</button > `;
+        }
+        if (buildingId === 'forge') {
+            return `< button class="btn-enter-building" style = "margin-top: 10px; width: 100%; padding: 10px; background: #e67e22; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer;" > Entrer dans la Forge</button > `;
+        }
+        return '';
     }
 
     /**
@@ -2869,16 +2906,16 @@ export default class UIManager {
 
             let statsHtml = '';
             for (let stat in item.stats) {
-                statsHtml += `<span>${stat.toUpperCase()}: ${item.stats[stat]}</span>`;
+                statsHtml += `< span > ${stat.toUpperCase()}: ${item.stats[stat]}</span > `;
             }
 
             card.innerHTML = `
-                <div class="item-header">
+            < div class="item-header" >
                     <div class="item-name">${item.name}</div>
                     <div class="item-stars">${item.getStarDisplay()}</div>
-                </div>
-                <div class="item-stats">${statsHtml}</div>
-            `;
+                </div >
+            <div class="item-stats">${statsHtml}</div>
+        `;
 
             card.onclick = () => {
                 this.selectedCraftItem = item;
@@ -2913,9 +2950,9 @@ export default class UIManager {
         let currentStatsHtml = '';
         let newStatsHtml = '';
         for (let stat in item.stats) {
-            currentStatsHtml += `<div>${stat.toUpperCase()}: ${item.stats[stat]}</div>`;
+            currentStatsHtml += `< div > ${stat.toUpperCase()}: ${item.stats[stat]}</div > `;
             if (refineInfo.newStats) {
-                newStatsHtml += `<div>${stat.toUpperCase()}: ${refineInfo.newStats[stat]}</div>`;
+                newStatsHtml += `< div > ${stat.toUpperCase()}: ${refineInfo.newStats[stat]}</div > `;
             }
         }
 
@@ -2924,7 +2961,7 @@ export default class UIManager {
         if (refineInfo.cost) {
             const resources = this.game.economySystem.resources;
             reqHtml = `
-                <div class="refine-requirements">
+            < div class="refine-requirements" >
                     <h4>Ressources requises</h4>
                     <div class="cost-item ${resources.gold >= refineInfo.cost.gold ? '' : 'insufficient'}">
                         💰 Or: ${refineInfo.cost.gold.toLocaleString()}
@@ -2937,19 +2974,20 @@ export default class UIManager {
                     </div>
                     ${refineInfo.cost.fragments > 0 ? `<div class="cost-item ${resources.fragments >= refineInfo.cost.fragments ? '' : 'insufficient'}">
                         🔮 Fragments: ${refineInfo.cost.fragments.toLocaleString()}
-                    </div>` : ''}
+                    </div>` : ''
+                }
                     <div class="cost-item">
                         ⏱️ Temps: ${this.formatTime(refineInfo.time)}
                     </div>
                     <div class="cost-item ${refineInfo.currentForgeLevel >= refineInfo.requiredForgeLevel ? '' : 'insufficient'}">
                         ⚒️ Forge niveau ${refineInfo.requiredForgeLevel} requis (actuellement ${refineInfo.currentForgeLevel})
                     </div>
-                </div>
+                </div >
             `;
         }
 
         panel.innerHTML = `
-            <div class="refine-preview">
+            < div class="refine-preview" >
                 <h3>Raffinage</h3>
                 <div style="display: flex; justify-content: space-around; align-items: center; margin: 30px 0;">
                     <div style="text-align: center;">
@@ -2966,18 +3004,18 @@ export default class UIManager {
                         </div>
                     </div>
                 </div>
-            </div>
+            </div >
             ${reqHtml}
-            <button class="refine-button" ${!refineInfo.canRefine ? 'disabled' : ''}>
-                ${item.stars >= 7 ? 'Niveau maximum' : refineInfo.canRefine ? 'Raffiner' : 'Ressources insuffisantes'}
-            </button>
+        <button class="refine-button" ${!refineInfo.canRefine ? 'disabled' : ''}>
+            ${item.stars >= 7 ? 'Niveau maximum' : refineInfo.canRefine ? 'Raffiner' : 'Ressources insuffisantes'}
+        </button>
         `;
 
         const refineBtn = panel.querySelector('.refine-button');
         if (refineBtn && !refineBtn.disabled) {
             refineBtn.onclick = () => {
                 if (this.game.craftingSystem.refineItem(item)) {
-                    this.showNotification(`Raffinage de ${item.name} démarré !`);
+                    this.showNotification(`Raffinage de ${item.name} démarré!`);
                     this.selectedCraftItem = null;
                     this.updateCraftingScreen();
                 }
@@ -2989,11 +3027,11 @@ export default class UIManager {
      * Formats time in seconds to readable format
      */
     formatTime(seconds) {
-        if (seconds < 60) return `${seconds}s`;
-        if (seconds < 3600) return `${Math.floor(seconds / 60)}m ${seconds % 60}s`;
+        if (seconds < 60) return `${seconds} s`;
+        if (seconds < 3600) return `${Math.floor(seconds / 60)}m ${seconds % 60} s`;
         const hours = Math.floor(seconds / 3600);
         const minutes = Math.floor((seconds % 3600) / 60);
-        return `${hours}h ${minutes}m`;
+        return `${hours}h ${minutes} m`;
     }
 }
 

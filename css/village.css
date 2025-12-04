@@ -20,34 +20,12 @@
     align-items: center;
 }
 
-.village-resources {
-    display: flex;
-    gap: 20px;
-    flex-wrap: wrap;
-}
-
-.resource-display {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 15px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 20px;
-    font-size: 0.9em;
-}
-
-.resource-icon {
-    font-size: 1.2em;
-}
-
-.resource-amount {
-    font-weight: bold;
-    color: #ffd700;
-}
-
-/* Buildings Grid */
-.buildings-container {
-    flex: 1;
+/* Fix for Exit Button in Village Header */
+.village-header .shop-exit-btn {
+    position: static;
+    width: auto;
+    height: auto;
+    margin: 0;
     padding: 20px;
     overflow-y: auto;
 }
@@ -162,47 +140,6 @@
     padding: 30px;
     max-width: 500px;
     width: 90%;
-    max-height: 80vh;
-    overflow-y: auto;
-    z-index: 1000;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-}
-
-.modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-    padding-bottom: 15px;
-    border-bottom: 2px solid rgba(255, 255, 255, 0.2);
-}
-
-.modal-title {
-    font-size: 1.5em;
-    font-weight: bold;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.modal-close {
-    background: rgba(255, 255, 255, 0.1);
-    border: none;
-    color: white;
-    font-size: 1.5em;
-    cursor: pointer;
-    width: 35px;
-    height: 35px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s ease;
-}
-
-.modal-close:hover {
-    background: rgba(255, 255, 255, 0.2);
-    transform: rotate(90deg);
 }
 
 .building-description {
@@ -428,19 +365,19 @@
         grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
         gap: 15px;
     }
-    
+
     .building-card {
         padding: 15px;
     }
-    
+
     .crafting-container {
         flex-direction: column;
     }
-    
+
     .village-resources {
         gap: 10px;
     }
-    
+
     .resource-display {
         padding: 6px 12px;
         font-size: 0.8em;
