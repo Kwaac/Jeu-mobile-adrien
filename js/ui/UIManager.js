@@ -96,10 +96,10 @@ export default class UIManager {
                         <p>Gérez vos objets et équipements</p>
                     </div>
                 </div>
-                <div class="menu-card" id="card-guild">
+                <div class="menu-card" id="card-pvp">
                     <div class="menu-card-content">
                         <div class="menu-card-icon">🏰</div>
-                        <h3>La Guilde</h3>
+                        <h3>Guilde</h3>
                         <p>Invocation, Forgeron et Échope</p>
                     </div>
                 </div>
@@ -114,16 +114,10 @@ export default class UIManager {
                     <div class="menu-card-content">
                         <div class="menu-card-icon">🏘️</div>
                         <h3>Village</h3>
-                        <p>Gérez vos bâtiments</p>
+                        <p>Sanctuaire, Forgeron et Marché</p>
                     </div>
                 </div>
-                <div class="menu-card" id="card-crafting">
-                    <div class="menu-card-content">
-                        <div class="menu-card-icon">⚒️</div>
-                        <h3>Forge</h3>
-                        <p>Raffinez vos objets</p>
-                    </div>
-                </div>
+
             </div>
         `;
         mainMenu.style.display = 'none';
@@ -998,11 +992,19 @@ export default class UIManager {
             this.showScreen(this.screens.EQUIPMENT);
         });
 
-        // Guild Events
-        const cardGuild = document.getElementById('card-guild');
-        if (cardGuild) {
-            cardGuild.addEventListener('click', () => {
-                this.openGuildScreen();
+        // Village Events
+        const cardVillage = document.getElementById('card-village');
+        if (cardVillage) {
+            cardVillage.addEventListener('click', () => {
+                this.openVillageScreen();
+            });
+        }
+
+        // PVP Events
+        const cardPvp = document.getElementById('card-pvp');
+        if (cardPvp) {
+            cardPvp.addEventListener('click', () => {
+                this.openGuildScreen(); // Réutilise l'écran Guild pour le PVP
             });
         }
 
@@ -1111,13 +1113,6 @@ export default class UIManager {
             this.performEvolution();
         });
 
-        // Village Events
-        const cardVillage = document.getElementById('card-village');
-        if (cardVillage) {
-            cardVillage.addEventListener('click', () => {
-                this.openVillageScreen();
-            });
-        }
 
         const btnVillageExit = document.getElementById('btn-village-exit');
         if (btnVillageExit) {
@@ -2902,10 +2897,14 @@ export default class UIManager {
             enterBtn.onclick = () => {
                 modal.remove();
                 if (buildingId === 'sanctuary') {
-                    this.showScreen(this.screens.EQUIPMENT);
-                    this.showNotification('Sélectionnez une unité à évoluer');
-                } else if (buildingId === 'forge') {
-                    this.openCraftingScreen();
+                    this.openGuildScreen();
+                    this.updateGuildScreen('summon');
+                } else if (buildingId === 'forgeron') {
+                    this.openGuildScreen();
+                    this.updateGuildScreen('blacksmith');
+                } else if (buildingId === 'market_shop') {
+                    this.openGuildScreen();
+                    this.updateGuildScreen('shop');
                 }
             };
         }
@@ -2920,8 +2919,11 @@ export default class UIManager {
         if (buildingId === 'sanctuary') {
             return `< button class="btn-enter-building" style = "margin-top: 10px; width: 100%; padding: 10px; background: #9b59b6; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer;" > Entrer dans le Sanctuaire</button > `;
         }
-        if (buildingId === 'forge') {
+        if (buildingId === 'forgeron') {
             return `< button class="btn-enter-building" style = "margin-top: 10px; width: 100%; padding: 10px; background: #e67e22; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer;" > Entrer dans la Forge</button > `;
+        }
+        if (buildingId === 'market_shop') {
+            return `<button class="btn-enter-building" style="margin-top: 10px; width: 100%; padding: 10px; background: #27ae60; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer;">Entrer dans le Marché</button>`;
         }
         return '';
     }

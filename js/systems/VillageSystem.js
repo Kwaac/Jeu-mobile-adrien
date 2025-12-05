@@ -32,6 +32,16 @@ export default class VillageSystem {
         this.buildings.town_hall.level = 1;
         this.buildings.town_hall.lastCollectTime = Date.now();
 
+        // Construire les bâtiments d'accès niveau 1 par défaut
+        this.buildings.sanctuary.level = 1;
+        this.buildings.sanctuary.lastCollectTime = Date.now();
+
+        this.buildings.forgeron.level = 1;
+        this.buildings.forgeron.lastCollectTime = Date.now();
+
+        this.buildings.market_shop.level = 1;
+        this.buildings.market_shop.lastCollectTime = Date.now();
+
         console.log('[VillageSystem] Village initialized');
     }
 

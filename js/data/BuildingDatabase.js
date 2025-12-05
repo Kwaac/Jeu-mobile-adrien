@@ -77,27 +77,11 @@ export const BUILDING_DATABASE = {
             capacityMultiplier: 1.5
         }
     },
-    'forge': {
-        id: 'forge',
-        name: 'Forge Mystique',
-        description: 'Permet le craft et le raffinage d\'équipements. Niveau requis pour raffiner.',
-        icon: '⚒️',
-        maxLevel: 10,
-        baseCost: { gold: 1200, crystals: 10, essences: 5 },
-        costMultiplier: 1.5,
-        buildTime: 180, // 3 minutes
-        upgradeTimeBase: 360, // 6 minutes
-        upgradeTimeMultiplier: 1.4,
-        benefits: {
-            type: 'unlock',
-            description: 'Débloque le raffinage d\'objets à des niveaux supérieurs'
-        }
-    },
-    'blacksmith': {
-        id: 'blacksmith',
+    'forgeron': {
+        id: 'forgeron',
         name: 'Forgeron',
-        description: 'Amélioration et raffinage d\'équipements. Accès direct depuis le village.',
-        icon: '🔨',
+        description: 'Amélioration et raffinage d\'équipements. Accès à la Guilde.',
+        icon: '⚒️',
         maxLevel: 1,
         baseCost: { gold: 0, crystals: 0, essences: 0 },
         costMultiplier: 1.0,
@@ -112,7 +96,7 @@ export const BUILDING_DATABASE = {
     'sanctuary': {
         id: 'sanctuary',
         name: 'Sanctuaire',
-        description: 'Invocation et évolution de héros. Accès direct depuis le village.',
+        description: 'Invocation et évolution de héros. Accès à la Guilde.',
         icon: '🏛️',
         maxLevel: 1,
         baseCost: { gold: 0, crystals: 0, essences: 0 },
@@ -123,6 +107,22 @@ export const BUILDING_DATABASE = {
         benefits: {
             type: 'access',
             description: 'Accès à l\'invocation et à l\'évolution de héros'
+        }
+    },
+    'market_shop': {
+        id: 'market_shop',
+        name: 'Marché',
+        description: 'Achetez et vendez des objets. Accès à l\'Échope.',
+        icon: '🏪',
+        maxLevel: 1,
+        baseCost: { gold: 0, crystals: 0, essences: 0 },
+        costMultiplier: 1.0,
+        buildTime: 0,
+        upgradeTimeBase: 0,
+        upgradeTimeMultiplier: 1.0,
+        benefits: {
+            type: 'access',
+            description: 'Accès à la boutique d\'objets'
         }
     },
     'warehouse': {
