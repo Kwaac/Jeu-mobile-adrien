@@ -165,6 +165,34 @@
 }
 
 /* Rarity Borders */
+.hero-card-compact {
+    aspect-ratio: 0.8;
+    background: rgba(0, 0, 0, 0.4);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding: 8px;
+    min-height: 120px;
+}
+
+.hero-card-compact:hover {
+    transform: translateY(-4px);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.hero-card-compact .hero-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    margin-bottom: 5px;
+    border: 2px solid rgba(255,255,255,0.2);
+}
+
 .hero-card-compact.rarity-1 {
     border: 2px solid #bdc3c7;
 }

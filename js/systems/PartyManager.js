@@ -1,5 +1,6 @@
 import Unit from '../entities/Unit.js';
 import { getStatsForRarity } from '../data/UnitDatabase.js';
+import ElementalBonusSystem from './ElementalBonusSystem.js';
 
 export default class PartyManager {
     constructor(game) {
@@ -8,6 +9,10 @@ export default class PartyManager {
         this.party = []; // Équipe de combat active (max 5)
         this.maxPartySize = 5;
         this.selectedUnit = null; // Unité actuellement sélectionnée dans l'UI
+
+        // Système de bonus élémentaires
+        this.elementalBonusSystem = new ElementalBonusSystem();
+        this.currentTeamBonuses = null;
 
         this.initializeDefaultUnits();
     }
@@ -90,6 +95,48 @@ export default class PartyManager {
 
         this.party.push(unit);
         console.log(`${unit.name} ajouté à l'équipe de combat.`);
+
+        // Recalculer les bonus d'équipe
+        // Recalculer les bonus d'équipe
+        this.updateTeamBonuses();
+
+        // Auto-position if no saved position
+        if (unit.savedPosition === null) {
+            // Find first available spot (0-5)
+            const usedPositions = this.party.map(u => u.savedPosition).filter(p => p !== null);
+            for (let i = 0; i < 6; i++) {
+                if (!usedPositions.includes(i)) {
+                    unit.savedPosition = i;
+                    break;
+                }
+            }
+        }
+
+        return 'SUCCESS';
+    }
+
+    /**
+     * Sauvegarde la position d'une unité dans la formation
+     * @param {Unit} unit - L'unité à positionner
+     * @param {number} position - Position 0-5
+     */
+    saveUnitPosition(unit, position) {
+        if (!this.party.includes(unit)) return;
+
+        // Vérifier si la position est valide
+        if (position < 0 || position > 5) return;
+
+        // Vérifier si la position est déjà prise par quelqu'un d'autre
+        const occupant = this.party.find(u => u.savedPosition === position && u !== unit);
+
+        if (occupant) {
+            // Swap positions
+            occupant.savedPosition = unit.savedPosition;
+        }
+
+        unit.savedPosition = position;
+        console.log(`Position sauvegardée pour ${unit.name} : ${position}`);
+
         return true;
     }
 
@@ -98,6 +145,10 @@ export default class PartyManager {
         if (index > -1) {
             this.party.splice(index, 1);
             console.log(`${unit.name} retiré de l'équipe de combat.`);
+
+            // Recalculer les bonus d'équipe
+            this.updateTeamBonuses();
+
             return true;
         }
         return false;
@@ -130,6 +181,43 @@ export default class PartyManager {
 
     getSelectedUnit() {
         return this.selectedUnit;
+    }
+
+    /**
+     * Met à jour les bonus d'équipe basés sur la composition élémentaire
+     */
+    updateTeamBonuses() {
+        this.currentTeamBonuses = this.elementalBonusSystem.calculateTeamBonuses(this.party);
+        console.log('🌟 Bonus d\'équipe mis à jour:', this.currentTeamBonuses);
+    }
+
+    /**
+     * Récupère les bonus d'équipe actuels
+     * @returns {Object} Bonus d'équipe
+     */
+    getTeamBonuses() {
+        if (!this.currentTeamBonuses) {
+            this.updateTeamBonuses();
+        }
+        return this.currentTeamBonuses;
+    }
+
+    /**
+     * Récupère les bonus formatés pour l'affichage UI
+     * @returns {Array} Tableau de strings formatés
+     */
+    getFormattedTeamBonuses() {
+        const bonuses = this.getTeamBonuses();
+        return this.elementalBonusSystem.formatBonusesForUI(bonuses);
+    }
+
+    /**
+     * Récupère un résumé des bonus totaux
+     * @returns {Object} Résumé des bonus
+     */
+    getTeamBonusSummary() {
+        const bonuses = this.getTeamBonuses();
+        return this.elementalBonusSystem.getTotalBonusSummary(bonuses);
     }
 
     /**

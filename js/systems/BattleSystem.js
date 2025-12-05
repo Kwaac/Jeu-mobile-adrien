@@ -1,4 +1,5 @@
 import Unit from '../entities/Unit.js';
+import FormationGrid from './FormationGrid.js';
 
 // Animation class for attack movements
 class AttackAnimation {
@@ -54,11 +55,16 @@ export default class BattleSystem {
         this.defeatedEnemies = []; // Track defeated enemies for XP calculation
         this.waveIndex = 0;
         this.turnState = 'PLAYER_PHASE'; // PLAYER_PHASE, ENEMY_PHASE, VICTORY, DEFEAT
+        this.actionMode = 'attack'; // 'attack' or 'skill'
         this.actionQueue = []; // For handling simultaneous attacks/animations
         this.selectedUnit = null; // Unit selected to attack
         this.hoveredEnemy = null; // Enemy currently hovered (for future mouse support)
         this.animations = []; // Active animations
         this.bbMode = false; // BB mode activated
+
+        // Tactical positioning
+        this.playerFormation = new FormationGrid();
+        this.enemyFormation = new FormationGrid();
     }
 
     initTestBattle() {
@@ -84,10 +90,13 @@ export default class BattleSystem {
         // Reset defeated enemies for new wave
         this.defeatedEnemies = [];
 
+        // Reset formations
+        this.playerFormation.reset();
+        this.enemyFormation.reset();
+
+        // Create enemy units
         this.enemyUnits = enemyDataArray.map((data, index) => {
             const unit = new Unit(data.name, false, data);
-            unit.x = this.game.width * 0.6 + (index % 2) * 110;
-            unit.y = this.game.height * 0.15 + Math.floor(index / 2) * 130;
             return unit;
         });
 
@@ -105,12 +114,19 @@ export default class BattleSystem {
             console.log(`Équipe de combat existante : ${this.playerUnits.length} unités`);
         }
 
-        // Position Player Units
+        // Place player units in formation
         this.playerUnits.forEach((unit, index) => {
-            unit.x = this.game.width * 0.2 + (index % 2) * 110;
-            unit.y = this.game.height * 0.45 + Math.floor(index / 2) * 130;
-            console.log(`Positionnement joueur ${unit.name} à ${unit.x}, ${unit.y}`);
+            const position = unit.savedPosition !== null ? unit.savedPosition : index;
+            this.playerFormation.placeUnit(unit, position);
         });
+
+        // Place enemy units in formation (auto-placement)
+        this.enemyUnits.forEach((unit, index) => {
+            this.enemyFormation.placeUnit(unit, index);
+        });
+
+        // Position units visually based on formation
+        this.updateUnitPositions();
 
         this.turnState = 'PLAYER_PHASE';
         this.game.uiManager.updateBattleInfo('Phase Joueur - Choisissez une unité');
@@ -126,8 +142,10 @@ export default class BattleSystem {
             // unit.update(deltaTime); // If Unit has update method
         });
 
-        if (this.turnState === 'ENEMY_PHASE') {
-            this.handleEnemyTurn();
+        // ATB LOGIC
+        if (this.turnState !== 'VICTORY' && this.turnState !== 'DEFEAT') {
+            // ALWAYS Tick ATB (Real-Time)
+            this.updateATB(deltaTime);
         }
 
         // Check for dead units and track defeated enemies
@@ -146,165 +164,213 @@ export default class BattleSystem {
         }
     }
 
+    updateATB(deltaTime) {
+        const allUnits = [...this.playerUnits, ...this.enemyUnits];
+
+        for (const unit of allUnits) {
+            const wasReady = unit.actionGauge >= 100;
+            unit.tick(deltaTime);
+            const isReady = unit.actionGauge >= 100;
+
+            if (isReady && !wasReady) {
+                // Unit JUST filled the bar
+                unit.updateCooldowns();
+
+                if (!unit.isPlayer) {
+                    this.handleEnemyTurnATB(unit);
+                } else {
+                    // Player Unit
+                    if (!this.activeUnit) {
+                        this.activeUnit = unit;
+                        this.setActionMode('attack');
+                        this.game.uiManager.updateBattleInfo(`Tour de ${this.activeUnit.name} !`);
+                    }
+                    // If activeUnit is already set, this unit waits at 100%
+                }
+            }
+
+            // Safety: If activeUnit becomes null (turn end) and we have a waiting ready player, pick it
+            if (isReady && unit.isPlayer && !this.activeUnit) {
+                this.activeUnit = unit;
+                this.setActionMode('attack');
+                this.game.uiManager.updateBattleInfo(`Tour de ${this.activeUnit.name} !`);
+            }
+        }
+    }
+
+    turnComplete(unit) {
+        if (unit) {
+            unit.resetActionGauge();
+            if (this.activeUnit === unit) {
+                this.activeUnit = null;
+                this.game.uiManager.updateBattleInfo('...');
+            }
+        }
+    }
 
     handleInput(x, y) {
-        if (this.turnState !== 'PLAYER_PHASE') return;
+        // ATB: Only allow input if active unit is a player unit
+        if (!this.activeUnit || !this.activeUnit.isPlayer) return;
 
-        // Check if clicking on a BB button first
-        for (const unit of this.playerUnits) {
-            if (!unit.hasActed && unit.isBbReady()) {
-                const bbButtonX = unit.x + unit.width / 2 - 30;
-                const bbButtonY = unit.y + unit.height + 5;
-                const bbButtonWidth = 60;
-                const bbButtonHeight = 25;
+        const unit = this.activeUnit;
+        const buttonSize = 50;
+        const buttonGap = 20;
+        const totalWidth = (buttonSize * 4) + (buttonGap * 3);
+        const startX = (this.game.width - totalWidth) / 2;
+        const startY = 480;
 
-                if (x >= bbButtonX && x <= bbButtonX + bbButtonWidth &&
-                    y >= bbButtonY && y <= bbButtonY + bbButtonHeight) {
-                    console.log(`BB button clicked for ${unit.name}`);
-                    this.executePlayerBB(unit);
+        // 0. Check Button Clicks
+        // Attack Button
+        if (x >= startX && x <= startX + buttonSize &&
+            y >= startY && y <= startY + buttonSize) {
+            this.setActionMode('attack');
+            return;
+        }
+
+        // Skill Buttons
+        for (let i = 0; i < unit.skills.length; i++) {
+            const btnX = startX + (i + 1) * (buttonSize + buttonGap);
+            if (x >= btnX && x <= btnX + buttonSize &&
+                y >= startY && y <= startY + buttonSize) {
+
+                if (unit.canUseSkill(i)) {
+                    this.setActionMode(`skill_${i}`);
+                } else {
+                    this.game.uiManager.showFloatingText(btnX, startY, "COOLDOWN", "grey");
+                }
+                return;
+            }
+        }
+
+        // 1. Check if clicking on an enemy
+        const clickedEnemy = this.enemyUnits.find(enemy =>
+            x >= enemy.x && x <= enemy.x + enemy.width &&
+            y >= enemy.y && y <= enemy.y + enemy.height
+        );
+
+        if (clickedEnemy) {
+            if (this.actionMode === 'attack') {
+                const canTarget = this.enemyFormation.canTargetPosition(clickedEnemy.position, unit.class);
+                if (!canTarget) {
+                    this.game.uiManager.updateBattleInfo(`❌ Cible protégée par la Front Line !`);
+                    return;
+                }
+                this.executePlayerAttack(unit, clickedEnemy);
+            } else if (this.actionMode.startsWith('skill_')) {
+                const skillIndex = parseInt(this.actionMode.split('_')[1]);
+                this.executeCharacterSkill(unit, clickedEnemy, skillIndex);
+            }
+            return;
+        }
+
+        // 2. Check Allies (for Heal/Buff skills)
+        if (this.actionMode.startsWith('skill_')) {
+            const skillIndex = parseInt(this.actionMode.split('_')[1]);
+            const skill = unit.getSkill(skillIndex);
+
+            if (skill && (skill.type === 'heal' || skill.type === 'buff')) {
+                const clickedAlly = this.playerUnits.find(ally =>
+                    x >= ally.x && x <= ally.x + ally.width &&
+                    y >= ally.y && y <= ally.y + ally.height
+                );
+
+                if (clickedAlly) {
+                    this.executeCharacterSkill(unit, clickedAlly, skillIndex);
                     return;
                 }
             }
         }
+    }
 
-        // If a unit is already selected, check if clicking on an enemy
-        if (this.selectedUnit) {
-            // Check if clicking on an enemy
-            const clickedEnemy = this.enemyUnits.find(enemy =>
-                x >= enemy.x && x <= enemy.x + enemy.width &&
-                y >= enemy.y && y <= enemy.y + enemy.height
-            );
+    executeCharacterSkill(unit, target, skillIndex) {
+        const skill = unit.getSkill(skillIndex);
+        if (!skill) return;
 
-            if (clickedEnemy) {
-                console.log(`${this.selectedUnit.name} targeting ${clickedEnemy.name}`);
-                this.executePlayerAttack(this.selectedUnit, clickedEnemy);
-                this.selectedUnit = null;
-                this.game.uiManager.updateBattleInfo('Phase Joueur - Choisissez une unité');
-                return;
-            }
+        console.log(`${unit.name} uses ${skill.name} on ${target.name}`);
+        this.game.uiManager.showBattleMessage(`${unit.name} lance ${skill.name} !`);
+        this.game.uiManager.showFloatingText(unit.x, unit.y - 40, skill.name, "yellow");
 
-            // If clicking elsewhere, deselect
-            this.selectedUnit = null;
-            this.game.uiManager.updateBattleInfo('Sélection annulée - Choisissez une unité');
+        if (skill.type === 'damage') {
+            new AttackAnimation(this.game.ctx, unit, target, () => {
+                let dmg = unit.getStat('atk') * (skill.power || 1.2);
+                target.takeDamage(Math.floor(dmg));
+                this.game.uiManager.showDamageNumber(target.x, target.y, Math.floor(dmg));
+
+                unit.putSkillOnCooldown(skillIndex);
+                this.setActionMode('attack');
+                this.turnComplete(unit);
+            });
+            return;
+        } else if (skill.type === 'heal') {
+            target.hp = Math.min(target.maxHp, target.hp + (skill.value || 50));
+            this.game.uiManager.showDamageNumber(target.x, target.y, skill.value || 50, "green");
+        } else if (skill.type === 'buff') {
+            this.game.uiManager.showFloatingText(target.x, target.y, "BUFF!", "blue");
         }
 
-        // Check if a player unit was clicked
-        this.playerUnits.forEach(unit => {
-            if (!unit.hasActed &&
-                x >= unit.x && x <= unit.x + unit.width &&
-                y >= unit.y && y <= unit.y + unit.height) {
+        unit.putSkillOnCooldown(skillIndex);
+        this.setActionMode('attack');
+        this.turnComplete(unit);
+    }
 
-                this.selectedUnit = unit;
-                console.log(`${unit.name} selected`);
-                if (unit.isBbReady()) {
-                    this.game.uiManager.updateBattleInfo(`${unit.name} - BB prêt ! Cliquez sur le bouton BB ou une cible`);
-                } else {
-                    this.game.uiManager.updateBattleInfo(`${unit.name} sélectionné - Choisissez une cible`);
-                }
-            }
-        });
+    setActionMode(mode) {
+        this.actionMode = mode;
+        console.log(`Battle Mode set to: ${mode.toUpperCase()}`);
     }
 
     executePlayerAttack(unit, target) {
-        // Check if BB is ready and used
-        if (unit.isBbReady()) {
-            this.executePlayerBB(unit);
-            return;
-        }
+        if (!unit || !target) return;
 
-        // Normal Attack on selected target with animation
-        if (target && !target.isDead()) {
-            unit.hasActed = true;
-            console.log(`${unit.name} attaque ${target.name} !`);
-
-            // Create attack animation
-            const animation = new AttackAnimation(unit, target, () => {
-                // This callback is executed at the midpoint of the animation
-                const damage = unit.attack(target);
-                this.game.uiManager.showDamageNumber(target.x, target.y, damage);
-                this.generateBattleCrystals(damage);
-            });
-
-            this.animations.push(animation);
-
-            // Check turn end after animation completes
-            setTimeout(() => this.checkTurnEnd(), 500);
-        }
+        console.log(`${unit.name} attaque ${target.name}`);
+        new AttackAnimation(this.game.ctx, unit, target, () => {
+            const damage = unit.attack(target);
+            this.game.uiManager.showDamageNumber(target.x, target.y, damage);
+            unit.fillBbGauge(10);
+            this.turnComplete(unit);
+        });
     }
 
     executePlayerBB(unit) {
-        unit.hasActed = true;
+        // Placeholder BB logic
         this.game.uiManager.showBattleMessage(`${unit.name} utilise son BB !`);
-
-        // BB hits all enemies
-        const damageTotal = unit.executeBB(this.enemyUnits);
-
-        // Show damage on all enemies
-        this.enemyUnits.forEach(enemy => {
-            this.game.uiManager.showDamageNumber(enemy.x, enemy.y, "BB!", "gold");
-        });
-
-        this.checkTurnEnd();
+        unit.executeBB(this.enemyUnits);
+        setTimeout(() => this.turnComplete(unit), 1000);
     }
 
     generateBattleCrystals(damage) {
-        // Simple logic: 1 BC per hit (or based on damage)
-        const bcCount = Math.max(1, Math.floor(damage / 5)); // 1 BC per 5 damage
-
+        const bcCount = Math.max(1, Math.floor(damage / 5));
         for (let i = 0; i < bcCount; i++) {
             const receiver = this.playerUnits[Math.floor(Math.random() * this.playerUnits.length)];
             if (!receiver.isDead()) {
-                receiver.fillBbGauge(5); // 5 gauge per BC
+                receiver.fillBbGauge(5);
             }
         }
     }
 
-    checkTurnEnd() {
-        if (this.playerUnits.every(u => u.hasActed)) {
-            setTimeout(() => this.startEnemyTurn(), 1000);
-        }
-    }
+    handleEnemyTurnATB(enemy) {
+        console.log(`[AI] ${enemy.name} is thinking...`);
 
-    startEnemyTurn() {
-        this.turnState = 'ENEMY_PHASE';
-        this.game.uiManager.updateBattleInfo('Phase Ennemie');
-    }
+        setTimeout(() => {
+            if (this.turnState === 'VICTORY' || this.turnState === 'DEFEAT' || enemy.isDead()) return;
 
-    handleEnemyTurn() {
-        // Simple AI: Each enemy attacks a random player
-        this.enemyUnits.forEach(enemy => {
             const target = this.playerUnits[Math.floor(Math.random() * this.playerUnits.length)];
             if (target && !target.isDead()) {
                 const damage = enemy.attack(target);
-                console.log(`${enemy.name} attaque ${target.name} pour ${damage} dégâts`);
                 this.game.uiManager.showDamageNumber(target.x, target.y, damage, 'red');
+                enemy.x -= 20;
+                setTimeout(() => enemy.x += 20, 200);
             }
-        });
-
-        // Reset Player States
-        this.playerUnits.forEach(u => u.hasActed = false);
-
-        // Back to Player Phase
-        this.turnState = 'PLAYER_PHASE';
-        this.game.uiManager.updateBattleInfo('Phase Joueur - Choisissez une unité');
+            this.turnComplete(enemy);
+        }, 800);
     }
 
     handleWaveClear() {
         this.turnState = 'VICTORY';
         console.log("Vague terminée !");
 
-        // Calculate XP based on defeated enemies (dynamic XP system)
-        const totalXp = this.defeatedEnemies.reduce((sum, enemy) => {
-            const enemyXp = enemy.exp || 0;
-            return sum + enemyXp;
-        }, 0);
-
-        console.log(`XP total de la vague : ${totalXp}`);
-
+        const totalXp = this.defeatedEnemies.reduce((sum, enemy) => sum + (enemy.exp || 0), 0);
         this.playerUnits.forEach(unit => {
-            if (!unit.isDead()) {
-                unit.gainXp(totalXp);
-            }
+            if (!unit.isDead()) unit.gainXp(totalXp);
         });
 
         setTimeout(() => {
@@ -380,38 +446,139 @@ export default class BattleSystem {
             ctx.fillText('Cliquez pour lancer', this.game.width / 2, 120);
         }
 
-        // Draw BB buttons under player units
-        this.playerUnits.forEach(unit => {
-            if (!unit.hasActed && unit.isBbReady()) {
-                const bbButtonX = unit.x + unit.width / 2 - 30;
-                const bbButtonY = unit.y + unit.height + 5;
-                const bbButtonWidth = 60;
-                const bbButtonHeight = 25;
+        // Draw Skill Buttons if Active Player Unit
+        if (this.activeUnit && this.activeUnit.isPlayer) {
+            const unit = this.activeUnit;
+            const buttonSize = 50;
+            const buttonGap = 20;
+            const totalWidth = (buttonSize * 4) + (buttonGap * 3); // Attack + 3 Skills
 
-                // Button background with gradient
-                const gradient = ctx.createLinearGradient(bbButtonX, bbButtonY, bbButtonX, bbButtonY + bbButtonHeight);
-                gradient.addColorStop(0, '#ffd700');
-                gradient.addColorStop(1, '#ff8c00');
-                ctx.fillStyle = gradient;
-                ctx.fillRect(bbButtonX, bbButtonY, bbButtonWidth, bbButtonHeight);
+            // Fixed Position at Bottom Center
+            const startX = (this.game.width - totalWidth) / 2;
+            const startY = 480; // Fixed Y coordinate (assuming canvas is ~600)
 
-                // Button border
-                ctx.strokeStyle = '#fff';
-                ctx.lineWidth = 2;
-                ctx.strokeRect(bbButtonX, bbButtonY, bbButtonWidth, bbButtonHeight);
+            // Draw Background Panel for Actions
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+            ctx.fillRect(startX - 10, startY - 10, totalWidth + 20, buttonSize + 20);
+            ctx.strokeStyle = '#fff';
+            ctx.strokeRect(startX - 10, startY - 10, totalWidth + 20, buttonSize + 20);
 
-                // Button text
-                ctx.fillStyle = '#000';
-                ctx.font = 'bold 14px Arial';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText('BB', bbButtonX + bbButtonWidth / 2, bbButtonY + bbButtonHeight / 2);
+            // 1. Attack Button (Basic)
+            this.drawActionButton(ctx, startX, startY, buttonSize, "⚔️", "attack", 0);
 
-                // Glow effect
-                ctx.shadowColor = '#ffd700';
-                ctx.shadowBlur = 10;
-                ctx.strokeRect(bbButtonX, bbButtonY, bbButtonWidth, bbButtonHeight);
-                ctx.shadowBlur = 0;
+            // 2. Skill Buttons (1, 2, 3)
+            unit.skills.forEach((skill, index) => {
+                const x = startX + (index + 1) * (buttonSize + buttonGap);
+                const icon = this.getSkillIcon(skill.type);
+                this.drawActionButton(ctx, x, startY, buttonSize, icon, `skill_${index}`, this.activeUnit.cooldowns[index]);
+            });
+
+            // Draw Helper Text
+            ctx.fillStyle = 'white';
+            ctx.font = '16px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText("Choisissez une action", this.game.width / 2, startY - 20);
+
+            // Draw Description Panel if a mode is selected
+            if (this.actionMode) {
+                let description = "";
+                let name = "";
+
+                if (this.actionMode === 'attack') {
+                    name = "Attaque";
+                    description = "Attaque normale. Génère des cristaux de combat.";
+                } else if (this.actionMode.startsWith('skill_')) {
+                    const index = parseInt(this.actionMode.split('_')[1]);
+                    const skill = unit.getSkill(index);
+                    if (skill) {
+                        name = skill.name;
+                        description = skill.description;
+                        if (skill.cooldown > 0) description += ` (CD: ${skill.cooldown})`;
+                    }
+                }
+
+                if (name) {
+                    const panelY = startY - 80;
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+                    ctx.fillRect(this.game.width / 2 - 200, panelY, 400, 50);
+                    ctx.strokeStyle = '#f1c40f';
+                    ctx.strokeRect(this.game.width / 2 - 200, panelY, 400, 50);
+
+                    ctx.fillStyle = '#f1c40f';
+                    ctx.font = 'bold 18px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(name, this.game.width / 2, panelY + 20);
+
+                    ctx.fillStyle = '#fff';
+                    ctx.font = '14px Arial';
+                    ctx.fillText(description, this.game.width / 2, panelY + 40);
+                }
+            }
+        }
+    }
+
+    getSkillIcon(type) {
+        if (type === 'damage') return '💥';
+        if (type === 'heal') return '💚';
+        if (type === 'buff') return '🛡️';
+        if (type === 'debuff') return '💀';
+        return '✨';
+    }
+
+    drawActionButton(ctx, x, y, size, icon, mode, cooldown) {
+        const isCooldown = cooldown > 0;
+
+        ctx.fillStyle = isCooldown ? '#95a5a6' : '#ecf0f1'; // Grey if CD, White if Ready
+        if (this.actionMode === mode) ctx.fillStyle = '#f1c40f'; // Yellow if Selected
+
+        ctx.fillRect(x, y, size, size);
+        ctx.strokeStyle = '#2c3e50';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(x, y, size, size);
+
+        // Icon
+        ctx.fillStyle = '#000';
+        ctx.font = '24px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(icon, x + size / 2, y + size / 2);
+
+        // Cooldown Overlay
+        if (isCooldown) {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+            ctx.fillRect(x, y, size, size);
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 20px Arial';
+            ctx.fillText(cooldown, x + size / 2, y + size / 2);
+        }
+    }
+
+    /**
+     * Met à jour les positions visuelles des unités selon leur formation
+     */
+    updateUnitPositions() {
+        const playerBaseX = this.game.width * 0.15;
+        const playerBaseY = this.game.height * 0.25;
+        const enemyBaseX = this.game.width * 0.55;
+        const enemyBaseY = this.game.height * 0.15;
+        const spacing = 110;
+
+        // Position player units
+        this.playerFormation.positions.forEach((unit, pos) => {
+            if (unit) {
+                const coords = this.playerFormation.getPositionCoordinates(pos, playerBaseX, playerBaseY, spacing);
+                unit.x = coords.x;
+                unit.y = coords.y;
+                console.log(`${unit.name} (${unit.class}) positionné à ${unit.getPositionName()} (${unit.x}, ${unit.y})`);
+            }
+        });
+
+        // Position enemy units
+        this.enemyFormation.positions.forEach((unit, pos) => {
+            if (unit) {
+                const coords = this.enemyFormation.getPositionCoordinates(pos, enemyBaseX, enemyBaseY, spacing);
+                unit.x = coords.x;
+                unit.y = coords.y;
             }
         });
     }

@@ -1,4 +1,4 @@
-import BattleSystem from '../systems/BattleSystem.js?v=3';
+import BattleSystem from '../systems/BattleSystem.js?v=16';
 import EconomySystem from '../systems/EconomySystem.js';
 import StorySystem from '../systems/StorySystem.js';
 import LootManager from '../systems/LootManager.js';
@@ -12,6 +12,8 @@ import PVPSystem from '../systems/PVPSystem.js';
 import VillageSystem from '../systems/VillageSystem.js';
 import CraftingSystem from '../systems/CraftingSystem.js';
 import UIManager from '../ui/UIManager.js';
+import QuestSystem from '../systems/QuestSystem.js';
+import ElementalBonusSystem from '../systems/ElementalBonusSystem.js';
 
 export default class Game {
     constructor(canvas) {
@@ -42,7 +44,9 @@ export default class Game {
         this.economySystem = new EconomySystem(this);
         this.partyManager = new PartyManager(this);
         this.lootManager = new LootManager(this);
+        this.elementalBonusSystem = new ElementalBonusSystem(this);
         this.storySystem = new StorySystem(this);
+        this.questSystem = new QuestSystem(this);
         this.battleSystem = new BattleSystem(this);
         this.evolutionSystem = new EvolutionSystem(this);
         this.gachaSystem = new GachaSystem(this);

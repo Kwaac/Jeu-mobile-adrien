@@ -5,6 +5,7 @@ export const UNIT_DATABASE = {
         id: 'fire_knight',
         name: 'Chevalier de Feu',
         element: 'fire',
+        class: 'Warrior', // Adding explicit class for clarity logic
         baseRarity: 3,
         maxRarity: 6,
         baseStats: {
@@ -13,12 +14,18 @@ export const UNIT_DATABASE = {
             def: 10,
             maxBbGauge: 100
         },
+        skills: [
+            { name: "Frappe Enflammée", type: "damage", power: 1.2, cooldown: 0, cost: 0, description: "Attaque physique de feu." },
+            { name: "Bouclier de Fer", type: "buff", stat: "def", value: 0.3, duration: 3, cooldown: 3, cost: 0, description: "+30% DEF pour 3 tours." },
+            { name: "Brise-Garde", type: "damage", power: 1.5, effect: "stun", chance: 0.3, cooldown: 4, cost: 0, description: "Gros dégâts avec chance d'étourdir." }
+        ],
         description: 'Un vaillant chevalier enveloppé de flammes ardentes'
     },
     'water_mage': {
         id: 'water_mage',
         name: 'Mage Aquatique',
         element: 'water',
+        class: 'Support',
         baseRarity: 3,
         maxRarity: 6,
         baseStats: {
@@ -27,12 +34,18 @@ export const UNIT_DATABASE = {
             def: 8,
             maxBbGauge: 100
         },
+        skills: [
+            { name: "Jet d'Eau", type: "damage", power: 1.0, cooldown: 0, description: "Attaque magique d'eau." },
+            { name: "Soin Rapide", type: "heal", power: 0.4, cooldown: 3, target: "single", description: "Soigne un allié." },
+            { name: "Voile Aqueux", type: "buff", stat: "def", value: 0.2, duration: 3, cooldown: 4, target: "all", description: "+20% DEF à toute l'équipe." }
+        ],
         description: 'Maître des arts mystiques de l\'eau'
     },
     'earth_warrior': {
         id: 'earth_warrior',
         name: 'Guerrier Terrestre',
         element: 'earth',
+        class: 'Tank',
         baseRarity: 4,
         maxRarity: 6,
         baseStats: {
@@ -41,12 +54,18 @@ export const UNIT_DATABASE = {
             def: 15,
             maxBbGauge: 100
         },
+        skills: [
+            { name: "Lancé de Rocher", type: "damage", power: 1.1, cooldown: 0, description: "Attaque physique de terre." },
+            { name: "Fortification", type: "buff", stat: "def", value: 0.5, duration: 3, cooldown: 5, target: "self", description: "+50% DEF (Self)." },
+            { name: "Séisme", type: "damage", power: 0.8, target: "all_enemies", cooldown: 4, description: "Dégâts de zone." }
+        ],
         description: 'Protecteur de la nature et gardien de la terre'
     },
     'thunder_assassin': {
         id: 'thunder_assassin',
         name: 'Assassin Foudroyant',
         element: 'thunder',
+        class: 'Assassin',
         baseRarity: 4,
         maxRarity: 7,
         baseStats: {
@@ -55,12 +74,18 @@ export const UNIT_DATABASE = {
             def: 7,
             maxBbGauge: 100
         },
+        skills: [
+            { name: "Éclair", type: "damage", power: 1.3, cooldown: 0, description: "Attaque rapide." },
+            { name: "Vitesse Pure", type: "buff", stat: "speed", value: 0.3, duration: 3, cooldown: 4, target: "self", description: "+30% Vitesse." },
+            { name: "Assassinat", type: "damage", power: 2.2, cooldown: 5, description: "Dégâts massifs sur cible unique." }
+        ],
         description: 'Frappe avec la vitesse de l\'éclair'
     },
     'light_paladin': {
         id: 'light_paladin',
         name: 'Paladin Lumineux',
         element: 'light',
+        class: 'Tank',
         baseRarity: 5,
         maxRarity: 7,
         baseStats: {
@@ -69,12 +94,18 @@ export const UNIT_DATABASE = {
             def: 18,
             maxBbGauge: 100
         },
+        skills: [
+            { name: "Châtiment", type: "damage", power: 1.2, cooldown: 0, description: "Attaque sacrée." },
+            { name: "Lumière Guérisseuse", type: "heal", power: 0.3, cooldown: 4, target: "all", description: "Soin de zone." },
+            { name: "Protection Divine", type: "buff", stat: "def", value: 0.4, duration: 2, cooldown: 5, target: "all", description: "+40% DEF à l'équipe." }
+        ],
         description: 'Champion de la lumière et de la justice'
     },
     'dark_necromancer': {
         id: 'dark_necromancer',
         name: 'Nécromancien Obscur',
         element: 'dark',
+        class: 'Mage',
         baseRarity: 5,
         maxRarity: 7,
         baseStats: {
@@ -83,6 +114,11 @@ export const UNIT_DATABASE = {
             def: 12,
             maxBbGauge: 100
         },
+        skills: [
+            { name: "Trait d'Ombre", type: "damage", power: 1.3, cooldown: 0, description: "Attaque ténébreuse." },
+            { name: "Vol de Vie", type: "damage", power: 1.0, effect: "lifesteal", value: 0.5, cooldown: 3, description: "Dégâts + Soin de 50%." },
+            { name: "Malédiction", type: "debuff", stat: "atk", value: 0.3, duration: 3, cooldown: 4, target: "all_enemies", description: "-30% ATK aux ennemis." }
+        ],
         description: 'Maître des ténèbres et des âmes perdues'
     }
 };
@@ -138,6 +174,8 @@ export function getStatsForRarity(unitId, rarity) {
         atk: Math.floor(baseStats.atk * multiplier),
         def: Math.floor(baseStats.def * multiplier),
         maxBbGauge: baseStats.maxBbGauge,
+        skills: unitData.skills, // Inherit skills from database
+        class: unitData.class || 'Warrior', // Inherit class
         level: 1,
         xp: 0
     };
