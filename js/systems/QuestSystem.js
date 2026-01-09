@@ -11,11 +11,11 @@ export default class QuestSystem {
                 description: 'Commencez votre aventure ici.',
                 energyCost: 5,
                 waves: [
-                    [{ name: 'Slime', hp: 30, atk: 5, def: 1, exp: 10, zel: 20 }],
-                    [{ name: 'Slime', hp: 30, atk: 5, def: 1, exp: 10, zel: 20 }, { name: 'Gobelin', hp: 45, atk: 8, def: 2, exp: 15, zel: 30 }],
-                    [{ name: 'Roi Slime', hp: 100, atk: 12, def: 5, exp: 50, zel: 100 }] // Boss
+                    [{ name: 'Slime', hp: 30, atk: 5, def: 1, exp: 10, gold: 20 }],
+                    [{ name: 'Slime', hp: 30, atk: 5, def: 1, exp: 10, gold: 20 }, { name: 'Gobelin', hp: 45, atk: 8, def: 2, exp: 15, gold: 30 }],
+                    [{ name: 'Roi Slime', hp: 100, atk: 12, def: 5, exp: 50, gold: 100 }] // Boss
                 ],
-                rewards: { exp: 100, zel: 500 }
+                rewards: { exp: 100, gold: 500 }
             },
             {
                 id: 'quest2',
@@ -23,11 +23,11 @@ export default class QuestSystem {
                 description: 'Une tour remplie de monstres.',
                 energyCost: 8,
                 waves: [
-                    [{ name: 'Gobelin', hp: 50, atk: 10, def: 3, exp: 20, zel: 40 }],
-                    [{ name: 'Gobelin', hp: 50, atk: 10, def: 3, exp: 20, zel: 40 }, { name: 'Loup', hp: 60, atk: 15, def: 2, exp: 25, zel: 50 }],
-                    [{ name: 'Orc', hp: 150, atk: 20, def: 8, exp: 80, zel: 200 }]
+                    [{ name: 'Gobelin', hp: 50, atk: 10, def: 3, exp: 20, gold: 40 }],
+                    [{ name: 'Gobelin', hp: 50, atk: 10, def: 3, exp: 20, gold: 40 }, { name: 'Loup', hp: 60, atk: 15, def: 2, exp: 25, gold: 50 }],
+                    [{ name: 'Orc', hp: 150, atk: 20, def: 8, exp: 80, gold: 200 }]
                 ],
-                rewards: { exp: 200, zel: 800 }
+                rewards: { exp: 200, gold: 800 }
             }
         ];
     }
@@ -61,7 +61,8 @@ export default class QuestSystem {
         console.log('Quête terminée !');
 
         // Distribute gold reward
-        this.game.economySystem.earnZel(this.activeQuest.rewards.zel);
+        const goldReward = this.activeQuest.rewards.gold || 0;
+        this.game.economySystem.earnGold(goldReward);
 
         // Distribute XP reward to all surviving party members
         const questXp = this.activeQuest.rewards.exp || 0;

@@ -19,6 +19,8 @@ export default class Unit {
         this.baseAtk = this.atk;
         this.baseDef = this.def;
         this.baseMaxHp = this.maxHp;
+        this.speed = stats.speed || 100; // Force default speed if missing
+        this.baseSpeed = this.speed;
 
         // Unit properties
         this.element = this.element || 'none';
@@ -42,6 +44,8 @@ export default class Unit {
 
         // Battle state
         this.hasActed = false;
+        this.actionGauge = 0; // Initialize ATB Gauge to 0
+        this.isBusy = false; // Prevents multiple turns while animating
 
         // Visual properties (placeholder)
         this.x = 0;
@@ -53,6 +57,14 @@ export default class Unit {
         // Skills System
         this.skills = stats.skills || []; // Array of skill objects
         this.cooldowns = [0, 0, 0]; // Cooldown trackers for the 3 skills
+
+        // Gameplay Revamp Data
+        this.soulPower = 0;
+        this.maxSoulPower = 100;
+        this.equippedSkills = {
+            auto: null, // Default Auto-Attack
+            ultimate: null // Soul Power Ability
+        };
     }
 
     getStat(statName) {
@@ -114,10 +126,62 @@ export default class Unit {
     }
 
     attack(target) {
-        const atk = this.getStat('atk');
+        let atk = this.getStat('atk');
         const targetDef = target.getStat('def');
-        const damage = Math.max(1, atk - targetDef);
+
+        // 1. Accuracy / Dodge Check
+        const hitChance = (this.getStat('acc') || 100) - (target.getStat('dodge') || 0);
+        // Minimum 5% hit chance, Max 100%
+        const finalHitChance = Math.max(5, Math.min(100, hitChance));
+
+        if (Math.random() * 100 > finalHitChance) {
+            console.log(`${this.name} attacks ${target.name} but MISSES!`);
+            // Return 'MISS' or handle as 0 damage (UI needs to handle string 'MISS' or 0)
+            // For now, let's use 0 and rely on UIManager to show 'Miss' if logic added there, or float '0'.
+            return 0; // MISS
+        }
+
+        // 2. Critical Hit Check
+        const critRate = this.getStat('crit_rate') || 5; // Base 5%
+        let isCrit = Math.random() * 100 < critRate;
+        let critMultiplier = 1.0;
+
+        if (isCrit) {
+            const critDmg = this.getStat('crit_dmg') || 50; // Base +50% (+150% total)
+            critMultiplier = 1.0 + (critDmg / 100);
+            atk = Math.floor(atk * critMultiplier);
+            console.log("CRITICAL HIT!");
+        }
+
+        // 3. Damage Calculation
+        // Standard Armor Mitigation: Damage = Atk * (100 / (100 + Def)) ? 
+        // OR Flat reduction: Atk - Def.
+        // Current Code uses Flat: Math.max(1, atk - targetDef);
+        // Let's stick to simple Flat for now but scaled up? Or switch to Ratio?
+        // User didn't ask for generic math revamp, just stats support. Sticking to Flat but ensuring min damage.
+        let damage = Math.max(1, atk - targetDef);
+
+        // 4. Lifesteal
+        const lifesteal = this.getStat('lifesteal') || 0;
+        if (lifesteal > 0) {
+            const healAmount = Math.floor(damage * (lifesteal / 100));
+            if (healAmount > 0) {
+                this.hp = Math.min(this.maxHp, this.hp + healAmount);
+                // We might need to show this visually later
+                console.log(`${this.name} lifesteals ${healAmount} HP`);
+            }
+        }
+
         target.takeDamage(damage);
+
+        // Return object for UI? Or just damage number. 
+        // Existing BattleSystem expects number.
+        // We can encode Crit in the number? No, BattleSystem check animations.
+        // BattleSystem handles 'showDamageNumber'.
+        // To show "CRIT", we might need to change return type or let BattleSystem query us?
+        // Let's attach a temporary flag to `this`?
+        this.lastAttackIsCrit = isCrit;
+
         return damage;
     }
 
@@ -129,9 +193,9 @@ export default class Unit {
         return this.hp <= 0;
     }
 
-    fillBbGauge(amount) {
+    fillSoulPower(amount) {
         if (this.isDead()) return;
-        this.bbGauge = Math.min(this.maxBbGauge, this.bbGauge + amount);
+        this.soulPower = Math.min(this.maxSoulPower, this.soulPower + amount);
     }
 
     /**
@@ -147,14 +211,13 @@ export default class Unit {
         // Formula: Gauge += Speed * Multiplier * DeltaTime
 
         // Let's say Speed 100 = 20 gauge/sec => 5 seconds to fill
-        // Speed 50 = 10 gauge/sec => 10 seconds to fill
-        // Water Bonus +3% => Speed 103 => 20.6 gauge/sec
+        const speedMultiplier = 0.15; // Adjusted for ~6-7s turns at 100 Speed
+        const effectiveSpeed = this.getStat('speed') || 100; // Safety fallback
+        // if (Math.random() < 0.01) console.log(`[ATB Debug] ${this.name} Speed: ${effectiveSpeed}, Gauge: ${this.actionGauge}`);
 
-        const speedMultiplier = 1.5; // FAST PACED!
-        const effectiveSpeed = this.getStat('speed');
-
-        // Increase gauge
-        this.actionGauge += effectiveSpeed * speedMultiplier * deltaTime;
+        // Increase gauge (deltaTime is in ms)
+        // Speed 100 * 0.15 * 16ms / 1000 => ~6.6 sec to fill (100 / 15)
+        this.actionGauge += (effectiveSpeed * speedMultiplier * deltaTime) / 1000;
 
         // Cap at 100 (but maybe allow overflow for "fastest acts first" tiebreaker later?)
         // For now, simple cap checking in BattleSystem, here just accumulate
@@ -192,8 +255,8 @@ export default class Unit {
         }
     }
 
-    isBbReady() {
-        return this.bbGauge >= this.maxBbGauge;
+    isSoulPowerReady() {
+        return this.soulPower >= this.maxSoulPower;
     }
 
     equipItem(item) {
@@ -309,23 +372,23 @@ export default class Unit {
         return names[this.position] || 'Unknown';
     }
 
-    executeBB(targets) {
-        // Basic BB: AOE Attack
-        console.log(`${this.name} utilise son ULTIMATE BURST !`);
-        this.bbGauge = 0;
+    executeUltimate(targets) {
+        // Ultimate Skill: AOE Attack (Soul Power)
+        console.log(`${this.name} utilise son SOUL POWER !`);
+        this.soulPower = 0;
 
         let totalDamage = 0;
         targets.forEach(target => {
             if (!target.isDead()) {
-                // BB deals 150% damage base
-                let bbMultiplier = 1.5;
+                // Ultimate deals 150% damage base + bonus
+                let multiplier = 1.5;
 
-                // Appliquer le bonus de BB damage de l'équipe
+                // Appliquer le bonus de BB/Soul damage de l'équipe
                 if (this.teamBonuses && this.teamBonuses.bbDamage) {
-                    bbMultiplier += this.teamBonuses.bbDamage;
+                    multiplier += this.teamBonuses.bbDamage;
                 }
 
-                const atk = this.getStat('atk') * bbMultiplier;
+                const atk = this.getStat('atk') * multiplier;
                 const targetDef = target.getStat('def');
                 const damage = Math.max(1, Math.floor(atk - targetDef));
                 target.takeDamage(damage);
@@ -379,7 +442,8 @@ export default class Unit {
         ctx.fillRect(this.x, gaugeY, this.width, gaugeHeight);
 
         // Foreground (filling)
-        const gaugeWidth = (this.actionGauge / 100) * this.width;
+        const visualGauge = Math.min(this.actionGauge, 100);
+        const gaugeWidth = (visualGauge / 100) * this.width;
         ctx.fillStyle = '#f1c40f'; // Bright Yellow
         ctx.fillRect(this.x, gaugeY, gaugeWidth, gaugeHeight);
 
@@ -389,9 +453,10 @@ export default class Unit {
         ctx.strokeRect(this.x, gaugeY, this.width, gaugeHeight);
 
         // Text Value
+        const displayValue = Math.min(100, Math.floor(this.actionGauge));
         ctx.fillStyle = '#fff';
         ctx.font = 'bold 10px Arial';
-        ctx.fillText(Math.floor(this.actionGauge) + "%", this.x + this.width / 2, gaugeY + 9);
+        ctx.fillText(displayValue + "%", this.x + this.width / 2, gaugeY + 9);
 
         // Draw BB Meter (Blue line above HP or similar? Keeping original logic below/above)
         // Original code had BB gauge too. Let's add it back small if needed or stick to requested changes.

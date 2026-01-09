@@ -39,8 +39,18 @@ export default class VillageSystem {
         this.buildings.forgeron.level = 1;
         this.buildings.forgeron.lastCollectTime = Date.now();
 
+        // Le Marché est actif dès le début (Boutique + Production Or)
+        this.buildings.market.level = 1;
+        this.buildings.market.lastCollectTime = Date.now();
+
+        // market_shop maintenu pour compatibilité si nécessaire, mais market est le principal
         this.buildings.market_shop.level = 1;
-        this.buildings.market_shop.lastCollectTime = Date.now();
+
+        // Initialize new buildings (Arena, Guild, Portal, Warehouse default)
+        if (this.buildings.arena) this.buildings.arena.level = 1;
+        if (this.buildings.guild) this.buildings.guild.level = 1;
+        if (this.buildings.portal) this.buildings.portal.level = 1;
+        if (this.buildings.warehouse) this.buildings.warehouse.level = 1;
 
         console.log('[VillageSystem] Village initialized');
     }
@@ -71,12 +81,15 @@ export default class VillageSystem {
             return false;
         }
 
-        // Vérifier le niveau de l'Hôtel de Ville
-        const townHallLevel = this.buildings.town_hall.level;
-        const maxAllowed = getMaxAllowedLevel(townHallLevel);
+        // Vérifier le niveau du Sanctuaire (Cap Level)
+        const sanctuaryLevel = this.buildings.sanctuary.level;
 
-        if (buildingId !== 'town_hall' && currentLevel >= maxAllowed) {
-            console.log(`${buildingData.name} nécessite un Hôtel de Ville de niveau ${currentLevel + 1}`);
+        // Le Sanctuaire est le seul bâtiment qui ne dépend pas de lui-même pour l'upgrade,
+        // mais il peut avoir ses propres conditions (ex: Town Hall supprimé ou secondaire).
+        // Ici, on dit que tout dépend du Sanctuaire.
+
+        if (buildingId !== 'sanctuary' && currentLevel >= sanctuaryLevel) {
+            console.log(`${buildingData.name} est limité par le niveau du Sanctuaire (${sanctuaryLevel})`);
             return false;
         }
 
@@ -170,6 +183,9 @@ export default class VillageSystem {
         const buildingState = this.buildings[buildingId];
         const buildingData = BUILDING_DATABASE[buildingId];
 
+        // Safe check: if building data or state is missing, return 0
+        if (!buildingData || !buildingState) return 0;
+
         if (buildingData.benefits.type !== 'production') return 0;
 
         const now = Date.now();
@@ -207,10 +223,9 @@ export default class VillageSystem {
         if (buildingState.isUpgrading) return false;
         if (buildingState.level >= buildingData.maxLevel) return false;
 
-        const townHallLevel = this.buildings.town_hall.level;
-        const maxAllowed = getMaxAllowedLevel(townHallLevel);
+        const sanctuaryLevel = this.buildings.sanctuary.level;
 
-        if (buildingId !== 'town_hall' && buildingState.level >= maxAllowed) {
+        if (buildingId !== 'sanctuary' && buildingState.level >= sanctuaryLevel) {
             return false;
         }
 
@@ -242,6 +257,11 @@ export default class VillageSystem {
                 // Notifier l'UI si elle existe
                 if (this.game.uiManager) {
                     this.game.uiManager.showNotification(`${buildingData.icon} ${buildingData.name} niveau ${buildingState.level} !`);
+
+                    // Si c'est le Sanctuaire, on update le visuel potentiellement
+                    if (buildingId === 'sanctuary') {
+                        this.game.uiManager.updateVillageVisuals();
+                    }
                 }
             }
         }
@@ -278,7 +298,29 @@ export default class VillageSystem {
     fromJSON(data) {
         if (!data || !data.buildings) return;
 
-        this.buildings = { ...data.buildings };
+        // Merge saved buildings with existing (default) buildings to ensure new buildings exist
+        this.buildings = { ...this.buildings, ...data.buildings };
+
+        // Ensure objects are merged correctly if structure is deep? 
+        // For now, assume top-level replacement is fine IF the save contains the building.
+        // But if save has "market" and we initialized "market", save wins.
+        // If save MISSES "new_building", we keep "new_building" from init.
+
         console.log('[VillageSystem] State restored from save');
+    }
+    /**
+     * Calcule le Tier visuel du village (1 = Camp, 2 = Bastion, 3 = Citadelle)
+     * Basé sur le niveau de l'Hôtel de Ville (town_hall)
+     * @returns {number} 1, 2 ou 3
+     */
+    getVillageTier() {
+        // Sécurité
+        if (!this.buildings['town_hall']) return 1;
+
+        const level = this.buildings['town_hall'].level;
+
+        if (level >= 7) return 3; // Citadelle (Lv 7-10)
+        if (level >= 4) return 2; // Bastion (Lv 4-6)
+        return 1; // Camp (Lv 1-3)
     }
 }

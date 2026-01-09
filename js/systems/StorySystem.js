@@ -248,16 +248,22 @@ export default class StorySystem {
     }
 
     /**
-     * Distribue les récompenses d'une étape
+     * Distribue les récompenses à la fin d'une étape
      */
     distributeRewards(rewards) {
-        // Distribuer l'or
-        if (rewards.zel) {
-            this.game.economySystem.earnZel(rewards.zel);
-            console.log(`[StorySystem] +${rewards.zel} Or`);
+        if (!rewards) return;
+
+        // Or
+        if (rewards.gold) {
+            this.game.economySystem.earnGold(rewards.gold);
+            // Show UI notification ideally
+            const rewardText = [];
+            rewardText.push(`+${rewards.gold} Or`);
+
+            // Note: UI notification logic would go here
         }
 
-        // Distribuer l'XP aux membres survivants de l'équipe
+        // Expérience
         if (rewards.exp) {
             const party = this.game.partyManager.getParty();
             party.forEach(unit => {

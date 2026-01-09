@@ -1,4 +1,6 @@
 import UIFormationManager from './UIFormationManager.js';
+import { BUILDING_DATABASE, getAllBuildingIds, getProduction } from '../data/BuildingDatabase.js';
+import { AssetManager } from '../utils/AssetManager.js';
 
 export default class UIManager {
     constructor(game) {
@@ -18,7 +20,6 @@ export default class UIManager {
             GUILD: 'guild-screen',
             AUTH: 'auth-screen',
             VILLAGE: 'village-screen',
-            VILLAGE: 'village-screen',
             CRAFTING: 'crafting-screen',
             FORMATION: 'formation-screen'
         };
@@ -31,7 +32,18 @@ export default class UIManager {
         if (this.game.onlineSystem && this.game.onlineSystem.isOnline) {
             this.showScreen(this.screens.MAIN_MENU);
         } else {
-            this.showAuthScreen();
+            // DEBUG: Bypass Auth for testing
+            this.game.villageSystem.buildings = {
+                town_hall: { level: 1 },
+                forge: { level: 1 }, // Level 1 unlocks button
+                sanctuary: { level: 1 },
+                crystal_mine: { level: 1 },
+                alchemy_lab: { level: 1 },
+                market: { level: 1 },
+                // Add others if needed to prevent errors, but undefined is handled in grid
+            };
+            this.showVillage();
+            // this.showAuthScreen();
         }
 
         // Hide debug overlay after initialization
@@ -42,99 +54,297 @@ export default class UIManager {
     }
 
     initScreens() {
-        // Clear existing content (except debug overlay)
+        // Clear existing content
         const debug = document.getElementById('debug-overlay');
         this.uiLayer.innerHTML = '';
         if (debug) this.uiLayer.appendChild(debug);
 
-        // Create Main Menu
-        const mainMenu = document.createElement('div');
-        mainMenu.id = this.screens.MAIN_MENU;
-        mainMenu.className = 'screen';
-        mainMenu.innerHTML = `
-            <div class="menu-header">
-                <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                    <h2 style="font-family: 'Poppins', sans-serif; font-size: 24px; margin: 0;">🌳 The Dying World Tree</h2>
-                    <button id="btn-logout" style="background: none; border: 1px solid rgba(255,255,255,0.3); color: white; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 12px;">Déconnexion</button>
-                </div>
-                <div class="resources-display">
-                    <div class="resource-item">
-                        <span class="resource-icon">💎</span>
-                        <span id="gems-count">0</span>
-                    </div>
-                    <div class="resource-item">
-                        <span class="resource-icon">🪙</span>
-                        <span id="gold-count">0</span>
-                    </div>
-                    <div class="resource-item">
-                        <span class="resource-icon">⚡</span>
-                        <span id="energy-count">100</span>
-                    </div>
-                </div>
-            </div>
-            <h1>The Dying World Tree</h1>
-            <div class="menu-cards">
-                <div class="menu-card" id="card-battle">
-                    <div class="menu-card-content">
-                        <div class="menu-card-icon">⚔️</div>
-                        <h3>Combat</h3>
-                        <p>Partez en quête et affrontez vos ennemis</p>
-                    </div>
-                </div>
-                <div class="menu-card" id="card-story">
-                    <div class="menu-card-content">
-                        <div class="menu-card-icon">📖</div>
-                        <h3>Histoire</h3>
-                        <p>Progressez à travers 7 zones épiques</p>
-                    </div>
-                </div>
-                <div class="menu-card" id="card-equip">
-                    <div class="menu-card-content">
-                        <div class="menu-card-icon">👥</div>
-                        <h3>Équipe</h3>
-                        <p>Gérez votre équipe et votre équipement</p>
-                    </div>
-                </div>
-                <div class="menu-card" id="card-inventory">
-                    <div class="menu-card-content">
-                        <div class="menu-card-icon">🎒</div>
-                        <h3>Inventaire</h3>
-                        <p>Gérez vos objets et équipements</p>
-                    </div>
-                </div>
-                <div class="menu-card" id="card-pvp">
-                    <div class="menu-card-content">
-                        <div class="menu-card-icon">🏰</div>
-                        <h3>Guilde</h3>
-                        <p>Invocation, Forgeron et Échope</p>
-                    </div>
-                </div>
-                <div class="menu-card" id="card-shop">
-                    <div class="menu-card-content">
-                        <div class="menu-card-icon">💎</div>
-                        <h3>Boutique Premium</h3>
-                        <p>Achetez des gemmes</p>
-                    </div>
-                </div>
-                <div class="menu-card" id="card-village">
-                    <div class="menu-card-content">
-                        <div class="menu-card-icon">🏘️</div>
-                        <h3>Village</h3>
-                        <p>Sanctuaire, Forgeron et Marché</p>
-                    </div>
-                </div>
+        // --- VILLAGE HUB (Nouveau Menu Principal) ---
+        // La création est gérée plus bas ou dans une méthode dédiée pour éviter les doublons
 
-            </div>
-        `;
-        mainMenu.style.display = 'none';
-        this.uiLayer.appendChild(mainMenu);
 
+        // Initialisation des autres écrans (Battle, Equip, etc.)
+        this.initLegacyScreens();
+
+        // Setup Event Listeners pour le Village
+        this.setupVillageListeners();
+    }
+
+    setupVillageListeners() {
+        // Dock navigation removed for scene immersion
+        // document.getElementById('btn-dock-hero').onclick = () => this.showScreen(this.screens.FORMATION);
+        // document.getElementById('btn-dock-inv').onclick = () => this.showScreen(this.screens.INVENTORY);
+
+        // Redirection des anciens boutons si nécessaire
+    }
+
+    showVillage() {
+        this.showScreen(this.screens.VILLAGE);
+    }
+
+    updateVillageVisuals() {
+        const villageSystem = this.game.villageSystem;
+        const sanctuary = villageSystem.buildings['sanctuary'];
+
+        // Sécurité si le sanctuaire n'existe pas encore (fallback level 1)
+        let level = sanctuary ? sanctuary.level : 1;
+
+        // Clamp level entre 1 et 7 (au cas où on dépasse 7 plus tard)
+        if (level < 1) level = 1;
+        if (level > 7) level = 7;
+
+        const bgContainer = document.getElementById('village-background');
+        const tierLabel = document.getElementById('village-tier-label');
+        const mainContainer = document.getElementById(this.screens.VILLAGE);
+
+        // 1. Update Background
+        // Images: assets/backgrounds/village_bg_lvl_1.png à village_bg_lvl_7.png
+        const bgImage = `url("assets/backgrounds/village_bg_lvl_${level}.png")`;
+
+        // Update Title based on Level
+
+        let tierName = '';
+        switch (level) {
+            case 1: tierName = 'Camp de Survivants (Ruines)'; break;
+            case 2: tierName = 'Hameau Reconstruit'; break;
+            case 3: tierName = 'Village Fortifié'; break;
+            case 4: tierName = 'Bastion de Pierre'; break;
+            case 5: tierName = 'Château en Construction'; break;
+            case 6: tierName = 'Grande Forteresse'; break;
+            case 7: tierName = 'Citadelle Majestueuse'; break;
+            default: tierName = 'Village';
+        }
+
+        // Clean old classes (both formats to be safe)
+        mainContainer.classList.remove('tier1', 'tier2', 'tier3', 'tier-1', 'tier-2', 'tier-3');
+        // Add granular class
+        mainContainer.classList.add(`level-${level}`);
+
+        // Add Tier class for styling (Fonts, Borders, etc defined in village-evolution.css)
+        if (level <= 3) {
+            mainContainer.classList.add('tier-1');
+        } else if (level <= 6) {
+            mainContainer.classList.add('tier-2');
+        } else {
+            mainContainer.classList.add('tier-3');
+        }
+
+        if (bgContainer) {
+            bgContainer.style.backgroundColor = '#1a1a1a';
+            bgContainer.style.backgroundImage = bgImage;
+            bgContainer.style.backgroundSize = 'cover';
+            bgContainer.style.backgroundPosition = 'center';
+            // Transition is handled by CSS if defined
+        }
+
+        if (tierLabel) tierLabel.textContent = tierName;
+
+        // 2. Render Interactive Buildings Grid
+        this.updateVillageScreen();
+    }
+
+    updateVillageScreen() {
+        const container = document.getElementById('village-background');
+        if (!container) return;
+
+        // Clear existing buildings (keep tier label)
+        const tierLabel = document.getElementById('village-tier-label');
+        // Save tier label to re-append or just clear everything else
+        // Easier to just query everything and remove if not label
+        Array.from(container.children).forEach(child => {
+            if (child.id !== 'village-tier-label') {
+                container.removeChild(child);
+            }
+        });
+
+        // Loop through all buildings in database
+        getAllBuildingIds().forEach(buildingId => {
+            const buildingData = BUILDING_DATABASE[buildingId];
+            if (!buildingData.layout) return;
+
+            // Get current state
+            const buildingState = this.game.villageSystem.buildings[buildingId] || { level: 0 };
+            const level = buildingState.level;
+
+            // Only show hidden buildings if they are unlocked (optional, for now show all)
+            if (buildingData.layout.x === -100) return; // Explicitly hidden
+
+            this.createBuildingElement(container, buildingId, buildingData, level);
+        });
+    }
+
+    createBuildingElement(container, id, data, level) {
+        const el = document.createElement('div');
+        el.className = `building-sprite building-${id}`;
+        // Basic positioning style
+        el.style.position = 'absolute';
+        el.style.left = `${data.layout.x}%`;
+        el.style.top = `${data.layout.y}%`;
+        el.style.zIndex = data.layout.zIndex || 1;
+        el.style.transform = `translate(-50%, -50%) scale(${data.layout.scale || 1})`;
+        el.style.cursor = 'pointer';
+
+        // Tooltip container (optional, can be CSS hover)
+        el.title = `${data.name} (Niv. ${level})`;
+
+        // Image Construction
+        // Priority: Specific Level -> Generic Tier -> Fallback
+        const img = document.createElement('img');
+        img.className = 'building-image';
+        img.style.width = '100%';
+        img.style.height = 'auto';
+        img.style.display = 'block';
+        img.style.transition = 'transform 0.2s';
+
+        // Asset Path Logic
+        // Try precise level asset first
+        // Note: Using a localized error handler fallback strategy
+        // Default assumption: assets/buildings/{id}/{id}_lvl{level}.png
+        const baseFolder = `assets/buildings/${id}`;
+        const tierFolder = `assets/buildings/tier${Math.min(3, Math.ceil(level / 3))}`; // Approximation
+
+        // Start with ideal path
+        // For ruins (level 0), use specific or greyed out level 1
+        let finalSrc = level > 0
+            ? `${baseFolder}/${id}_lvl${level}.png`
+            : `${baseFolder}/${id}_ruins.png`;
+
+        img.src = finalSrc;
+
+        // Fallback chain handled via error event allows graceful degradation without complex checks
+        img.onerror = () => {
+            // Fallback 1: Try Tier 1 folder (legacy structure)
+            img.onerror = () => {
+                // Fallback 2: Just show a placeholder or nothing
+                console.warn(`Missing asset for ${id} lvl ${level}`);
+                img.style.opacity = 0.5; // Visual indicator of missing asset
+            };
+            img.src = `assets/buildings/tier1/${id}.png`;
+        };
+
+        if (level === 0) {
+            el.classList.add('building-locked');
+            img.style.filter = 'grayscale(100%) brightness(50%)';
+        }
+
+        // Hover Effect using JS or CSS class
+        el.onmouseenter = () => { img.style.transform = 'scale(1.1)'; img.style.filter = level === 0 ? 'grayscale(100%) brightness(70%)' : 'brightness(120%)'; };
+        el.onmouseleave = () => { img.style.transform = 'scale(1)'; img.style.filter = level === 0 ? 'grayscale(100%) brightness(50%)' : 'none'; };
+
+        // Click Interaction
+        el.onclick = () => {
+            // Animation feedback
+            img.style.transform = 'scale(0.95)';
+            setTimeout(() => img.style.transform = 'scale(1.1)', 100);
+
+            this.handleBuildingClick(id, data, level);
+        };
+
+        el.appendChild(img);
+
+        // Add Floating Label (Always visible or on hover)
+        const label = document.createElement('div');
+        label.className = 'building-label';
+        label.textContent = level > 0 ? `Niv. ${level}` : 'Construire';
+        label.style.position = 'absolute';
+        label.style.bottom = '-20px';
+        label.style.left = '50%';
+        label.style.transform = 'translateX(-50%)';
+        label.style.backgroundColor = 'rgba(0,0,0,0.7)';
+        label.style.color = 'white';
+        label.style.padding = '2px 6px';
+        label.style.borderRadius = '4px';
+        label.style.fontSize = '10px';
+        label.style.whiteSpace = 'nowrap';
+        label.style.pointerEvents = 'none'; // Click through
+        el.appendChild(label);
+
+        container.appendChild(el);
+    }
+
+    handleBuildingClick(id, data, level) {
+        console.log(`Building clicked: ${id}`, data.action);
+
+        if (!data.action) return;
+
+        // Prevent interaction if locked (unless it's to build it?)
+        // Assuming we allow clicking to see requirements to build
+
+        const action = data.action;
+
+        if (action.type === 'open_screen') {
+            if (this.screens[action.target]) {
+                this.showScreen(this.screens[action.target]);
+                // Handle specific tabs
+                if (action.tab && action.target === 'GUILD') {
+                    this.updateGuildScreen(action.tab);
+                }
+            } else {
+                console.error(`Screen ${action.target} not found`);
+            }
+        }
+        else if (action.type === 'open_modal') {
+            if (action.target === 'town_hall_info') {
+                // Implement Town Hall Modal
+                alert("Hôtel de ville - Work in Progress");
+            } else if (action.target === 'coming_soon') {
+                alert(`${action.title} - Bientôt disponible !`);
+            }
+        }
+        else if (action.type === 'collect') {
+            // Trigger collect in VillageSystem
+            // Visual feedback needed
+            const collected = this.game.villageSystem.collectResources(id);
+            if (collected > 0) {
+                this.showFloatingText(data.layout.x, data.layout.y, `+${collected} ${action.resource}`, '#2ecc71');
+                this.updateResourceDisplay(); // Ensure this exists
+            } else {
+                this.showFloatingText(data.layout.x, data.layout.y, "Rien à collecter", '#bdc3c7');
+            }
+        }
+    }
+
+    showFloatingText(xPct, yPct, text, color) {
+        const container = document.getElementById('village-background');
+        const el = document.createElement('div');
+        el.textContent = text;
+        el.style.position = 'absolute';
+        el.style.left = `${xPct}%`;
+        el.style.top = `${yPct}%`; // Start at building center
+        el.style.transform = 'translate(-50%, -50%)';
+        el.style.color = color;
+        el.style.fontWeight = 'bold';
+        el.style.textShadow = '1px 1px 2px black';
+        el.style.pointerEvents = 'none';
+        el.style.zIndex = 200;
+        el.style.transition = 'all 1s ease-out';
+
+        container.appendChild(el);
+
+        // Animate
+        requestAnimationFrame(() => {
+            el.style.top = `${yPct - 10}%`; // Float up
+            el.style.opacity = 0;
+        });
+
+        setTimeout(() => {
+            if (el.parentNode) el.parentNode.removeChild(el);
+        }, 1000);
+    }
+
+    showMainMenu() {
+        // Legacy redirect
+        this.showVillage();
+    }
+
+
+    initLegacyScreens() {
         // Create Equipment Screen - NOUVELLE VERSION AVEC ÉQUIPE HORIZONTALE
         const equipScreen = document.createElement('div');
         equipScreen.id = this.screens.EQUIPMENT;
         equipScreen.className = 'screen equipment-screen';
         equipScreen.innerHTML = `
-            <div class="inventory-header">
+    <div class="inventory-header">
                 <div class="header-top-row">
                     <div class="shop-exit-btn" id="btn-equip-exit">
                         <div class="door-icon">🚪</div>
@@ -150,68 +360,68 @@ export default class UIManager {
                     </div>
                 </div>
             </div>
-            <div class="team-screen-container">
-                <!-- Section Équipe Horizontale -->
-                <!-- Flex Layout for Side Bonuses & Team -->
-                <div class="team-flex-container" style="display: flex; align-items: flex-start; justify-content: center; gap: 10px; margin-bottom: 20px;">
-                    
-                    <!-- Left Bonus Panel -->
-                    <div id="team-bonus-left" style="flex: 0 0 180px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; min-height: 120px; font-size: 0.85em; border: 1px solid rgba(255,255,255,0.1);">
-                        <h4 style="margin: 0 0 8px 0; color: #f1c40f; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">Bonus Actifs</h4>
-                        <div id="bonus-list-left"></div>
-                    </div>
+    <div class="team-screen-container">
+        <!-- Section Équipe Horizontale -->
+        <!-- Flex Layout for Side Bonuses & Team -->
+        <div class="team-flex-container" style="display: flex; align-items: flex-start; justify-content: center; gap: 10px; margin-bottom: 20px;">
 
-                    <!-- Center Party Section -->
-                    <div class="team-center-section" style="flex: 0 0 auto;">
-                        <div class="team-header-compact" style="text-align: center; margin-bottom: 10px;">
-                            <h3 style="margin:0;">⚔️ Équipe <span id="party-count" style="font-size: 0.8em; color: #aaa;">(0/5)</span></h3>
-                        </div>
-                        <div id="party-units" class="party-list-horizontal"></div>
-                    </div>
+            <!-- Left Bonus Panel -->
+            <div id="team-bonus-left" style="flex: 0 0 180px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; min-height: 120px; font-size: 0.85em; border: 1px solid rgba(255,255,255,0.1);">
+                <h4 style="margin: 0 0 8px 0; color: #f1c40f; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">Bonus Actifs</h4>
+                <div id="bonus-list-left"></div>
+            </div>
 
-                    <!-- Right Bonus Panel -->
-                    <div id="team-bonus-right" style="flex: 0 0 180px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; min-height: 120px; font-size: 0.85em; border: 1px solid rgba(255,255,255,0.1);">
-                        <h4 style="margin: 0 0 8px 0; color: #f1c40f; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">Stats Totales</h4>
-                         <div id="bonus-list-right"></div>
-                    </div>
+            <!-- Center Party Section -->
+            <div class="team-center-section" style="flex: 0 0 auto;">
+                <div class="team-header-compact" style="text-align: center; margin-bottom: 10px;">
+                    <h3 style="margin:0;">⚔️ Équipe <span id="party-count" style="font-size: 0.8em; color: #aaa;">(0/5)</span></h3>
                 </div>
+                <div id="party-units" class="party-list-horizontal"></div>
+            </div>
 
-                <!-- Total Bonus Summary (Visual Bar) -->
-                 <div id="team-bonus-summary" style="background: rgba(39, 174, 96, 0.2); padding: 8px; border-radius: 5px; text-align: center; margin-bottom: 20px; border: 1px solid #27ae60; font-weight: bold; color: #2ecc71; display: none;">
-                    📊 Total: <span id="bonus-summary-text">Aucun bonus</span>
-                </div>
-                
-                <!-- Section Héros Disponibles (With Filters) -->
-                <div class="available-heroes-section">
-                    <div class="inventory-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                        <h3>Héros Disponibles <span id="total-hero-count" style="font-size: 0.8em; color: #aaa;">(0/50)</span></h3>
-                        
-                        <!-- Filters -->
-                         <div class="inventory-filters" style="display: flex; gap: 5px;">
-                            <select id="filter-element" style="padding: 5px; border-radius: 4px; background: #34495e; color: white; border: 1px solid #7f8c8d;">
-                                <option value="all">Tous Éléments</option>
-                                <option value="fire">Fire</option>
-                                <option value="water">Water</option>
-                                <option value="earth">Earth</option>
-                                <option value="thunder">Thunder</option>
-                                <option value="light">Light</option>
-                                <option value="dark">Dark</option>
-                            </select>
-                            <select id="filter-role" style="padding: 5px; border-radius: 4px; background: #34495e; color: white; border: 1px solid #7f8c8d;">
-                                <option value="all">Tous Rôles</option>
-                                <option value="Tank">Tank</option>
-                                <option value="Warrior">Warrior</option>
-                                <option value="Mage">Mage</option>
-                                <option value="Ranger">Ranger</option>
-                                <option value="Support">Support</option>
-                                <option value="Assassin">Assassin</option>
-                            </select>
-                         </div>
-                    </div>
-                    <div id="equipment-grid" class="available-heroes-grid"></div>
+            <!-- Right Bonus Panel -->
+            <div id="team-bonus-right" style="flex: 0 0 180px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; min-height: 120px; font-size: 0.85em; border: 1px solid rgba(255,255,255,0.1);">
+                <h4 style="margin: 0 0 8px 0; color: #f1c40f; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">Stats Totales</h4>
+                <div id="bonus-list-right"></div>
+            </div>
+        </div>
+
+        <!-- Total Bonus Summary (Visual Bar) -->
+        <div id="team-bonus-summary" style="background: rgba(39, 174, 96, 0.2); padding: 8px; border-radius: 5px; text-align: center; margin-bottom: 20px; border: 1px solid #27ae60; font-weight: bold; color: #2ecc71; display: none;">
+            📊 Total: <span id="bonus-summary-text">Aucun bonus</span>
+        </div>
+
+        <!-- Section Héros Disponibles (With Filters) -->
+        <div class="available-heroes-section">
+            <div class="inventory-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <h3>Héros Disponibles <span id="total-hero-count" style="font-size: 0.8em; color: #aaa;">(0/50)</span></h3>
+
+                <!-- Filters -->
+                <div class="inventory-filters" style="display: flex; gap: 5px;">
+                    <select id="filter-element" style="padding: 5px; border-radius: 4px; background: #34495e; color: white; border: 1px solid #7f8c8d;">
+                        <option value="all">Tous Éléments</option>
+                        <option value="fire">Fire</option>
+                        <option value="water">Water</option>
+                        <option value="earth">Earth</option>
+                        <option value="thunder">Thunder</option>
+                        <option value="light">Light</option>
+                        <option value="dark">Dark</option>
+                    </select>
+                    <select id="filter-role" style="padding: 5px; border-radius: 4px; background: #34495e; color: white; border: 1px solid #7f8c8d;">
+                        <option value="all">Tous Rôles</option>
+                        <option value="Tank">Tank</option>
+                        <option value="Warrior">Warrior</option>
+                        <option value="Mage">Mage</option>
+                        <option value="Ranger">Ranger</option>
+                        <option value="Support">Support</option>
+                        <option value="Assassin">Assassin</option>
+                    </select>
                 </div>
             </div>
-        `;
+            <div id="equipment-grid" class="available-heroes-grid"></div>
+        </div>
+    </div>
+`;
         equipScreen.style.display = 'none';
         this.uiLayer.appendChild(equipScreen);
 
@@ -238,38 +448,45 @@ export default class UIManager {
         battleHud.id = this.screens.BATTLE_HUD;
         battleHud.className = 'screen';
         battleHud.innerHTML = `
-            <div id="battle-info">Début du combat !</div>
-            <div style="position: absolute; bottom: 20px; right: 20px; display: flex; gap: 10px;">
-                <button id="btn-bm-attack" class="battle-action-btn active" style="padding: 15px; background: #e74c3c; color: white; border: 2px solid white;">⚔️ ATK</button>
-                <button id="btn-bm-skill" class="battle-action-btn" style="padding: 15px; background: #34495e; color: white;">✨ SKILL</button>
-                <button id="btn-flee" style="padding: 15px; background: #7f8c8d; color: white;">🏃 Fuir</button>
+    <div id = "battle-info" style = "font-size: 1.2em; font-weight: bold; background: rgba(0,0,0,0.6); padding: 10px; border-radius: 8px;"> Combat en cours</div>
+            
+            <div id="battle-portraits-container" style="
+                position: absolute; 
+                bottom: 20px; 
+                left: 50%; 
+                transform: translateX(-50%); 
+                display: flex; 
+                gap: 15px; 
+                /* width: 80%; */
+                justify-content: center;
+                align-items: flex-end;
+            ">
+                <!-- Portraits injected via updateBattleUI -->
             </div>
-            <div id="skill-description" style="position: absolute; bottom: 80px; right: 20px; background: rgba(0,0,0,0.7); color: white; padding: 10px; border-radius: 5px; display: none;">
-                Skill Info
-            </div>
-        `;
+
+            <button id="btn-flee" style="
+                position: absolute; 
+                top: 20px; 
+                right: 20px; 
+                padding: 10px 20px; 
+                background: #c0392b; 
+                color: white; 
+                border: none; 
+                border-radius: 5px; 
+                font-family: inherit; 
+                cursor: pointer;
+            ">🏃 Fuir</button>
+
+`;
         battleHud.style.display = 'none';
         this.uiLayer.appendChild(battleHud);
 
         // Battle HUD Listeners
-        document.getElementById('btn-bm-attack').onclick = () => {
-            this.game.battleSystem.setActionMode('attack');
-            document.getElementById('btn-bm-attack').classList.add('active');
-            document.getElementById('btn-bm-skill').classList.remove('active');
-            document.getElementById('skill-description').style.display = 'none';
-        };
+        // New Unit Listeners are dynamic in updateBattleUI
 
-        document.getElementById('btn-bm-skill').onclick = () => {
-            this.game.battleSystem.setActionMode('skill');
-            document.getElementById('btn-bm-attack').classList.remove('active');
-            document.getElementById('btn-bm-skill').classList.add('active');
-            document.getElementById('skill-description').style.display = 'block';
-            document.getElementById('skill-description').textContent = "Ciblez un Allié pour SWAP, ou un Ennemi pour PUSH/PULL";
-        };
 
         document.getElementById('btn-flee').addEventListener('click', () => {
-            this.game.battleSystem.endBattle(false); // Flee = defeat/end
-            this.showScreen(this.screens.MAIN_MENU);
+            this.game.endBattle(false); // Flee = defeat/end
         });
 
         // Create Shop Screen
@@ -338,7 +555,7 @@ export default class UIManager {
         inventoryScreen.innerHTML = `
             <div class="inventory-header">
                 <div class="header-top-row">
-                    <div class="shop-exit-btn" id="btn-inventory-exit">
+                    <div class="shop-exit-btn" id="btn-back-inventory">
                         <div class="door-icon">🚪</div>
                         <span>Sortie</span>
                     </div>
@@ -363,7 +580,7 @@ export default class UIManager {
                     <!-- Zone Principale Personnage -->
                     <div class="character-display-area">
                         <h3 id="rpg-hero-name" class="rpg-hero-name">Sélectionnez un héros</h3>
-                        
+
                         <div class="character-visual-container">
                             <!-- Slots d'équipement autour -->
                             <div class="equipment-slot slot-left" data-slot="weapon" id="rpg-slot-weapon" title="Arme">
@@ -371,9 +588,9 @@ export default class UIManager {
                                 <div class="slot-item-img"></div>
                                 <button class="btn-unequip-rpg" style="display: none;">✖</button>
                             </div>
-                            
+
                             <div class="character-avatar-large" id="rpg-hero-avatar"></div>
-                            
+
                             <div class="equipment-slot slot-right" data-slot="armor" id="rpg-slot-armor" title="Armure">
                                 <div class="slot-icon">🛡️</div>
                                 <div class="slot-item-img"></div>
@@ -410,7 +627,7 @@ export default class UIManager {
         this.uiLayer.appendChild(inventoryScreen);
 
         // Attach inventory event listeners immediately after creation
-        const invExitBtn = inventoryScreen.querySelector('#btn-inventory-exit');
+        const invExitBtn = inventoryScreen.querySelector('#btn-back-inventory');
         if (invExitBtn) {
             invExitBtn.addEventListener('click', () => {
                 this.showScreen(this.screens.MAIN_MENU);
@@ -431,7 +648,7 @@ export default class UIManager {
         questScreen.id = this.screens.QUEST_SELECT;
         questScreen.className = 'screen';
         questScreen.innerHTML = `
-            <h2>Sélectionner une Quête</h2>
+            <h2 > Sélectionner une Quête</h2>
             <div id="quest-list" style="overflow-y: auto; max-height: 60%; width: 80%; background: rgba(255,255,255,0.1); padding: 10px;"></div>
             <button id="btn-back-quest">Retour</button>
         `;
@@ -443,7 +660,7 @@ export default class UIManager {
         evolutionScreen.id = this.screens.EVOLUTION;
         evolutionScreen.className = 'screen';
         evolutionScreen.innerHTML = `
-            <h2>🌟 Évolution</h2>
+            <h2 >🌟 Évolution</h2>
             <div class="evolution-container">
                 <div class="evolution-source">
                     <h3>Avant</h3>
@@ -583,7 +800,7 @@ export default class UIManager {
             
 
 
-            <!-- Summon Animation Overlay -->
+            <!--Summon Animation Overlay-- >
             <div id="summon-overlay" class="summon-overlay" style="display: none;">
                 <div class="summon-crystal">💎</div>
                 <div id="summon-result-card" class="summon-result-card" style="display: none;">
@@ -606,15 +823,16 @@ export default class UIManager {
                     <span>Sortie</span>
                 </div>
                 <h2>🏘️ Village</h2>
-                <!-- Resources moved to separate container -->
+                <!--Resources moved to separate container-->
             </div>
             <div class="village-resources-container">
                 <!-- Resources will be injected here -->
             </div>
-            <div class="buildings-container">
-                <div class="buildings-grid">
+            <div id="village-background" class="buildings-container" style="position: relative; flex: 1; width: 100%; overflow: hidden;">
+                <div class="buildings-grid" style="display: none;">
                     <!-- Buildings will be injected here -->
                 </div>
+                <div id="village-tier-label" style="position: absolute; top: 10px; left: 10px; color: rgba(255,255,255,0.7); font-size: 0.8em; z-index: 100;"></div>
             </div>
         `;
         villageScreen.style.display = 'none';
@@ -625,7 +843,7 @@ export default class UIManager {
         craftingScreen.id = 'crafting-screen';
         craftingScreen.className = 'screen crafting-screen';
         craftingScreen.innerHTML = `
-            <div class="village-header" >
+            <div class="village-header">
                 <div class="shop-exit-btn" id="btn-crafting-exit">
                     <div class="door-icon">🚪</div>
                     <span>Sortie</span>
@@ -634,7 +852,7 @@ export default class UIManager {
                 <div class="village-resources">
                     <!-- Resources will be injected here -->
                 </div>
-            </div >
+            </div>
             <div class="crafting-container">
                 <div class="item-list">
                     <!-- Item list will be injected here -->
@@ -657,14 +875,14 @@ export default class UIManager {
                 <button class="story-back-btn" id="btn-story-back">Retour</button>
             </div>
             
-            <!-- Zone Selection View -->
+            < !--Zone Selection View-- >
             <div class="zone-selection" id="zone-selection">
                 <div class="zones-grid" id="zones-grid">
                     <!-- Zones will be injected here -->
                 </div>
             </div>
             
-            <!-- Stage Selection View -->
+            <!--Stage Selection View-- >
             <div class="stage-selection" id="stage-selection">
                 <div class="zone-info" id="zone-info">
                     <!-- Zone info will be injected here -->
@@ -684,6 +902,146 @@ export default class UIManager {
         if (logoutBtn) {
             logoutBtn.addEventListener('click', () => this.handleLogout());
         }
+    }
+
+    updateBattleUI() {
+        if (this.currentScreen !== this.screens.BATTLE_HUD) return;
+
+        const container = document.getElementById('battle-portraits-container');
+        if (!container) return;
+
+        const party = this.game.battleSystem.playerUnits;
+
+        // Init container if empty (first time)
+        // Or partial update? To be smooth (animations), we should update DOM elements not recreate them if possible.
+        // For simplicity V1: Recreate if length changes, otherwise update.
+
+        // Checking if we need to full rebuild
+        let needRebuild = false;
+        if (container.children.length !== party.length) needRebuild = true;
+
+        if (needRebuild) {
+            container.innerHTML = '';
+            party.forEach(unit => {
+                const el = document.createElement('div');
+                el.className = 'battle-portrait';
+                el.id = `portrait - ${unit.instanceId} `;
+                el.style.cssText = `
+        width: 80px;
+        height: 100px;
+        background: rgba(0, 0, 0, 0.5);
+        border: 2px solid #555;
+        border - radius: 8px;
+        position: relative;
+        cursor: pointer;
+        transition: transform 0.1s, border - color 0.2s;
+        display: flex;
+        flex - direction: column;
+        align - items: center;
+        overflow: hidden;
+        `;
+
+                // Avatar (Color square for now)
+                const avatar = document.createElement('div');
+                avatar.style.cssText = `
+        width: 100 %;
+        height: 60px;
+        background - color: ${unit.color || '#ccc'};
+        display: flex;
+        justify - content: center;
+        align - items: center;
+        font - size: 24px;
+        `;
+                avatar.textContent = "👤"; // Placeholder for sprite
+                el.appendChild(avatar);
+
+                // Info overlay
+                const info = document.createElement('div');
+                info.style.cssText = `
+        width: 100 %;
+        height: 40px;
+        padding: 2px;
+        box - sizing: border - box;
+        background: #222;
+        `;
+
+                // HP Bar
+                const hpBar = document.createElement('div');
+                hpBar.className = 'hp-bar';
+                hpBar.style.cssText = `width: 100 %; height: 6px; background: #555; margin - bottom: 2px; border - radius: 2px; overflow: hidden; `;
+                const hpFill = document.createElement('div');
+                hpFill.className = 'hp-fill';
+                hpFill.style.cssText = `width: 100 %; height: 100 %; background: #2ecc71; transition: width 0.2s; `;
+                hpBar.appendChild(hpFill);
+                info.appendChild(hpBar);
+
+                // ATB Bar (Yellow)
+                const atbBar = document.createElement('div');
+                atbBar.className = 'atb-bar';
+                atbBar.style.cssText = `width: 100 %; height: 6px; background: #555; margin - bottom: 2px; border - radius: 2px; position: relative; overflow: hidden; `;
+                const atbFill = document.createElement('div');
+                atbFill.className = 'atb-fill';
+                atbFill.style.cssText = `width: 0 %; height: 100 %; background: #f1c40f; transition: width 0.1s linear; `;
+                atbBar.appendChild(atbFill);
+                info.appendChild(atbBar);
+
+                // Soul Power Bar (Purple)
+                const spBar = document.createElement('div');
+                spBar.className = 'sp-bar';
+                spBar.style.cssText = `width: 100 %; height: 8px; background: #444; border - radius: 2px; position: relative; overflow: hidden; `;
+                const spFill = document.createElement('div');
+                spFill.className = 'sp-fill';
+                spFill.style.cssText = `width: 0 %; height: 100 %; background: #9b59b6; transition: width 0.2s; box - shadow: 0 0 5px #9b59b6; `;
+                spBar.appendChild(spFill);
+                info.appendChild(spBar);
+
+                el.appendChild(info);
+
+                // Click Handler for Ultimate
+                el.onclick = () => {
+                    this.game.battleSystem.triggerSoulPower(unit);
+                };
+
+                container.appendChild(el);
+            });
+        }
+
+        // Update Values
+        party.forEach((unit, index) => {
+            const el = container.children[index];
+            if (!el) return;
+
+            const maxHp = unit.getStat('maxHp') || 1;
+            const hpPct = (unit.hp / maxHp) * 100;
+            const atbPct = Math.min(100, unit.actionGauge || 0);
+            const spPct = (unit.soulPower / unit.maxSoulPower) * 100;
+
+            el.querySelector('.hp-fill').style.width = `${hpPct}% `;
+            el.querySelector('.atb-fill').style.width = `${atbPct}% `;
+
+            const spFill = el.querySelector('.sp-fill');
+            spFill.style.width = `${spPct}% `;
+
+            // Visual feedback for Ready Ultimate
+            if (unit.isSoulPowerReady()) {
+                el.style.borderColor = '#9b59b6'; // Purple glow border
+                el.style.boxShadow = '0 0 15px #9b59b6';
+                spFill.style.background = '#e056fd'; // Brighter purple
+            } else {
+                el.style.borderColor = '#555';
+                el.style.boxShadow = 'none';
+                spFill.style.background = '#9b59b6';
+            }
+
+            // Visual feedback for Dead
+            if (unit.isDead()) {
+                el.style.opacity = '0.5';
+                el.style.filter = 'grayscale(100%)';
+            } else {
+                el.style.opacity = '1';
+                el.style.filter = 'none';
+            }
+        });
     }
 
     updateEquipmentScreen() {
@@ -736,7 +1094,7 @@ export default class UIManager {
             formattedBonuses.forEach((text, index) => {
                 const item = document.createElement('div');
                 item.style.marginBottom = '4px';
-                item.innerHTML = `✅ ${text}`;
+                item.innerHTML = `✅ ${text} `;
 
                 if (index % 2 === 0) {
                     leftPanel.appendChild(item);
@@ -749,10 +1107,10 @@ export default class UIManager {
             if (summaryPanel && summaryText) {
                 const summary = this.game.elementalBonusSystem.getTotalBonusSummary(bonuses);
                 const parts = [];
-                if (summary.totalAtk > 0) parts.push(`+${summary.totalAtk}% ATK`);
-                if (summary.totalDef > 0) parts.push(`+${summary.totalDef}% DEF`);
-                if (summary.totalHp > 0) parts.push(`+${summary.totalHp}% HP`);
-                if (summary.totalBbFill > 0) parts.push(`+${summary.totalBbFill}% BB`);
+                if (summary.totalAtk > 0) parts.push(`+ ${summary.totalAtk}% ATK`);
+                if (summary.totalDef > 0) parts.push(`+ ${summary.totalDef}% DEF`);
+                if (summary.totalHp > 0) parts.push(`+ ${summary.totalHp}% HP`);
+                if (summary.totalBbFill > 0) parts.push(`+ ${summary.totalBbFill}% BB`);
 
                 if (parts.length > 0) {
                     summaryPanel.style.display = 'block';
@@ -784,21 +1142,21 @@ export default class UIManager {
             if (unit) {
                 // Filled slot
                 slotEl.classList.add('filled');
-                slotEl.classList.add(`rarity-${unit.rarity || 1}`);
+                slotEl.classList.add(`rarity - ${unit.rarity || 1} `);
                 const colors = {
                     'fire': '#e74c3c', 'water': '#3498db', 'earth': '#27ae60',
                     'thunder': '#f39c12', 'light': '#ecf0f1', 'dark': '#34495e', 'none': '#95a5a6'
                 };
 
                 slotEl.innerHTML = `
-                    <div class="hero-avatar-container" style="background-color: ${colors[unit.element] || colors['none']};">
-                        <span style="font-size: 2em;">👤</span>
+            <div class="hero-avatar-container" style = "background-color: ${colors[unit.element] || colors['none']};">
+                <span style="font-size: 2em;">👤</span>
                     </div>
                     <div class="hero-name">${unit.name}</div>
                     <div class="hero-level">Niv. ${unit.level}</div>
                     <div class="hero-stars">${unit.getRarityStars()}</div>
                     <button class="remove-btn" title="Retirer">✖</button>
-                `;
+        `;
 
                 // Remove button handler
                 const removeBtn = slotEl.querySelector('.remove-btn');
@@ -817,9 +1175,9 @@ export default class UIManager {
                 // Empty slot
                 slotEl.classList.add('empty');
                 slotEl.innerHTML = `
-                    <div style="font-size: 2em; opacity: 0.3;">+</div>
-                    <div class="hero-name" style="color: #666;">Vide</div>
-                `;
+            <div style = "font-size: 2em; opacity: 0.3;"> +</div>
+                <div class="hero-name" style="color: #666;">Vide</div>
+        `;
             }
 
             partyContainer.appendChild(slotEl);
@@ -829,7 +1187,7 @@ export default class UIManager {
         const currentCount = party.filter(u => u !== null).length;
         const countSpan = document.getElementById('party-count');
         if (countSpan) {
-            countSpan.textContent = `(${currentCount}/${maxPartySize})`;
+            countSpan.textContent = `(${currentCount} / ${maxPartySize})`;
         }
     }
 
@@ -866,20 +1224,20 @@ export default class UIManager {
             // if (index === 0) unit.rarity = 7;
 
             const unitCard = document.createElement('div');
-            unitCard.className = `hero-card-compact rarity-${unit.rarity || 1}`;
+            unitCard.className = `hero - card - compact rarity - ${unit.rarity || 1} `;
             // DEBUG: Force visible styles
             unitCard.style.cssText = `
-                min-height: 120px;
-                background: rgba(0,0,0,0.5);
-                border: 2px solid #555;
-                border-radius: 8px;
-                padding: 5px;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                cursor: pointer;
-            `;
+        min - height: 120px;
+        background: rgba(0, 0, 0, 0.5);
+        border: 2px solid #555;
+        border - radius: 8px;
+        padding: 5px;
+        display: flex;
+        flex - direction: column;
+        align - items: center;
+        justify - content: center;
+        cursor: pointer;
+        `;
 
             const colors = {
                 'fire': '#e74c3c', 'water': '#3498db', 'earth': '#27ae60',
@@ -887,11 +1245,11 @@ export default class UIManager {
             };
 
             unitCard.innerHTML = `
-                <div class="hero-avatar" style="background-color: ${colors[unit.element] || colors['none']}"></div>
+            <div class="hero-avatar" style = "background-color: ${colors[unit.element] || colors['none']}"></div>
                 <div class="hero-name">${unit.name}</div>
                 <div class="hero-level">Niv. ${unit.level}</div>
                 <div class="hero-stars">${unit.getRarityStars()}</div>
-            `;
+        `;
 
             unitCard.onclick = () => {
                 const result = this.game.partyManager.addToParty(unit);
@@ -954,10 +1312,10 @@ export default class UIManager {
             : '';
 
         card.innerHTML = `
-                <div class="char-name" > ${unit.name}</div >
-                    <div class="char-element">${unit.element} ${unit.getRarityStars()}</div>
+            <div class="char-name"> ${unit.name}</div>
+                <div class="char-element">${unit.element} ${unit.getRarityStars()}</div>
             ${evolutionBadge}
-            `;
+        `;
 
         card.addEventListener('click', () => this.selectCharacter(unit));
         return card;
@@ -1018,14 +1376,14 @@ export default class UIManager {
         const maxHp = unit.getStat('maxHp');
 
         const evolutionButton = unit.canEvolve()
-            ? `<button id = "btn-evolve-unit" class="btn-evolve" style = "margin-top: 16px; width: 100%;" >🌟 Évoluer(${unit.getRarityStars()} → ${'★'.repeat(unit.currentRarity + 1)})</button > `
+            ? `<button id = "btn-evolve-unit" class="btn-evolve" style = "margin-top: 16px; width: 100%;">🌟 Évoluer(${unit.getRarityStars()} → ${'★'.repeat(unit.currentRarity + 1)})</button> `
             : '';
 
         statsDisplay.innerHTML = `
-                <div class="stat-row level-row" >
+            <div class="stat-row level-row">
                 <span class="stat-label">⭐ Niveau :</span>
                 <span class="stat-value">${unit.level}</span>
-            </div >
+            </div>
             <div class="stat-row xp-row">
                 <span class="stat-label">📊 XP :</span>
                 <span class="stat-value">${unit.xp} / ${unit.xpToNextLevel}</span>
@@ -1051,7 +1409,7 @@ export default class UIManager {
                 <span class="stat-value">${unit.bbGauge} / ${unit.maxBbGauge}</span>
             </div>
             ${evolutionButton}
-            `;
+        `;
 
         // Add event listener for evolution button if it exists
         if (unit.canEvolve()) {
@@ -1073,10 +1431,12 @@ export default class UIManager {
 
             if (equipment[slot]) {
                 const statsStr = this.getItemStatsString(equipment[slot]);
+                const iconPath = AssetManager.getItemIconPath(equipment[slot]);
                 slotEl.innerHTML = `
-                <div class="equipped-name" > ${equipment[slot].name}</div >
+                    <div class="equipped-name">${equipment[slot].name}</div>
+                    <img src="${iconPath}" class="equipped-icon" style="width: 40px; height: 40px; object-fit: contain; display: block; margin: 5px auto;">
                     <div class="equipped-desc">${statsStr}</div>
-            `;
+                `;
                 slotEl.classList.add('equipped');
                 unequipBtn.style.display = 'inline-block';
                 unequipBtn.onclick = () => {
@@ -1107,11 +1467,18 @@ export default class UIManager {
             const itemCard = document.createElement('div');
             itemCard.className = 'inventory-item';
             const statsStr = this.getItemStatsString(item);
+            const iconPath = AssetManager.getItemIconPath(item);
             itemCard.innerHTML = `
-                <div class="item-name" > ${item.name}</div >
-                <div class="item-desc">${statsStr}</div>
-                <div class="item-type">${item.type}</div>
+                <img src="${iconPath}" class="item-icon" style="width: 32px; height: 32px; object-fit: contain; margin-right: 10px;">
+                <div class="item-details" style="flex: 1;">
+                    <div class="item-name">${item.name}</div>
+                    <div class="item-desc">${statsStr}</div>
+                    <div class="item-type">${item.type}</div>
+                </div>
             `;
+            // Ensure flex layout for the card if not already in CSS
+            itemCard.style.display = 'flex';
+            itemCard.style.alignItems = 'center';
 
             itemCard.addEventListener('click', () => {
                 if (unit.equip(item)) {
@@ -1146,12 +1513,12 @@ export default class UIManager {
             el.style.alignItems = 'center';
 
             el.innerHTML = `
-                <div >
+            <div >
                     <h3>${quest.name}</h3>
                     <p>${quest.description}</p>
-                </div >
-                <button>Commencer (${quest.energyCost} Énergie)</button>
-            `;
+                </div>
+            <button>Commencer (${quest.energyCost} Énergie)</button>
+        `;
 
             el.querySelector('button').addEventListener('click', () => {
                 console.log(`Clic sur commencer la quête: ${quest.name} `);
@@ -1165,17 +1532,7 @@ export default class UIManager {
 
     bindEvents() {
         // Main Menu Card Navigation
-        document.getElementById('card-battle').addEventListener('click', () => {
-            this.showScreen(this.screens.QUEST_SELECT);
-        });
 
-        document.getElementById('card-equip').addEventListener('click', () => {
-            this.showScreen(this.screens.EQUIPMENT);
-        });
-
-        document.getElementById('card-shop').addEventListener('click', () => {
-            this.showScreen(this.screens.SHOP);
-        });
 
         document.getElementById('btn-equip-exit').addEventListener('click', () => {
             this.showScreen(this.screens.MAIN_MENU);
@@ -1276,21 +1633,7 @@ export default class UIManager {
 
 
         // Inventory Events
-        const backBtn = document.getElementById('btn-back-inventory');
-        console.log('btn-back-inventory element:', backBtn);
 
-        document.getElementById('card-inventory').addEventListener('click', () => {
-            this.openInventoryScreen();
-        });
-
-        if (backBtn) {
-            backBtn.addEventListener('click', () => {
-                console.log('Back button clicked - returning to main menu');
-                this.showScreen(this.screens.MAIN_MENU);
-            });
-        } else {
-            console.error('btn-back-inventory not found!');
-        }
 
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
@@ -1364,7 +1707,21 @@ export default class UIManager {
         }
     }
 
+
     showScreen(screenId) {
+        // Redirection de sûreté: MAIN_MENU est le VILLAGE
+        if (screenId === this.screens.MAIN_MENU) {
+            screenId = this.screens.VILLAGE;
+        }
+
+        // Remove any open building modals
+        const existingModals = document.querySelectorAll('.building-detail-modal');
+        existingModals.forEach(modal => modal.remove());
+
+        // Remove any open shop modals
+        const shopModals = document.querySelectorAll('.shop-modal');
+        shopModals.forEach(modal => modal.remove());
+
         // Hide all screens
         Object.values(this.screens).forEach(id => {
             const el = document.getElementById(id);
@@ -1382,6 +1739,10 @@ export default class UIManager {
             this.updateQuestList();
         } else if (screenId === this.screens.MAIN_MENU) {
             this.updateResourceDisplay();
+            this.updateVillageVisuals();
+        } else if (screenId === this.screens.VILLAGE) {
+            this.updateVillageVisuals();
+            this.updateBuildingsGrid();
         } else if (screenId === this.screens.FORMATION) {
             this.formationManager.renderFormationScreen();
         }
@@ -1420,8 +1781,8 @@ export default class UIManager {
         const el = document.createElement('div');
         el.textContent = amount;
         el.style.position = 'absolute';
-        el.style.left = `${x + 20} px`;
-        el.style.top = `${y} px`;
+        el.style.left = `${x + 20}px`;
+        el.style.top = `${y}px`;
         el.style.color = color;
         el.style.fontSize = '24px';
         el.style.fontWeight = 'bold';
@@ -1434,11 +1795,11 @@ export default class UIManager {
             const style = document.createElement('style');
             style.id = 'anim-style';
             style.textContent = `
-            @keyframes floatUp {
-                0 % { transform: translateY(0); opacity: 1; }
-                100 % { transform: translateY(-50px); opacity: 0; }
-            }
-            `;
+        @keyframes floatUp {
+            0% { transform: translateY(0); opacity: 1; }
+            100% { transform: translateY(-50px); opacity: 0; }
+        }
+        `;
             document.head.appendChild(style);
         }
 
@@ -1465,17 +1826,74 @@ export default class UIManager {
             const style = document.createElement('style');
             style.id = 'msg-anim-style';
             style.textContent = `
-            @keyframes fadeOut {
-                0 % { opacity: 1; transform: scale(1); }
-                80 % { opacity: 1; transform: scale(1.1); }
-                100 % { opacity: 0; transform: scale(1.2); }
-            }
-            `;
+        @keyframes fadeOut {
+            0 % { opacity: 1; transform: scale(1); }
+            80 % { opacity: 1; transform: scale(1.1); }
+            100 % { opacity: 0; transform: scale(1.2); }
+        }
+        `;
             document.head.appendChild(style);
         }
 
         this.uiLayer.appendChild(el);
         setTimeout(() => el.remove(), 2000);
+    }
+
+    showStartBattleControls(show) {
+        let btn = document.getElementById('btn-start-battle');
+        let timer = document.getElementById('battle-timer');
+
+        if (!btn) {
+            // Create controls if missing
+            const container = document.createElement('div');
+            container.id = 'start-battle-container';
+            container.style.cssText = 'position: absolute; top: 100px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 10px; z-index: 100;';
+
+            timer = document.createElement('div');
+            timer.id = 'battle-timer';
+            timer.style.cssText = 'color: white; font-size: 24px; font-weight: bold; text-shadow: 2px 2px 4px black;';
+            timer.textContent = '15s';
+
+            btn = document.createElement('button');
+            btn.id = 'btn-start-battle';
+            btn.textContent = 'LANCER LE COMBAT';
+            btn.style.cssText = 'background: #e74c3c; color: white; border: 2px solid white; padding: 10px 20px; font-size: 20px; font-weight: bold; cursor: pointer; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.3);';
+
+            btn.addEventListener('click', () => {
+                this.game.battleSystem.startCombat();
+            });
+
+            container.appendChild(timer);
+            container.appendChild(btn);
+            this.uiLayer.appendChild(container);
+        }
+
+        const container = document.getElementById('start-battle-container');
+        if (container) {
+            container.style.display = show ? 'flex' : 'none';
+        }
+    }
+
+    updateSetupTimer(seconds) {
+        const timer = document.getElementById('battle-timer');
+        if (timer) {
+            timer.textContent = `Début dans ${seconds} s`;
+            if (seconds <= 5) {
+                timer.style.color = '#e74c3c';
+                timer.style.transform = 'scale(1.2)';
+            } else {
+                timer.style.color = 'white';
+                timer.style.transform = 'scale(1)';
+            }
+        }
+    }
+
+    showFloatingText(x, y, text, color) {
+        const el = document.createElement('div');
+        el.textContent = text;
+        el.style.cssText = `position: absolute; left: ${x} px; top: ${y - 30} px; color: ${color}; font - weight: bold; font - size: 16px; text - shadow: 1px 1px 2px black; pointer - events: none; animation: floatUp 1s ease - out forwards; `;
+        this.uiLayer.appendChild(el);
+        setTimeout(() => el.remove(), 1000);
     }
 
     // Evolution Methods
@@ -1497,7 +1915,7 @@ export default class UIManager {
 
         // Display current unit stats
         beforeDiv.innerHTML = `
-                <div class="unit-preview" >
+            <div class="unit-preview">
                 <h4>${unit.name}</h4>
                 <p class="rarity-stars">${unit.getRarityStars()}</p>
                 <p>Niveau ${unit.level}</p>
@@ -1506,8 +1924,8 @@ export default class UIManager {
                     <p>ATK: ${unit.atk}</p>
                     <p>DEF: ${unit.def}</p>
                 </div>
-            </div >
-                `;
+            </div>
+            `;
 
         // Check if evolution is possible
         const check = this.game.evolutionSystem.canPerformEvolution(unit);
@@ -1516,7 +1934,7 @@ export default class UIManager {
             // Show preview of evolved stats
             const preview = this.game.evolutionSystem.getEvolutionPreview(unit);
             afterDiv.innerHTML = `
-                <div class="unit-preview" >
+            <div class="unit-preview">
                     <h4>${unit.name}</h4>
                     <p class="rarity-stars">${'★'.repeat(preview.nextRarity)}</p>
                     <p>Niveau 1</p>
@@ -1525,32 +1943,32 @@ export default class UIManager {
                         <p>ATK: ${preview.nextStats.atk} <span class="stat-increase">+${preview.nextStats.atk - preview.currentStats.atk}</span></p>
                         <p>DEF: ${preview.nextStats.def} <span class="stat-increase">+${preview.nextStats.def - preview.currentStats.def}</span></p>
                     </div>
-                </div >
-                `;
+                </div>
+            `;
 
             // Show materials
             materialsDiv.innerHTML = `
-                <p >✓ 2 Duplicatas disponibles</p >
-                    `;
+            <p >✓ 2 Duplicatas disponibles</p>
+                `;
 
             // Show cost
             costDiv.innerHTML = `
-                    <p >💰 Coût: ${check.cost.toLocaleString()} Or</p >
-                        `;
+                <p >💰 Coût: ${check.cost.toLocaleString()} Or</p>
+                    `;
 
             // Enable button
             evolveBtn.disabled = false;
         } else {
             // Show why evolution is not possible
             afterDiv.innerHTML = `
-                        <div class="unit-preview" >
-                            <p>Évolution impossible</p>
-                </div >
-                `;
+                    <div class="unit-preview">
+                        <p>Évolution impossible</p>
+                </div>
+            `;
 
             materialsDiv.innerHTML = `
-                <p class="error" >✗ ${check.reason}</p >
-                    `;
+            <p class="error">✗ ${check.reason}</p>
+                `;
 
             costDiv.innerHTML = '';
             evolveBtn.disabled = true;
@@ -1673,7 +2091,7 @@ export default class UIManager {
         // Update Slots
         const slots = ['weapon', 'armor', 'accessory'];
         slots.forEach(slot => {
-            const slotEl = document.getElementById(`rpg - slot - ${slot} `);
+            const slotEl = document.getElementById(`rpg-slot-${slot}`);
             if (!slotEl) return;
 
             const itemImg = slotEl.querySelector('.slot-item-img');
@@ -1729,10 +2147,10 @@ export default class UIManager {
             const hpBonus = totalHp - baseHp;
 
             statsEl.innerHTML = `
-                <div class="rpg-stat-row" >
+            <div class="rpg-stat-row">
                     <span class="rpg-stat-label">HP</span>
                     <span class="rpg-stat-value">${totalHp} ${hpBonus > 0 ? `<span class="rpg-stat-bonus">(+${hpBonus})</span>` : ''}</span>
-                </div >
+                </div>
                 <div class="rpg-stat-row">
                     <span class="rpg-stat-label">ATK</span>
                     <span class="rpg-stat-value">${totalAtk} ${atkBonus > 0 ? `<span class="rpg-stat-bonus">(+${atkBonus})</span>` : ''}</span>
@@ -1741,7 +2159,7 @@ export default class UIManager {
                     <span class="rpg-stat-label">DEF</span>
                     <span class="rpg-stat-value">${totalDef} ${defBonus > 0 ? `<span class="rpg-stat-bonus">(+${defBonus})</span>` : ''}</span>
                 </div>
-            `;
+        `;
         }
     }
 
@@ -1792,10 +2210,9 @@ export default class UIManager {
         // Refresh displays
         this.updateHeroEquipmentDisplay(unit);
 
-        // Get current filter tab
         const activeTab = document.querySelector('.tab-btn.active');
-        const filterType = activeTab ? activeTab.dataset.tab : 'all';
-        this.updateInventoryGrid(filterType);
+        const currentTab = activeTab ? activeTab.dataset.tab : 'all';
+        this.updateInventoryGrid(currentTab);
         this.renderInventoryPartyUnits();
     }
 
@@ -1804,11 +2221,22 @@ export default class UIManager {
         if (!grid) return;
 
         grid.innerHTML = '';
-        const inventory = this.game.economySystem.inventory;
+        let items = this.game.economySystem.inventory;
 
-        let filteredItems = inventory;
+        let filteredItems = items;
         if (filterType !== 'all') {
-            filteredItems = inventory.filter(item => item.type === filterType);
+            if (filterType === 'armor') {
+                filteredItems = items.filter(item =>
+                    item.type === 'armor' ||
+                    item.type === 'plate' ||
+                    item.type === 'leather' ||
+                    item.type === 'cloth' ||
+                    item.type === 'helm' ||
+                    item.type === 'boots'
+                );
+            } else {
+                filteredItems = items.filter(item => item.type === filterType);
+            }
         }
 
         if (filteredItems.length === 0) {
@@ -1820,14 +2248,11 @@ export default class UIManager {
             const itemCard = document.createElement('div');
             itemCard.className = 'rpg-item-card';
 
-            let icon = '❓';
-            if (item.type === 'weapon') icon = '⚔️';
-            if (item.type === 'armor') icon = '🛡️';
-            if (item.type === 'accessory') icon = '💍';
+            const iconPath = AssetManager.getItemIconPath(item);
 
             itemCard.innerHTML = `
-                <div class="rpg-item-icon" > ${icon}</div >
-                    <div class="rpg-item-level">Niv.${item.level || 1}</div>
+                <img src="${iconPath}" class="rpg-item-icon-img" style="width: 48px; height: 48px; object-fit: contain; margin-bottom: 5px;">
+                <div class="rpg-item-level">Niv.${item.level || 1}</div>
             `;
 
             // Add tooltip
@@ -1855,7 +2280,7 @@ export default class UIManager {
 
         const beforeEl = document.getElementById('evo-before');
         beforeEl.innerHTML = `
-                <div class="character-card" >
+            <div class="character-card">
                 <div class="char-name">${unit.name}</div>
                 <div class="char-element">${unit.element} ${unit.getRarityStars()}</div>
                 <div class="char-stats">
@@ -1864,12 +2289,12 @@ export default class UIManager {
                     DEF: ${unit.def}
                 </div>
             </div>
-            `;
+        `;
 
         const afterEl = document.getElementById('evo-after');
         if (preview) {
             afterEl.innerHTML = `
-                <div class="character-card" >
+            <div class="character-card">
                     <div class="char-name">${unit.name}</div>
                     <div class="char-element">${unit.element} ${'⭐'.repeat(preview.nextRarity)}</div>
                     <div class="char-stats">
@@ -1878,7 +2303,7 @@ export default class UIManager {
                         DEF: <span class="stat-boost">${preview.nextStats.def} (+${preview.nextStats.def - unit.def})</span>
                     </div>
                 </div>
-            `;
+        `;
         } else {
             afterEl.innerHTML = '<p>Évolution impossible</p>';
         }
@@ -1901,9 +2326,9 @@ export default class UIManager {
                 const el = document.createElement('div');
                 el.className = 'material-card';
                 el.innerHTML = `
-                <div class="char-name" > ${dup.name}</div >
-                    <div class="char-level">Niv. ${dup.level}</div>
-            `;
+            <div class="char-name"> ${dup.name}</div>
+                <div class="char-level">Niv. ${dup.level}</div>
+        `;
                 // Auto-select first 2
                 if (this.selectedMaterials.length < 2) {
                     this.selectedMaterials.push(dup);
@@ -1963,7 +2388,7 @@ export default class UIManager {
         document.querySelectorAll('.guild-tab-content').forEach(content => {
             content.classList.remove('active');
         });
-        document.getElementById(`tab - ${activeTab} `).classList.add('active');
+        document.getElementById(`tab-${activeTab}`).classList.add('active');
 
 
 
@@ -2060,12 +2485,12 @@ export default class UIManager {
         units.forEach(unit => {
             const color = colors[unit.element] || '#95a5a6';
             html += `
-                <div style = "background: ${color}; padding: 10px; border-radius: 8px; text-align: center;" >
+            <div style="background: ${color}; padding: 10px; border-radius: 8px; text-align: center;">
                     <div style="font-size: 2em;">${unit.getAvatar()}</div>
                     <div style="font-size: 0.8em; margin-top: 5px;">${unit.name}</div>
                     <div style="color: #ffd700; font-size: 0.9em;">${unit.getRarityStars()}</div>
-                </div >
-                `;
+                </div>
+            `;
         });
 
         html += '</div>';
@@ -2086,7 +2511,7 @@ export default class UIManager {
         };
 
         resultCard.innerHTML = `
-                <div class="summon-flash" ></div >
+            <div class="summon-flash"></div>
             <div class="hero-avatar-large" style="background-color: ${colors[unit.element]}; width: 100px; height: 100px; margin: 0 auto 15px;"></div>
             <h2>${unit.name}</h2>
             <div style="color: #ffd700; font-size: 1.5em; margin-bottom: 10px;">${unit.getRarityStars()}</div>
@@ -2096,7 +2521,7 @@ export default class UIManager {
                 <div>ATK: ${unit.atk}</div>
                 <div>DEF: ${unit.def}</div>
             </div>
-            `;
+        `;
 
         resultCard.style.display = 'block';
         closeBtn.style.display = 'block';
@@ -2107,13 +2532,119 @@ export default class UIManager {
         crystal.style.opacity = '1';
     }
 
-    updateBlacksmithScreen(filter = 'all') {
-        const list = document.getElementById('blacksmith-items');
-        if (!list) return;
+    updateBlacksmithScreen(filter = 'all', mode = 'upgrade') {
+        const container = document.getElementById('tab-blacksmith');
+        if (!container) return;
 
-        let items = this.game.economySystem.inventory.filter(item =>
-            item.type === 'weapon' || item.type === 'armor' || item.type === 'accessory'
-        );
+        // Ensure Tabs Structure exists
+        if (!document.getElementById('blacksmith-mode-tabs')) {
+            container.innerHTML = `
+            <div class="guild-header">
+                    <h2>Forgeron</h2>
+                    <div id="blacksmith-gold-amount" class="resource-badge">0 Or</div>
+                </div>
+                
+                <div id="blacksmith-mode-tabs" class="sub-tabs">
+                    <button class="sub-tab-btn active" data-mode="upgrade">Améliorer</button>
+                    <button class="sub-tab-btn" data-mode="craft">Forger</button>
+                </div>
+
+                <div id="blacksmith-content-upgrade" class="blacksmith-mode-content">
+                     <!-- Existing Inventory Grid -->
+                     <div class="inventory-filters">
+                        <button class="filter-btn active" onclick="uiManager.updateBlacksmithScreen('all', 'upgrade')">Tout</button>
+                        <button class="filter-btn" onclick="uiManager.updateBlacksmithScreen('weapon', 'upgrade')">Armes</button>
+                        <button class="filter-btn" onclick="uiManager.updateBlacksmithScreen('armor', 'upgrade')">Armures</button>
+                        <button class="filter-btn" onclick="uiManager.updateBlacksmithScreen('accessory', 'upgrade')">Bijoux</button>
+                     </div>
+                     <div class="blacksmith-layout">
+                        <div id="blacksmith-items" class="items-grid"></div>
+                        <div id="blacksmith-panel" class="upgrade-panel">
+                             <div id="blacksmith-preview">Select an item</div>
+                             <div id="blacksmith-materials" style="display:none">
+                                <p>Matériel requis</p>
+                                <div id="blacksmith-material-slot"></div>
+                             </div>
+                             <div id="blacksmith-cost"></div>
+                             <button id="btn-upgrade" class="btn-action" disabled>Améliorer</button>
+                        </div>
+                     </div>
+                </div>
+
+                <div id="blacksmith-content-craft" class="blacksmith-mode-content" style="display:none">
+                    <h3>Forger un nouvel équipement</h3>
+                    <div class="crafting-controls">
+                        <label>Type d'objet :</label>
+                        <select id="craft-slot-select">
+                            <option value="">Aléatoire</option>
+                            <option value="weapon">Arme</option>
+                            <option value="armor">Armure</option>
+                            <option value="helm">Casque</option>
+                            <option value="boots">Bottes</option>
+                            <option value="accessory">Accessoire</option>
+                        </select>
+                        
+                        <label>Rareté Cible :</label>
+                        <select id="craft-rarity-select">
+                            <option value="1">1 Etoile (Standard)</option>
+                            <option value="2">2 Etoiles (Rare)</option>
+                            <option value="3">3 Etoiles (Epic)</option>
+                        </select>
+                        
+                        <div id="craft-cost-preview" style="margin: 20px 0; font-weight: bold;">
+                             Coût: 100 Or, 10 Cristaux
+                        </div>
+
+                        <button id="btn-craft-action" class="btn-action">FORGER (Aléatoire)</button>
+                    </div>
+                </div>
+        `;
+
+            // Bind Tab Clicks
+            container.querySelectorAll('.sub-tab-btn').forEach(btn => {
+                btn.onclick = () => {
+                    const newMode = btn.dataset.mode;
+                    this.updateBlacksmithScreen(filter, newMode);
+                };
+            });
+
+            // Bind Craft Button
+            const craftBtn = document.getElementById('btn-craft-action');
+            if (craftBtn) {
+                craftBtn.onclick = () => {
+                    const slot = document.getElementById('craft-slot-select').value || null;
+                    const rarity = parseInt(document.getElementById('craft-rarity-select').value);
+                    this.game.craftingSystem.craftNewItem(slot, rarity);
+                };
+            }
+
+            // Update Cost Preview on Change
+            const updateCost = () => {
+                const rarity = parseInt(document.getElementById('craft-rarity-select').value);
+                const gold = 100 * rarity;
+                const crystals = 10 * rarity;
+                document.getElementById('craft-cost-preview').textContent = `Coût: ${gold} Or, ${crystals} Cristaux`;
+            };
+            document.getElementById('craft-rarity-select').onchange = updateCost;
+        }
+
+        // Toggle Views based on Mode
+        document.querySelectorAll('.sub-tab-btn').forEach(btn => {
+            if (btn.dataset.mode === mode) btn.classList.add('active');
+            else btn.classList.remove('active');
+        });
+
+        document.getElementById('blacksmith-content-upgrade').style.display = mode === 'upgrade' ? 'block' : 'none';
+        document.getElementById('blacksmith-content-craft').style.display = mode === 'craft' ? 'block' : 'none';
+
+        if (mode === 'craft') return; // Stop here if crafting mode
+
+        // UPGRADE MODE LOGIC (Original Code)
+        const list = document.getElementById('blacksmith-items');
+        if (!list) return; // Should allow re-render of list if upgrading
+
+        let items = this.game.economySystem.inventory;
+
 
         // Apply filter
         if (filter !== 'all') {
@@ -2141,8 +2672,8 @@ export default class UIManager {
             el.className = 'blacksmith-item-card';
             if (this.selectedBlacksmithItem === item) el.classList.add('selected');
 
-            // Icon based on type
-            const icon = item.type === 'weapon' ? '⚔️' : item.type === 'armor' ? '🛡️' : '💍';
+            // Icon based on type - Now using Assets
+            const iconPath = AssetManager.getItemIconPath(item);
 
             // Determine rarity based on total stats
             const totalStats = Object.values(item.stats).reduce((sum, val) => sum + val, 0);
@@ -2158,14 +2689,16 @@ export default class UIManager {
             else if (item.level >= 6) tierClass = 'tier3';
             else if (item.level >= 3) tierClass = 'tier2';
 
-            el.classList.add(`rarity - ${rarityClass} `);
+            el.classList.add(`rarity-${rarityClass}`);
 
             el.innerHTML = `
-                <div class="item-icon" > ${icon}</div >
-                    <div class="item-info">
-                        <div class="item-name">${item.name}</div>
-                        <div class="item-level ${tierClass}">+${item.level}</div>
-                    </div>
+                <div class="item-icon">
+                    <img src="${iconPath}" style="width: 40px; height: 40px; object-fit: contain;">
+                </div>
+                <div class="item-info">
+                    <div class="item-name">${item.name}</div>
+                    <div class="item-level ${tierClass}">+${item.level}</div>
+                </div>
             `;
             el.onclick = () => this.selectBlacksmithItem(item);
             list.appendChild(el);
@@ -2197,18 +2730,18 @@ export default class UIManager {
                 ? `+ ${Math.floor(bonus.value * 100)}% `
                 : `+ ${bonus.value} `;
 
-            statsHtml += `<div > ${key.toUpperCase()}: ${item.stats[key]} → <span class="stat-boost">${nextStats[key]}</span> <span class="bonus-indicator">(${bonusText})</span></div > `;
+            statsHtml += `<div > ${key.toUpperCase()}: ${item.stats[key]} → <span class="stat-boost">${nextStats[key]}</span> <span class="bonus-indicator">(${bonusText})</span></div> `;
         }
 
         const tierBadge = isTierUp
-            ? `<span class="tier-up-badge" >🌟 PALIER ${nextTier} 🌟</span > `
+            ? `<span class="tier-up-badge">🌟 PALIER ${nextTier} 🌟</span> `
             : '';
 
         previewEl.innerHTML = `
-                <h3 > ${item.name} +${item.level} → +${item.level + 1}</h3 >
-                    ${tierBadge}
-            <div class="upgrade-stats">${statsHtml}</div>
-            `;
+            <h3 > ${item.name} +${item.level} → +${item.level + 1}</h3>
+                ${tierBadge}
+        <div class="upgrade-stats">${statsHtml}</div>
+        `;
 
         // Check Requirements
         const cost = this.game.blacksmithSystem.getUpgradeCost(item);
@@ -2222,13 +2755,13 @@ export default class UIManager {
                 // Auto-select first material
                 this.selectedBlacksmithMaterial = materials[0];
                 materialSlot.innerHTML = `
-                <div class="material-card selected" >
+            <div class="material-card selected">
                         <div class="item-name">${this.selectedBlacksmithMaterial.name}</div>
                         <div class="item-level">+${this.selectedBlacksmithMaterial.level}</div>
-                    </div >
-                `;
+                    </div>
+            `;
             } else {
-                materialSlot.innerHTML = `<p class="error-text" > Aucun doublon + ${item.level} trouvé</p > `;
+                materialSlot.innerHTML = `<p class="error-text"> Aucun doublon + ${item.level} trouvé</p> `;
             }
         } else {
             materialsSection.style.display = 'none';
@@ -2322,14 +2855,14 @@ export default class UIManager {
 
                 let statsHtml = '';
                 for (let key in itemData.stats) {
-                    statsHtml += `<div > ${key.toUpperCase()}: +${itemData.stats[key]}</div > `;
+                    statsHtml += `<div > ${key.toUpperCase()}: +${itemData.stats[key]}</div> `;
                 }
 
                 el.innerHTML = `
-                <div class="item-name" > ${itemData.name}</div >
+            <div class="item-name"> ${itemData.name}</div>
                     <div class="item-type">${itemData.slot}</div>
                     <div class="item-stats">${statsHtml}</div>
-            `;
+        `;
 
                 const priceLabel = document.createElement('div');
                 priceLabel.className = 'special-price-label';
@@ -2356,17 +2889,17 @@ export default class UIManager {
 
             let statsHtml = '';
             for (let key in item.stats) {
-                statsHtml += `<div > ${key.toUpperCase()}: +${item.stats[key]}</div > `;
+                statsHtml += `<div > ${key.toUpperCase()}: +${item.stats[key]}</div> `;
             }
 
             const levelText = item.level > 0 ? ` + ${item.level} ` : '';
             const sellPrice = item.level > 0 ? item.level * 50 : 10; // Base price 10 for level 0, 50 per level
             el.innerHTML = `
-                <div class="item-name" > ${item.name}${levelText}</div >
+            <div class="item-name"> ${item.name}${levelText}</div>
                 <div class="item-type">${item.type || item.slot}</div>
                 <div class="item-stats">${statsHtml}</div>
                 <div class="sell-price">Vendre: ${sellPrice} Or</div>
-            `;
+        `;
 
             // Make card clickable to sell
             el.addEventListener('click', () => {
@@ -2398,14 +2931,14 @@ export default class UIManager {
 
             let statsHtml = '';
             for (let key in itemData.stats) {
-                statsHtml += `<div > ${key.toUpperCase()}: +${itemData.stats[key]}</div > `;
+                statsHtml += `<div > ${key.toUpperCase()}: +${itemData.stats[key]}</div> `;
             }
 
             el.innerHTML = `
-                <div class="item-name" > ${itemData.name}</div >
+            <div class="item-name"> ${itemData.name}</div>
                 <div class="item-type">${itemData.slot}</div>
                 <div class="item-stats">${statsHtml}</div>
-            `;
+        `;
 
             const priceLabel = document.createElement('div');
             priceLabel.className = 'buy-price-label';
@@ -2427,7 +2960,7 @@ export default class UIManager {
         const maxInventory = this.game.economySystem.maxInventorySize;
         const shopTitles = document.querySelectorAll('#tab-shop h3');
         if (shopTitles[0]) {
-            shopTitles[0].innerHTML = `Votre Inventaire <span style = "color: ${inventoryCount >= maxInventory * 0.8 ? '#e74c3c' : '#2ecc71'}; font-size: 0.8em;" > (${inventoryCount} /${maxInventory})</span > `;
+            shopTitles[0].innerHTML = `Votre Inventaire <span style="color: ${inventoryCount >= maxInventory * 0.8 ? '#e74c3c' : '#2ecc71'}; font-size: 0.8em;">(${inventoryCount}/${maxInventory})</span>`;
         }
 
         // Update gold display
@@ -2509,11 +3042,11 @@ export default class UIManager {
         const modal = document.createElement('div');
         modal.className = 'shop-modal';
         modal.innerHTML = `
-                <div class="shop-modal-content ${type}" >
+            <div class="shop-modal-content ${type}">
                 <p>${message}</p>
                 <button class="shop-modal-btn">OK</button>
-            </div >
-                `;
+            </div>
+            `;
         document.body.appendChild(modal);
 
         const btn = modal.querySelector('.shop-modal-btn');
@@ -2531,14 +3064,14 @@ export default class UIManager {
         const modal = document.createElement('div');
         modal.className = 'shop-modal';
         modal.innerHTML = `
-                <div class="shop-modal-content confirm" >
+            <div class="shop-modal-content confirm">
                 <p>${message}</p>
                 <div class="shop-modal-buttons">
                     <button class="shop-modal-btn cancel">Annuler</button>
                     <button class="shop-modal-btn confirm">Confirmer</button>
                 </div>
-            </div >
-                `;
+            </div>
+            `;
         document.body.appendChild(modal);
 
         const cancelBtn = modal.querySelector('.cancel');
@@ -2593,7 +3126,7 @@ export default class UIManager {
         authScreen.className = 'auth-screen';
 
         authScreen.innerHTML = `
-                <div class="auth-container" >
+            <div class="auth-container">
                 <div class="auth-header">
                     <h1 class="auth-title">🌳 The Dying World Tree</h1>
                     <p class="auth-subtitle">Connectez-vous pour sauvegarder votre progression</p>
@@ -2623,7 +3156,7 @@ export default class UIManager {
                     </button>
                 </form>
 
-                <!--Register Form-->
+                <!--Register Form-- >
                 <form class="auth-form" id="register-form">
                     <div class="auth-input-group">
                         <label class="auth-label" for="register-username">Nom d'utilisateur</label>
@@ -2647,8 +3180,8 @@ export default class UIManager {
                         Continuer sans compte
                     </button>
                 </div>
-            </div >
-                `;
+            </div>
+            `;
 
         return authScreen;
     }
@@ -2701,7 +3234,7 @@ export default class UIManager {
         if (guestBtn) {
             guestBtn.addEventListener('click', (e) => {
                 e.preventDefault();
-                this.showScreen(this.screens.MAIN_MENU);
+                this.showScreen(this.screens.VILLAGE);
             });
         }
     }
@@ -2724,7 +3257,7 @@ export default class UIManager {
             if (result.success) {
                 this.showAuthSuccess('Connexion réussie ! Bienvenue ' + result.user.username);
                 setTimeout(() => {
-                    this.showScreen(this.screens.MAIN_MENU);
+                    this.showScreen(this.screens.VILLAGE);
                 }, 1500);
             } else {
                 this.showAuthError(result.error || 'Erreur de connexion');
@@ -2757,7 +3290,7 @@ export default class UIManager {
             if (result.success) {
                 this.showAuthSuccess('Compte créé ! Bienvenue ' + result.user.username);
                 setTimeout(() => {
-                    this.showScreen(this.screens.MAIN_MENU);
+                    this.showScreen(this.screens.VILLAGE);
                 }, 1500);
             } else {
                 this.showAuthError(result.error || 'Erreur lors de la création du compte');
@@ -2823,17 +3356,17 @@ export default class UIManager {
         notification.className = 'notification';
         notification.textContent = message;
         notification.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: rgba(46, 204, 113, 0.9);
-            color: white;
-            padding: 15px 25px;
-            border - radius: 10px;
-            font - weight: bold;
-            z - index: 10000;
-            animation: slideIn 0.3s ease;
-            `;
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: rgba(46, 204, 113, 0.9);
+        color: white;
+        padding: 15px 25px;
+        border - radius: 10px;
+        font - weight: bold;
+        z - index: 10000;
+        animation: slideIn 0.3s ease;
+        `;
         document.body.appendChild(notification);
 
         setTimeout(() => {
@@ -2851,6 +3384,34 @@ export default class UIManager {
     }
 
     /**
+     * Updates the visual appearance of the village based on its Tier
+     */
+    updateVillageVisuals() {
+        if (!this.game.villageSystem || !this.game.villageSystem.buildings.town_hall) return;
+
+        const townHallLevel = this.game.villageSystem.buildings.town_hall.level || 1;
+        const bgContainer = document.getElementById('village-background');
+
+        let bgImage;
+        // Logic for Ruined Village (Level 1 starts as ruins)
+        if (townHallLevel <= 1) {
+            bgImage = `url("assets/backgrounds/village_ruins_bg.png")`;
+        } else {
+            // We have assets: village_bg_lvl_1.png to village_bg_lvl_7.png
+            // Clamp level between 1 and 7
+            const bgLevel = Math.max(1, Math.min(townHallLevel, 7));
+            bgImage = `url("assets/backgrounds/village_bg_lvl_${bgLevel}.png")`;
+        }
+
+        if (bgContainer) {
+            bgContainer.style.backgroundImage = bgImage;
+            bgContainer.style.backgroundSize = 'cover';
+            bgContainer.style.backgroundPosition = 'center';
+            bgContainer.style.width = '100%';
+            bgContainer.style.height = '100%';
+        }
+    }
+    /**
      * Updates the village screen
      */
     updateVillageScreen() {
@@ -2862,6 +3423,9 @@ export default class UIManager {
 
         // Update buildings grid
         this.updateBuildingsGrid();
+
+        // Update visuals
+        this.updateVillageVisuals();
     }
 
     /**
@@ -2874,11 +3438,11 @@ export default class UIManager {
         const resources = this.game.economySystem.resources;
 
         container.innerHTML = `
-                <div class="resource-display" >
+            <div class="resource-display">
                 <span class="resource-icon">💰</span>
                 <span class="resource-label">Or</span>
                 <span class="resource-amount">${resources.gold.toLocaleString()}</span>
-            </div >
+            </div>
             <div class="resource-display">
                 <span class="resource-icon">💎</span>
                 <span class="resource-label">Cristaux</span>
@@ -2894,91 +3458,194 @@ export default class UIManager {
                 <span class="resource-label">Fragments</span>
                 <span class="resource-amount">${resources.fragments.toLocaleString()}</span>
             </div>
-            `;
+        `;
     }
 
-    /**
-     * Updates buildings grid
-     */
     async updateBuildingsGrid() {
-        const grid = document.querySelector('.buildings-grid');
-        if (!grid) return;
+        const bgContainer = document.getElementById('village-background');
+        if (!bgContainer) return;
 
-        const { BUILDING_DATABASE, getAllBuildingIds, getProduction } = await import('../data/BuildingDatabase.js');
+        // Ensure relative positioning
+        if (getComputedStyle(bgContainer).position === 'static') {
+            bgContainer.style.position = 'relative';
+        }
+
+        // Clear previous content (except bg image style)
+        bgContainer.innerHTML = '';
+
+        // Hide Legacy Header if presents
+        const legacyHeader = document.querySelector('.village-header');
+        if (legacyHeader) legacyHeader.style.display = 'none';
+
+        // Add Tier Label overlay (persists visual tier name)
+        const tierLabel = document.createElement('div');
+        tierLabel.id = 'village-tier-label';
+        tierLabel.style.position = 'absolute';
+        tierLabel.style.top = '10px';
+        tierLabel.style.left = '10px';
+        tierLabel.style.color = 'rgba(255,255,255,0.7)';
+        tierLabel.style.fontSize = '0.8em';
+        tierLabel.style.zIndex = '100';
+        bgContainer.appendChild(tierLabel);
+
+        // Building positions (Approximate) adjusted for visibility
+        // x, y are percentages. w is width percentage.
+        const buildingPositions = {
+            'town_hall': { x: 40, y: 30, w: 25, z: 10 },
+            'sanctuary': { x: 70, y: 50, w: 20, z: 15 },
+            'forgeron': { x: 10, y: 55, w: 20, z: 15 },
+            'market': { x: 25, y: 70, w: 18, z: 20 },  // Marché
+            'market_shop': { x: 25, y: 70, w: 18, z: 20 }, // Fallback
+            'crystal_mine': { x: 80, y: 30, w: 15, z: 5 },
+            'alchemy_lab': { x: 60, y: 70, w: 15, z: 20 },
+            'portal': { x: 5, y: 30, w: 15, z: 5 },
+            'warehouse': { x: 85, y: 70, w: 15, z: 20 },
+            'guild': { x: 50, y: 15, w: 15, z: 5 }, // Guild Hall background?
+            'arena': { x: 10, y: 10, w: 15, z: 2 }
+        };
+
+        // Mapping for Ruined Assets (Filename in assets/buildings/ruins/)
+        const ruinedMapping = {
+            'town_hall': 'town_hall.png',
+            'forgeron': 'forge.png',
+            'sanctuary': 'sanctuary.png',
+            'market': 'shop.png',
+            'market_shop': 'shop.png',
+            'crystal_mine': 'crystal_mine.png',
+            'alchemy_lab': 'alchemy_lab.png',
+            'warehouse': 'warehouse.png',
+            'guild': 'guild.png',
+            'arena': 'arena.png'
+        };
+
         const buildingIds = getAllBuildingIds();
-
-        grid.innerHTML = '';
+        // Check if map contains buildings not in DB but requested
+        if (!buildingIds.includes('guild')) buildingIds.push('guild');
 
         buildingIds.forEach(buildingId => {
-            const buildingData = BUILDING_DATABASE[buildingId];
-            const buildingState = this.game.villageSystem.buildings[buildingId];
+            const pos = buildingPositions[buildingId];
+            if (!pos) return;
 
-            const card = document.createElement('div');
-            card.className = 'building-card';
-
-            if (buildingState.level === 0) {
-                card.classList.add('locked');
-            }
-            if (buildingState.isUpgrading) {
-                card.classList.add('upgrading');
+            // Handle case where building might not be in system but we want to show it (e.g. ruins)
+            let buildingState = this.game.villageSystem.buildings[buildingId];
+            // Initializing fake state if missing, for visual purposes of ruins
+            if (!buildingState) {
+                buildingState = { level: 0 };
             }
 
-            // Calculate production if applicable
-            let productionHtml = '';
-            if (buildingData.benefits.type === 'production' && buildingState.level > 0) {
-                const production = getProduction(buildingId, buildingState.level);
-                const resourceIcon = buildingData.benefits.resource === 'crystals' ? '💎' :
-                    buildingData.benefits.resource === 'essences' ? '⚗️' : '💰';
-                productionHtml = `<div class="building-production" > ${resourceIcon} +${production} /h</div > `;
+            const buildingData = BUILDING_DATABASE[buildingId] || { name: 'Bâtiment', benefits: {} };
+
+            let visualLevel = buildingState.level;
+            if (visualLevel < 1) visualLevel = 1;
+            if (visualLevel > 7) visualLevel = 7;
+
+            // Determine Image URL
+            let bgUrl = `assets/buildings/${buildingId}/${buildingId}_lvl${visualLevel}.png`;
+
+            // Ruined Logic
+            const townHallLevel = this.game.villageSystem.buildings['town_hall'] ? this.game.villageSystem.buildings['town_hall'].level : 1;
+            const isRuined = townHallLevel <= 1;
+
+            if (isRuined && ruinedMapping[buildingId]) {
+                bgUrl = `assets/buildings/ruins/${ruinedMapping[buildingId]}`;
             }
 
-            // Timer if upgrading
-            let timerHtml = '';
-            if (buildingState.isUpgrading) {
-                const remaining = this.game.villageSystem.getRemainingUpgradeTime(buildingId);
-                timerHtml = `<div class="building-timer" > ${this.formatTime(remaining)}</div > `;
+            const sprite = document.createElement('div');
+            sprite.className = `building-sprite building-${buildingId}`;
+            sprite.style.backgroundImage = `url('${bgUrl}')`;
+            sprite.style.position = 'absolute';
+            sprite.style.left = `${pos.x}%`;
+            sprite.style.top = `${pos.y}%`;
+            sprite.style.width = `${pos.w}%`;
+            sprite.style.zIndex = pos.z;
+            sprite.style.aspectRatio = '1 / 1';
+            sprite.style.backgroundSize = 'contain';
+            sprite.style.backgroundRepeat = 'no-repeat';
+            sprite.style.cursor = 'pointer';
+
+            if (buildingState.level === 0 && !isRuined) {
+                sprite.style.filter = 'grayscale(100%) opacity(0.7)';
             }
 
-            // Collect button if has resources
-            let collectHtml = '';
-            if (buildingData.benefits.type === 'production' && buildingState.level > 0) {
-                const generated = this.game.villageSystem.calculateGeneratedResources(buildingId);
-                if (generated > 0) {
-                    collectHtml = `<button class="collect-button" > Collecter(${generated})</button > `;
-                }
-            }
-
-            card.innerHTML = `
-                <div class="building-icon" > ${buildingData.icon}</div >
-                <div class="building-name">${buildingData.name}</div>
-                <div class="building-level">Niveau ${buildingState.level}/${buildingData.maxLevel}</div>
-                ${productionHtml}
-                ${timerHtml}
-                ${collectHtml}
-            `;
-
-            // Click handlers
-            if (collectHtml) {
-                const collectBtn = card.querySelector('.collect-button');
-                collectBtn.onclick = (e) => {
-                    e.stopPropagation();
-                    this.collectBuildingResources(buildingId);
-                };
-            }
-
-            card.onclick = () => {
-                if (buildingState.level > 0 || buildingId === 'town_hall' || buildingId === 'sanctuary' || buildingId === 'forge') {
-                    this.openBuildingDetail(buildingId);
-                }
+            // Hover
+            sprite.style.transition = 'transform 0.2s, filter 0.2s';
+            sprite.onmouseenter = () => {
+                sprite.style.transform = 'scale(1.1)';
+                sprite.style.filter = (buildingState.level === 0 && !isRuined) ? 'grayscale(80%) brightness(1.2)' : 'brightness(1.2)';
+            };
+            sprite.onmouseleave = () => {
+                sprite.style.transform = 'scale(1)';
+                sprite.style.filter = (buildingState.level === 0 && !isRuined) ? 'grayscale(100%) opacity(0.7)' : 'none';
             };
 
-            grid.appendChild(card);
+            // Label
+            const label = document.createElement('div');
+            // Show "Ruines" if ruined
+            const levelText = isRuined ? 'Ruines' : `Lv.${buildingState.level}`;
+            label.innerHTML = `<div style="text-shadow:0 1px 2px black; font-weight:bold;">${buildingData.name}</div><div style="font-size:0.8em;color:#ffd700;text-shadow:0 1px 2px black;">${levelText}</div>`;
+            label.style.position = 'absolute';
+            label.style.bottom = '-30px';
+            label.style.left = '50%';
+            label.style.transform = 'translateX(-50%)';
+            label.style.textAlign = 'center';
+            label.style.width = '150px';
+            label.style.color = 'white';
+            label.style.pointerEvents = 'none';
+            sprite.appendChild(label);
+
+            // Collection Bubble
+            if (buildingData.benefits.type === 'production' && buildingState.level > 0 && !isRuined) {
+                const generated = this.game.villageSystem.calculateGeneratedResources(buildingId);
+                if (generated > 0) {
+                    const resourceIcon = buildingData.benefits.resource === 'crystals' ? '💎' :
+                        buildingData.benefits.resource === 'essences' ? '⚗️' : '💰';
+
+                    const bubble = document.createElement('div');
+                    bubble.className = 'collection-bubble';
+                    bubble.innerHTML = `${resourceIcon}`;
+                    bubble.style.position = 'absolute';
+                    bubble.style.top = '-15px';
+                    bubble.style.right = '-15px';
+                    bubble.style.background = '#fff';
+                    bubble.style.border = '2px solid #f1c40f';
+                    bubble.style.borderRadius = '50%';
+                    bubble.style.width = '30px';
+                    bubble.style.height = '30px';
+                    bubble.style.display = 'flex';
+                    bubble.style.justifyContent = 'center';
+                    bubble.style.alignItems = 'center';
+                    bubble.style.cursor = 'pointer';
+                    bubble.style.zIndex = '50';
+                    bubble.style.animation = 'bounce 2s infinite';
+                    bubble.style.boxShadow = '0 0 10px rgba(241, 196, 15, 0.5)';
+
+                    bubble.onclick = (e) => {
+                        e.stopPropagation();
+                        this.collectBuildingResources(buildingId);
+                    };
+
+                    sprite.appendChild(bubble);
+                }
+            }
+
+            sprite.onclick = (e) => {
+                e.stopPropagation();
+                if (buildingState.level > 0) {
+                    if (buildingId === 'sanctuary') { this.openGuildScreen(); this.updateGuildScreen('summon'); }
+                    else if (buildingId === 'forgeron') { this.openGuildScreen(); this.updateBlacksmithScreen('all', 'craft'); }
+                    else if (buildingId === 'market_shop' || buildingId === 'market') { this.openGuildScreen(); this.updateShopScreen(); }
+                    else this.openBuildingDetail(buildingId);
+                } else this.openBuildingDetail(buildingId);
+            };
+
+            bgContainer.appendChild(sprite);
         });
+
+        // Hide Old Grid
+        const oldGrid = document.querySelector('#village-screen .buildings-grid');
+        if (oldGrid) oldGrid.style.display = 'none';
     }
 
-    /**
-     * Collects resources from a building
-     */
     async collectBuildingResources(buildingId) {
         const amount = this.game.villageSystem.collectResources(buildingId);
         if (amount > 0) {
@@ -3016,15 +3683,15 @@ export default class UIManager {
             const nextCap = getCapacity(buildingId, buildingState.level + 1);
 
             statsHtml = `
-                <div class="stat-row" >
-                    <span class="stat-label">Production/h</span>
-                    <span class="stat-value">${currentProd} → ${nextProd}</span>
-                </div >
-                <div class="stat-row">
-                    <span class="stat-label">Capacité</span>
-                    <span class="stat-value">${currentCap} → ${nextCap}</span>
-                </div>
-            `;
+            <div class="stat-row">
+    <span class="stat-label">Production/h</span>
+    <span class="stat-value">${currentProd} → ${nextProd}</span>
+</div>
+            <div class="stat-row">
+                <span class="stat-label">Capacité</span>
+                <span class="stat-value">${currentCap} → ${nextCap}</span>
+            </div>
+        `;
         }
 
         // Build cost HTML
@@ -3032,52 +3699,52 @@ export default class UIManager {
         const resources = this.game.economySystem.resources;
         if (buildingState.level < buildingData.maxLevel) {
             costHtml = `
-                <div class="upgrade-cost" >
-                    <div class="cost-title">Coût d'amélioration</div>
-                    <div class="cost-item ${resources.gold >= cost.gold ? '' : 'insufficient'}">
-                        💰 Or: ${cost.gold.toLocaleString()}
-                    </div>
-                    ${cost.crystals > 0 ? `<div class="cost-item ${resources.crystals >= cost.crystals ? '' : 'insufficient'}">
-                        💎 Cristaux: ${cost.crystals.toLocaleString()}
-                    </div>` : ''
+            <div class="upgrade-cost">
+    <div class="cost-title">Coût d'amélioration</div>
+    <div class="cost-item ${resources.gold >= cost.gold ? '' : 'insufficient'}">
+        💰 Or: ${cost.gold.toLocaleString()}
+    </div>
+    ${cost.crystals > 0 ? `<div class="cost-item ${resources.crystals >= cost.crystals ? '' : 'insufficient'}">
+        💎 Cristaux: ${cost.crystals.toLocaleString()}
+    </div>` : ''
                 }
-                    ${cost.essences > 0 ? `<div class="cost-item ${resources.essences >= cost.essences ? '' : 'insufficient'}">
-                        ⚗️ Essences: ${cost.essences.toLocaleString()}
-                    </div>` : ''
+    ${cost.essences > 0 ? `<div class="cost-item ${resources.essences >= cost.essences ? '' : 'insufficient'}">
+        ⚗️ Essences: ${cost.essences.toLocaleString()}
+    </div>` : ''
                 }
-            <div class="cost-item">
-                ⏱️ Temps: ${this.formatTime(upgradeTime)}
-            </div>
-                </div >
-                `;
+        <div class="cost-item">
+            ⏱️ Temps: ${this.formatTime(upgradeTime)}
+        </div>
+</div>
+            `;
         }
 
         modal.innerHTML = `
-                <div class="modal-header" >
-                <div class="modal-title">
-                    <span>${buildingData.icon}</span>
-                    ${buildingData.name}
-                </div>
-                <button class="modal-close">✖</button>
-            </div >
-            <div class="building-description">${buildingData.description}</div>
-            <div class="building-stats">
-                <div class="stat-row">
-                    <span class="stat-label">Niveau actuel</span>
-                    <span class="stat-value">${buildingState.level}/${buildingData.maxLevel}</span>
-                </div>
-                ${statsHtml}
-            </div>
-            ${costHtml}
-            ${buildingState.level < buildingData.maxLevel ? `
-                <button class="upgrade-button" ${!canUpgrade ? 'disabled' : ''}>
-                    ${buildingState.isUpgrading ? 'En cours...' : 'Améliorer'}
-                </button>
-            ` : '<p style="text-align: center; color: #ffd700;">✨ Niveau maximum atteint !</p>'
+            <div class="modal-header">
+    <div class="modal-title">
+        <span>${buildingData.icon}</span>
+        ${buildingData.name}
+    </div>
+    <button class="modal-close">✖</button>
+</div>
+<div class="building-description">${buildingData.description}</div>
+<div class="building-stats">
+    <div class="stat-row">
+        <span class="stat-label">Niveau actuel</span>
+        <span class="stat-value">${buildingState.level}/${buildingData.maxLevel}</span>
+    </div>
+    ${statsHtml}
+</div>
+${costHtml}
+${buildingState.level < buildingData.maxLevel ? `
+    <button class="upgrade-button" ${!canUpgrade ? 'disabled' : ''}>
+        ${buildingState.isUpgrading ? 'En cours...' : 'Améliorer'}
+    </button>
+` : '<p style="text-align: center; color: #ffd700;">✨ Niveau maximum atteint !</p>'
             }
-            
-            ${this.getBuildingActionButtons(buildingId)}
-            `;
+
+${this.getBuildingActionButtons(buildingId)}
+        `;
 
         document.body.appendChild(modal);
 
@@ -3096,23 +3763,6 @@ export default class UIManager {
             };
         }
 
-        const enterBtn = modal.querySelector('.btn-enter-building');
-        if (enterBtn) {
-            enterBtn.onclick = () => {
-                modal.remove();
-                if (buildingId === 'sanctuary') {
-                    this.openGuildScreen();
-                    this.updateGuildScreen('summon');
-                } else if (buildingId === 'forgeron') {
-                    this.openGuildScreen();
-                    this.updateGuildScreen('blacksmith');
-                } else if (buildingId === 'market_shop') {
-                    this.openGuildScreen();
-                    this.updateGuildScreen('shop');
-                }
-            };
-        }
-
         // Close on background click
         modal.onclick = (e) => {
             if (e.target === modal) modal.remove();
@@ -3121,13 +3771,13 @@ export default class UIManager {
 
     getBuildingActionButtons(buildingId) {
         if (buildingId === 'sanctuary') {
-            return `<button class="btn-enter-building" style = "margin-top: 10px; width: 100%; padding: 10px; background: #9b59b6; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer;" > Entrer dans le Sanctuaire</button > `;
+            return `<button class="btn-enter-building" style = "margin-top: 10px; width: 100%; padding: 10px; background: #9b59b6; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer;"> Entrer dans le Sanctuaire</button> `;
         }
         if (buildingId === 'forgeron') {
-            return `<button class="btn-enter-building" style = "margin-top: 10px; width: 100%; padding: 10px; background: #e67e22; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer;" > Entrer dans la Forge</button > `;
+            return `<button class="btn-enter-building" style = "margin-top: 10px; width: 100%; padding: 10px; background: #e67e22; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer;"> Entrer dans la Forge</button> `;
         }
         if (buildingId === 'market_shop') {
-            return `<button class="btn-enter-building" style = "margin-top: 10px; width: 100%; padding: 10px; background: #27ae60; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer;" > Entrer dans le Marché</button > `;
+            return `<button class="btn-enter-building" style = "margin-top: 10px; width: 100%; padding: 10px; background: #27ae60; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer;"> Entrer dans le Marché</button> `;
         }
         return '';
     }
@@ -3175,16 +3825,16 @@ export default class UIManager {
 
             let statsHtml = '';
             for (let stat in item.stats) {
-                statsHtml += `<span > ${stat.toUpperCase()}: ${item.stats[stat]}</span > `;
+                statsHtml += `<span > ${stat.toUpperCase()}: ${item.stats[stat]}</span> `;
             }
 
             card.innerHTML = `
-                <div class="item-header" >
+            <div class="item-header">
                     <div class="item-name">${item.name}</div>
                     <div class="item-stars">${item.getStarDisplay()}</div>
-                </div >
-                <div class="item-stats">${statsHtml}</div>
-            `;
+                </div>
+            <div class="item-stats">${statsHtml}</div>
+        `;
 
             card.onclick = () => {
                 this.selectedCraftItem = item;
@@ -3219,9 +3869,9 @@ export default class UIManager {
         let currentStatsHtml = '';
         let newStatsHtml = '';
         for (let stat in item.stats) {
-            currentStatsHtml += `<div > ${stat.toUpperCase()}: ${item.stats[stat]}</div > `;
+            currentStatsHtml += `<div > ${stat.toUpperCase()}: ${item.stats[stat]}</div> `;
             if (refineInfo.newStats) {
-                newStatsHtml += `<div > ${stat.toUpperCase()}: ${refineInfo.newStats[stat]}</div > `;
+                newStatsHtml += `<div > ${stat.toUpperCase()}: ${refineInfo.newStats[stat]}</div> `;
             }
         }
 
@@ -3230,7 +3880,7 @@ export default class UIManager {
         if (refineInfo.cost) {
             const resources = this.game.economySystem.resources;
             reqHtml = `
-                <div class="refine-requirements" >
+            <div class="refine-requirements">
                     <h4>Ressources requises</h4>
                     <div class="cost-item ${resources.gold >= refineInfo.cost.gold ? '' : 'insufficient'}">
                         💰 Or: ${refineInfo.cost.gold.toLocaleString()}
@@ -3251,12 +3901,12 @@ export default class UIManager {
                     <div class="cost-item ${refineInfo.currentForgeLevel >= refineInfo.requiredForgeLevel ? '' : 'insufficient'}">
                         ⚒️ Forge niveau ${refineInfo.requiredForgeLevel} requis (actuellement ${refineInfo.currentForgeLevel})
                     </div>
-                </div >
-                `;
+                </div>
+            `;
         }
 
         panel.innerHTML = `
-                <div class="refine-preview" >
+            <div class="refine-preview">
                 <h3>Raffinage</h3>
                 <div style="display: flex; justify-content: space-around; align-items: center; margin: 30px 0;">
                     <div style="text-align: center;">
@@ -3273,12 +3923,12 @@ export default class UIManager {
                         </div>
                     </div>
                 </div>
-            </div >
-                ${reqHtml}
-            <button class="refine-button" ${!refineInfo.canRefine ? 'disabled' : ''}>
-                ${item.stars >= 7 ? 'Niveau maximum' : refineInfo.canRefine ? 'Raffiner' : 'Ressources insuffisantes'}
-            </button>
-            `;
+            </div>
+            ${reqHtml}
+        <button class="refine-button" ${!refineInfo.canRefine ? 'disabled' : ''}>
+            ${item.stars >= 7 ? 'Niveau maximum' : refineInfo.canRefine ? 'Raffiner' : 'Ressources insuffisantes'}
+        </button>
+        `;
 
         const refineBtn = panel.querySelector('.refine-button');
         if (refineBtn && !refineBtn.disabled) {
@@ -3295,6 +3945,254 @@ export default class UIManager {
     /**
      * Formats time in seconds to readable format
      */
+    formatTime(seconds) {
+        if (seconds < 60) return `${seconds} s`;
+        if (seconds < 3600) return `${Math.floor(seconds / 60)}m ${seconds % 60} s`;
+        const hours = Math.floor(seconds / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        return `${hours}h ${minutes} m`;
+    }
+
+    /**
+     * Updates the Village screen with the scene-based layout
+     */
+    updateVillageScreen() {
+        if (this.currentScreen !== this.screens.VILLAGE) return;
+
+        // This method now acts as the main render loop for the village scene
+        this.updateVillageVisuals();
+        this.updateBuildingsGrid(); // Renaming kept for compatibility but logic changes
+        this.updateVillageResources();
+    }
+
+    /**
+     * Updates the visual theme of the village based on Town Hall Level
+     */
+    updateVillageVisuals() {
+        if (!this.game.villageSystem) return;
+
+        // Visuals depend on Town Hall level as per user request
+        const thLevel = this.game.villageSystem.buildings['town_hall'] ? this.game.villageSystem.buildings['town_hall'].level : 0;
+
+        const villageScreen = document.getElementById('village-screen');
+        const container = document.getElementById('village-background'); // This is .buildings-container
+
+        if (!container) return;
+
+        // Background Image Logic
+        let bgPath = 'assets/backgrounds/village_ruins_bg.png';
+
+        if (thLevel > 0) {
+            // Cap at 7 as we only have assets up to lvl 7
+            const assetLevel = Math.min(thLevel, 7);
+            bgPath = `assets/backgrounds/village_bg_lvl_${assetLevel}.png`;
+        }
+
+        container.style.backgroundImage = `url('${bgPath}')`;
+
+        // Update Tier Label (Still useful for context)
+        const tierLabel = document.getElementById('village-tier-label');
+        if (tierLabel) {
+            const tier = this.game.villageSystem.getVillageTier();
+            const names = ["Campement", "Bastion", "Citadelle"];
+            tierLabel.textContent = `${names[tier - 1]} (Hôtel de Ville Lv.${thLevel})`;
+        }
+    }
+
+    /**
+     * Renders the buildings as sprites on the scene
+     */
+    updateBuildingsGrid() {
+        const container = document.getElementById('village-background'); // Now the .buildings-container
+        if (!container) return;
+
+        // Clear existing sprites (or update them if optimization needed, for now rebuild)
+        // We look for .building-sprite to clear, keeping other UI elements if any
+        const existingSprites = container.querySelectorAll('.building-sprite');
+        existingSprites.forEach(el => el.remove());
+
+        const buildingData = BUILDING_DATABASE;
+        const buildings = this.game.villageSystem.buildings;
+
+        for (const [id, data] of Object.entries(buildingData)) {
+            // Check if building exists in save data
+            const state = buildings[id];
+
+            // Skip hidden buildings (like old market_shop with negative coords)
+            if (data.layout && data.layout.x < 0) continue;
+
+            const level = state ? state.level : 0;
+            const isBuilt = level > 0;
+
+            // Create Sprite Element
+            const sprite = document.createElement('div');
+            sprite.className = 'building-sprite';
+            if (state && state.isUpgrading) sprite.classList.add('upgrading');
+            if (!isBuilt) sprite.classList.add('locked');
+
+            // Position
+            const layout = data.layout || { x: 50, y: 50, scale: 1.0, zIndex: 1 };
+            sprite.style.left = `${layout.x}%`;
+            sprite.style.top = `${layout.y}%`;
+            sprite.style.zIndex = layout.zIndex || 10;
+
+            // Determine sizing (base size * scale)
+            // We assume a base width or use the image's natural size controlled by CSS width %?
+            // Let's use a base width of around 15% of screen for scale 1.0
+            const baseWidth = 120;
+            sprite.style.width = `${baseWidth * layout.scale}px`;
+
+            // Image Source Logic
+            let imagePath = `assets/buildings/${id}/${id}_lvl${level}.png`;
+            if (level === 0) {
+                // Try ruins
+                imagePath = `assets/buildings/ruins/${id}_ruins.png`;
+                // If ruins don't exist, we might fallback to generic or lvl1 grayed out
+                // We'll handle 404s via error handler to fallback? 
+                // Alternatively, just show lvl1 grayed out if locked
+                imagePath = `assets/buildings/${id}/${id}_lvl1.png`;
+            } else if (level === 1) {
+                imagePath = `assets/buildings/${id}/${id}_lvl1.png`;
+            }
+            // Note: If exact level asset missing, we rely on browser finding it or fallback?
+            // Ideally we need a check, but for now we assume assets exist or we set an onerror
+
+            const img = document.createElement('img');
+            img.src = imagePath;
+            img.alt = data.name;
+            img.draggable = false;
+
+            // Simple fallback if specific level is missing (e.g. lvl 8 image doesn't exist yet, show lvl 7 or lvl 1)
+            // This is hard without checking file existence first. 
+            // We can assume standard tier fallback: lvl 1-3 -> lvl1 image, etc? 
+            // For now, let's try direct map. If interactions fail, user sees broken image.
+
+            img.onerror = () => {
+                // Fallback to Tier 1 default or generic icon
+                img.src = `assets/buildings/tier1/${id}.png`;
+                img.onerror = () => {
+                    // Ultimate fallback
+                    img.style.display = 'none';
+                    sprite.textContent = data.icon;
+                    sprite.style.fontSize = '3em';
+                    sprite.style.backgroundColor = 'rgba(0,0,0,0.5)';
+                    sprite.style.borderRadius = '50%';
+                };
+            };
+
+            sprite.appendChild(img);
+
+            // Label
+            const label = document.createElement('div');
+            label.className = 'building-label';
+            label.innerHTML = `${data.name} <span style="color: #ffd700; margin-left:5px;">Lv.${level}</span>`;
+            sprite.appendChild(label);
+
+            // Indicators
+            // Upgrade ready? (Town Hall check handled in canUpgrade)
+            if (this.game.villageSystem.canUpgradeBuilding(id) && !state.isUpgrading) {
+                const upIcon = document.createElement('div');
+                upIcon.className = 'upgrade-ready-icon';
+                upIcon.textContent = '⬆️';
+                sprite.appendChild(upIcon);
+            }
+
+            // Production ready?
+            if (this.game.villageSystem.calculateGeneratedResources(id) > 0) {
+                const prodIcon = document.createElement('div');
+                prodIcon.className = 'production-ready-icon';
+                prodIcon.textContent = '💰'; // Or specific icon based on resource
+                sprite.appendChild(prodIcon);
+            }
+
+            // Click Interaction
+            sprite.onclick = () => {
+                this.handleBuildingClick(id);
+            };
+
+            container.appendChild(sprite);
+        }
+    }
+
+    /**
+     * Handles clicks on building sprites
+     * @param {string} buildingId 
+     */
+    handleBuildingClick(buildingId) {
+        // Collect resources if production building
+        const generated = this.game.villageSystem.calculateGeneratedResources(buildingId);
+        if (generated > 0) {
+            this.game.villageSystem.collectResources(buildingId);
+            this.updateVillageResources();
+            // Optional: Play sound or show floating number
+            this.showNotification(`Récolte : +${generated}`);
+            this.updateBuildingsGrid(); // Update icons
+            return;
+        }
+
+        // Feature Navigation
+        switch (buildingId) {
+            case 'town_hall':
+            case 'crystal_mine':
+            case 'alchemy_lab':
+            case 'warehouse':
+                // Open Upgrade/Details Modal
+                // Special case for warehouse: open Inventory?
+                if (buildingId === 'warehouse') {
+                    this.showScreen(this.screens.INVENTORY);
+                    return;
+                }
+                this.openBuildingModal(buildingId);
+                break;
+
+            case 'market':
+                // Open Shop Screen
+                this.showScreen(this.screens.SHOP);
+                break;
+
+            case 'forgeron':
+                // Open Blacksmith (Guild -> Blacksmith tab)
+                this.openGuildScreen();
+                this.updateGuildScreen('blacksmith');
+                break;
+
+            case 'sanctuary':
+                // Open Summon Screen (Or Evolution)
+                this.showSummonScreen();
+                break;
+
+            case 'arena':
+                this.showModal("Arène PVP", "L'arène ouvrira ses portes bientôt ! Préparez vos champions.");
+                break;
+
+            case 'guild':
+                this.showModal("Guilde", "Le système de guilde et d'échanges communautaires arrive prochainement.");
+                break;
+
+            case 'portal':
+                this.showModal("Portail Monde", "L'exploration du monde et les donjons PVM sont en cours de découverte.");
+                break;
+
+            default:
+                this.openBuildingModal(buildingId);
+                break;
+        }
+    }
+
+    // Helper to show generic modal
+    showModal(title, message) {
+        // Simple alert for now or a generic custom modal if implemented
+        alert(`${title}\n\n${message}`);
+    }
+
+    /**
+     * Legacy method kept if referenced, but now empty or redirecting
+     */
+    updateVillageResources() {
+        const resources = this.game.economySystem.resources;
+        // Update top bar logic here if needed...
+        // Assuming header updates elsewhere or using economySystem.updateUI()
+    }
     // ========== STORY MODE METHODS ==========
 
     /**
@@ -3343,12 +4241,12 @@ export default class UIManager {
             const progressPercent = Math.floor((completedStages / totalStages) * 100);
 
             zoneCard.innerHTML = `
-                <div class="zone-card-header" >
+            <div class="zone-card-header">
                     <span class="zone-number">Zone ${zone.id}</span>
                     <span class="${zone.unlocked ? 'zone-unlock-icon' : 'zone-lock-icon'}">
                         ${zone.unlocked ? '✓' : '🔒'}
                     </span>
-                </div >
+                </div>
                 <h3 class="zone-card-title">${zone.name}</h3>
                 <p class="zone-card-description">${zone.description}</p>
                 <p class="zone-card-theme">${zone.theme}</p>
@@ -3358,7 +4256,7 @@ export default class UIManager {
                         <div class="zone-progress-fill" style="width: ${progressPercent}%"></div>
                     </div>
                 </div>
-            `;
+        `;
 
             if (zone.unlocked) {
                 zoneCard.onclick = () => this.showZoneStages(zone.id);
@@ -3397,12 +4295,12 @@ export default class UIManager {
 
         // Render zone info
         zoneInfo.innerHTML = `
-                <div class="zone-info-header" >
+            <div class="zone-info-header">
                 <h3 class="zone-info-title">${zoneData.name}</h3>
                 <span class="zone-info-energy">⚡ ${zoneData.energyCost} énergie/étape</span>
-            </div >
-                <p class="zone-info-description">${zoneData.description}</p>
-            `;
+            </div>
+            <p class="zone-info-description">${zoneData.description}</p>
+        `;
 
         // Render stages
         stagesGrid.innerHTML = '';
@@ -3417,11 +4315,11 @@ export default class UIManager {
             const stageIcon = stage.isBoss ? '👹' : stage.unlocked ? '⚔️' : '🔒';
 
             stageCard.innerHTML = `
-                <div class="stage-number" > Étape ${stage.stageId}</div >
+            <div class="stage-number"> Étape ${stage.stageId}</div>
                 <div class="${stage.isBoss ? 'boss-icon' : 'stage-icon'}">${stageIcon}</div>
                 <h4 class="stage-name">${stage.name}</h4>
                 <p class="stage-energy">⚡ ${stage.energyCost}</p>
-            `;
+        `;
 
             if (stage.unlocked) {
                 stageCard.onclick = () => this.startStage(zoneId, stage.stageId);

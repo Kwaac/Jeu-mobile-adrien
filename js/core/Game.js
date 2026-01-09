@@ -14,9 +14,11 @@ import CraftingSystem from '../systems/CraftingSystem.js';
 import UIManager from '../ui/UIManager.js';
 import QuestSystem from '../systems/QuestSystem.js';
 import ElementalBonusSystem from '../systems/ElementalBonusSystem.js';
+import TutorialSystem from '../systems/TutorialSystem.js';
 
 export default class Game {
     constructor(canvas) {
+        console.log("Game Constructor called");
         this.canvas = canvas;
         this.ctx = canvas.getContext('2d');
         this.width = 0;
@@ -60,10 +62,16 @@ export default class Game {
         this.onlineSystem = new OnlineSystem(this);
         this.pvpSystem = new PVPSystem(this);
 
+        // Tutorial System
+        this.tutorialSystem = new TutorialSystem(this);
+
         this.uiManager = new UIManager(this);
 
         // Load saved game after all systems are initialized
         this.saveSystem.load();
+
+        // Check for first-time start (Tutorial)
+        this.tutorialSystem.checkStarter();
 
         // Start auto-save
         this.saveSystem.startAutoSave();

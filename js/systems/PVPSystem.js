@@ -136,9 +136,10 @@ export default class PVPSystem {
 
             // Appliquer les récompenses
             if (response.data.rewards) {
-                if (response.data.rewards.zel > 0) {
-                    this.game.economySystem.earnZel(response.data.rewards.zel);
+                if (response.data.rewards.gold > 0) {
+                    this.game.economySystem.earnGold(response.data.rewards.gold);
                 }
+
                 if (response.data.rewards.gems > 0) {
                     this.game.economySystem.buyGems(response.data.rewards.gems);
                 }

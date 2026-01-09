@@ -17,42 +17,13 @@ export default class PartyManager {
         this.initializeDefaultUnits();
     }
 
+
     initializeDefaultUnits() {
-        // Créer des unités de test avec le nouveau système
-
-        // 3x Chevalier de Feu 3★ (pour tester l'évolution)
-        const fireKnight1 = new Unit('Chevalier de Feu', true, getStatsForRarity('fire_knight', 3));
-        const fireKnight2 = new Unit('Chevalier de Feu', true, getStatsForRarity('fire_knight', 3));
-        const fireKnight3 = new Unit('Chevalier de Feu', true, getStatsForRarity('fire_knight', 3));
-
-        // 3x Mage Aquatique 3★ (pour tester l'évolution)
-        const waterMage1 = new Unit('Mage Aquatique', true, getStatsForRarity('water_mage', 3));
-        const waterMage2 = new Unit('Mage Aquatique', true, getStatsForRarity('water_mage', 3));
-        const waterMage3 = new Unit('Mage Aquatique', true, getStatsForRarity('water_mage', 3));
-
-        // 1x Guerrier Terrestre 4★
-        const earthWarrior = new Unit('Guerrier Terrestre', true, getStatsForRarity('earth_warrior', 4));
-
-        // 1x Paladin Lumineux 5★
-        const lightPaladin = new Unit('Paladin Lumineux', true, getStatsForRarity('light_paladin', 5));
-
-        // Ajouter les unités
-        this.addUnit(fireKnight1);
-        this.addUnit(fireKnight2);
-        this.addUnit(fireKnight3);
-        this.addUnit(waterMage1);
-        this.addUnit(waterMage2);
-        this.addUnit(waterMage3);
-        this.addUnit(earthWarrior);
-        this.addUnit(lightPaladin);
-
-        // Ajouter à l'équipe de combat
-        this.addToParty(fireKnight1);
-        this.addToParty(waterMage1);
-        this.addToParty(earthWarrior);
-
-        console.log('PartyManager initialisé avec 8 unités (dont duplicatas pour test évolution)');
+        // No default units. Player starts with 0.
+        // The first summon tutorial will handle the starter unit.
+        console.log('PartyManager initialized. Waiting for first summon.');
     }
+
 
     addUnit(unit) {
         if (!this.ownedUnits.includes(unit)) {
@@ -316,6 +287,10 @@ export default class PartyManager {
 
                         // Restaurer l'instanceId pour maintenir les références
                         unit.instanceId = unitData.instanceId;
+
+                        // Patch missing speed for old saves
+                        if (!unit.speed) unit.speed = 100;
+                        if (!unit.baseSpeed) unit.baseSpeed = 100;
 
                         // Restaurer l'équipement
                         if (unitData.equipment) {

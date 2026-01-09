@@ -1,0 +1,63 @@
+:root {
+    /* Palette: Grimdark Divin (Warhammer x Nordic) */
+    --bg-color: #0a0a0c;
+    /* Obsidienne Profonde - Fond principal */
+    --bg-secondary: #141416;
+    /* Fond secondaire */
+
+    --text-color: #e0d8c3;
+    /* Parchemin - Texte clair */
+    --text-muted: #8b8b8b;
+
+    --primary-color: #d4af37;
+    /* Or Éclatant - Actions principales, Bordures Riches */
+    --primary-dim: #8a7224;
+
+    --secondary-color: #4a4e57;
+    /* Acier / Fer Froid - UI standard */
+
+    --accent-color: #8a0303;
+    /* Rouge Sang - Combat, Danger, Important */
+    --success-color: #3d6e3f;
+    /* Vert sombre */
+    --warning-color: #d4af37;
+    /* Or pour les avertissements aussi */
+
+    --font-main: 'Raleway', sans-serif;
+    --font-titles: 'Cinzel', serif;
+    /* Titres épiques */
+
+    --border-radius: 2px;
+    /* Coins durs */
+    --box-shadow: 0 4px 15px rgba(0, 0, 0, 0.9);
+
+    /* Variables Spécifiques au thème */
+    --border-gold: 1px solid var(--primary-color);
+    --border-steel: 1px solid var(--secondary-color);
+    --glow-gold: 0 0 10px rgba(212, 175, 55, 0.3);
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-family: var(--font-main);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.game-title,
+.modal-header {
+    font-family: var(--font-titles);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--primary-color);
+}
+
+button {
+    font-family: var(--font-titles);
+    border-radius: var(--border-radius);
+}

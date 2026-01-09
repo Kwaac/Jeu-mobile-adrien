@@ -4,8 +4,6 @@ export default class EconomySystem {
     constructor(game) {
         this.game = game;
         this.resources = {
-            zel: 0,
-            karma: 0,
             gems: 0,
             gold: 100000,
             // Nouvelles ressources pour le village
@@ -51,9 +49,9 @@ export default class EconomySystem {
     }
 
     // Soft Currency (Earned in game)
-    earnZel(amount) {
-        this.resources.zel += amount;
-        console.log(`Gagné ${amount} Zel. Total : ${this.resources.zel}`);
+    earnGold(amount) {
+        this.resources.gold += amount;
+        console.log(`Gagné ${amount} Or. Total : ${this.resources.gold}`);
         this.updateUI();
     }
 
@@ -62,6 +60,30 @@ export default class EconomySystem {
         this.resources.gems += amount;
         console.log(`Acheté ${amount} Gemmes. Total : ${this.resources.gems}`);
         this.updateUI();
+    }
+
+    /**
+     * Ajoute une ressource générique
+     * @param {string} type - 'gold', 'gems', 'crystals', 'essences', 'fragments'
+     * @param {number} amount - Quantité à ajouter
+     */
+    earnResource(type, amount) {
+        if (type === 'gold') {
+            this.earnGold(amount);
+            return;
+        }
+        if (type === 'gems') {
+            this.buyGems(amount);
+            return;
+        }
+
+        if (this.resources[type] !== undefined) {
+            this.resources[type] += amount;
+            console.log(`Gagné ${amount} ${type}. Total : ${this.resources[type]}`);
+            this.updateUI();
+        } else {
+            console.warn(`Type de ressource inconnu: ${type}`);
+        }
     }
 
     // Generic spend method

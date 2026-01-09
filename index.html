@@ -9,6 +9,7 @@
     <meta name="theme-color" content="#667eea">
     <title>The Dying World Tree - Mobile RPG</title>
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/theme.css">
     <link rel="stylesheet" href="css/auth.css">
     <link rel="stylesheet" href="css/inventory-rpg.css">
     <link rel="stylesheet" href="css/inventory-header.css">
@@ -18,9 +19,13 @@
     <link rel="stylesheet" href="css/shop.css">
     <link rel="stylesheet" href="css/shop-header.css">
     <link rel="stylesheet" href="css/village.css">
+    <link rel="stylesheet" href="css/village-evolution.css">
     <link rel="stylesheet" href="css/story.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Cinzel+Decorative:wght@400;700;900&family=Raleway:wght@300;400;700&display=swap"
+        rel="stylesheet">
 </head>
 
 <body>
@@ -28,8 +33,44 @@
         <canvas id="game-canvas"></canvas>
         <div id="ui-layer">
             <!-- UI Elements will be injected here -->
+
+            <!-- Auth Screen -->
+            <div id="auth-screen" class="screen" style="display: flex;">
+                <div class="auth-container">
+                    <h1>The Dying World Tree</h1>
+                    <div class="auth-box">
+                        <input type="text" id="auth-username" placeholder="Pseudo" class="auth-input">
+                        <input type="password" id="auth-password" placeholder="Mot de passe" class="auth-input">
+                        <div class="auth-buttons">
+                            <button id="btn-login" class="btn-primary">Connexion</button>
+                            <button id="btn-register" class="btn-secondary">Inscription</button>
+                        </div>
+                        <div class="auth-separator">ou</div>
+                        <button id="btn-guest" class="btn-text">Continuer sans compte</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Menu (Village, etc will be injected dynamically, but we need containers if UIManager expects them) -->
+            <!-- Actually UIManager often creates these dynamically or expects them to be in the HTML. 
+                 Based on main.js, it seems to rely on UIManager to create them or finding them.
+                 Let's add the basic empty containers for screens usually found in RPGs if they aren't generated. -->
+
+            <div id="main-menu" class="screen" style="display: none;">
+                <!-- Main Menu content if any, or just a placeholder for UIManager to toggle -->
+            </div>
+
+            <div id="village-screen" class="screen" style="display: none;"></div>
+            <div id="inventory-screen" class="screen" style="display: none;">
+                <div class="screen-header">
+                    <h2>Inventaire</h2>
+                    <button class="btn-close" onclick="uiManager.showScreen('village-screen')">X</button>
+                </div>
+                <div id="rpg-inventory-grid" class="inventory-grid"></div>
+            </div>
+
             <div id="debug-overlay"
-                style="color: white; font-family: monospace; padding: 10px; background: rgba(0,0,0,0.8);">
+                style="color: white; font-family: monospace; padding: 10px; background: rgba(0,0,0,0.8); pointer-events: none; position: absolute; top: 0; left: 0; z-index: 9999;">
                 Initializing...</div>
         </div>
     </div>
@@ -48,7 +89,7 @@
             }
         });
     </script>
-    <script type="module" src="js/main.js"></script>
+    <script type="module" src="js/main.js?v=force_verify_1"></script>
 </body>
 
 </html>

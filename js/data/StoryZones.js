@@ -16,7 +16,7 @@ export const ENEMY_TEMPLATES = {
         baseAtk: 5,
         baseDef: 1,
         baseExp: 8,
-        baseZel: 15
+        baseGold: 15
     },
     zone1_goblin_scout: {
         name: 'Gobelin Scout',
@@ -24,7 +24,7 @@ export const ENEMY_TEMPLATES = {
         baseAtk: 7,
         baseDef: 2,
         baseExp: 10,
-        baseZel: 20
+        baseGold: 20
     },
     zone1_wolf: {
         name: 'Loup Gris',
@@ -32,7 +32,7 @@ export const ENEMY_TEMPLATES = {
         baseAtk: 8,
         baseDef: 2,
         baseExp: 12,
-        baseZel: 22
+        baseGold: 22
     },
     zone1_boar: {
         name: 'Sanglier Sauvage',
@@ -40,7 +40,7 @@ export const ENEMY_TEMPLATES = {
         baseAtk: 6,
         baseDef: 4,
         baseExp: 11,
-        baseZel: 18
+        baseGold: 18
     },
     zone1_goblin_archer: {
         name: 'Gobelin Archer',
@@ -48,7 +48,7 @@ export const ENEMY_TEMPLATES = {
         baseAtk: 9,
         baseDef: 1,
         baseExp: 13,
-        baseZel: 24
+        baseGold: 24
     },
     zone1_raven: {
         name: 'Corbeau Noir',
@@ -56,7 +56,7 @@ export const ENEMY_TEMPLATES = {
         baseAtk: 10,
         baseDef: 1,
         baseExp: 9,
-        baseZel: 16
+        baseGold: 16
     },
     zone1_bandit: {
         name: 'Bandit Novice',
@@ -64,7 +64,7 @@ export const ENEMY_TEMPLATES = {
         baseAtk: 8,
         baseDef: 3,
         baseExp: 14,
-        baseZel: 25
+        baseGold: 25
     },
     zone1_boss: {
         name: 'Petit Fenrir',
@@ -72,7 +72,7 @@ export const ENEMY_TEMPLATES = {
         baseAtk: 15,
         baseDef: 8,
         baseExp: 100,
-        baseZel: 150,
+        baseGold: 150,
         isBoss: true
     },
 
@@ -83,7 +83,7 @@ export const ENEMY_TEMPLATES = {
         baseAtk: 12,
         baseDef: 6,
         baseExp: 18,
-        baseZel: 30
+        baseGold: 30
     },
     zone2_dryad: {
         name: 'Dryade',
@@ -91,7 +91,7 @@ export const ENEMY_TEMPLATES = {
         baseAtk: 14,
         baseDef: 4,
         baseExp: 20,
-        baseZel: 35
+        baseGold: 35
     },
     zone2_corrupted_root: {
         name: 'Racine Corrompue',
@@ -99,7 +99,7 @@ export const ENEMY_TEMPLATES = {
         baseAtk: 10,
         baseDef: 8,
         baseExp: 16,
-        baseZel: 28
+        baseGold: 28
     },
     zone2_forest_sprite: {
         name: 'Lutin Forestier',
@@ -107,7 +107,7 @@ export const ENEMY_TEMPLATES = {
         baseAtk: 15,
         baseDef: 3,
         baseExp: 19,
-        baseZel: 32
+        baseGold: 32
     },
     zone2_giant_mushroom: {
         name: 'Champignon Géant',
@@ -115,7 +115,7 @@ export const ENEMY_TEMPLATES = {
         baseAtk: 11,
         baseDef: 7,
         baseExp: 17,
-        baseZel: 29
+        baseGold: 29
     },
     zone2_dark_fairy: {
         name: 'Fée Sombre',
@@ -123,7 +123,7 @@ export const ENEMY_TEMPLATES = {
         baseAtk: 16,
         baseDef: 2,
         baseExp: 21,
-        baseZel: 36
+        baseGold: 36
     },
     zone2_treant: {
         name: 'Treant Mineur',
@@ -131,7 +131,7 @@ export const ENEMY_TEMPLATES = {
         baseAtk: 13,
         baseDef: 9,
         baseExp: 22,
-        baseZel: 38
+        baseGold: 38
     },
     zone2_boss: {
         name: 'Rejeton de Nidhogg',
@@ -139,7 +139,7 @@ export const ENEMY_TEMPLATES = {
         baseAtk: 22,
         baseDef: 12,
         baseExp: 200,
-        baseZel: 300,
+        baseGold: 300,
         isBoss: true
     },
 
@@ -150,7 +150,7 @@ export const ENEMY_TEMPLATES = {
         baseAtk: 18,
         baseDef: 10,
         baseExp: 28,
-        baseZel: 45
+        baseGold: 45
     },
     zone3_frost_giant: {
         name: 'Géant du Givre',
@@ -158,7 +158,7 @@ export const ENEMY_TEMPLATES = {
         baseAtk: 20,
         baseDef: 12,
         baseExp: 32,
-        baseZel: 52
+        baseGold: 52
     },
     zone3_frozen_warrior: {
         name: 'Guerrier Gelé',
@@ -166,7 +166,7 @@ export const ENEMY_TEMPLATES = {
         baseAtk: 22,
         baseDef: 8,
         baseExp: 30,
-        baseZel: 48
+        baseGold: 48
     },
     zone3_yeti: {
         name: 'Yéti',
@@ -174,7 +174,7 @@ export const ENEMY_TEMPLATES = {
         baseAtk: 19,
         baseDef: 11,
         baseExp: 29,
-        baseZel: 46
+        baseGold: 46
     },
     zone3_snow_wolf: {
         name: 'Loup des Neiges',
@@ -182,7 +182,7 @@ export const ENEMY_TEMPLATES = {
         baseAtk: 24,
         baseDef: 6,
         baseExp: 27,
-        baseZel: 44
+        baseGold: 44
     },
     zone3_ice_spirit: {
         name: 'Esprit Glacial',
@@ -190,7 +190,7 @@ export const ENEMY_TEMPLATES = {
         baseAtk: 25,
         baseDef: 5,
         baseExp: 31,
-        baseZel: 50
+        baseGold: 50
     },
     zone3_ice_golem: {
         name: 'Golem de Glace',
@@ -198,7 +198,7 @@ export const ENEMY_TEMPLATES = {
         baseAtk: 16,
         baseDef: 15,
         baseExp: 33,
-        baseZel: 54
+        baseGold: 54
     },
     zone3_boss: {
         name: 'Thrym le Jarl Glacial',
@@ -206,7 +206,7 @@ export const ENEMY_TEMPLATES = {
         baseAtk: 32,
         baseDef: 18,
         baseExp: 320,
-        baseZel: 480,
+        baseGold: 480,
         isBoss: true
     },
 
@@ -217,7 +217,7 @@ export const ENEMY_TEMPLATES = {
         baseAtk: 26,
         baseDef: 12,
         baseExp: 38,
-        baseZel: 60
+        baseGold: 60
     },
     zone4_valkyrie_trainee: {
         name: 'Apprentie Valkyrie',
@@ -225,7 +225,7 @@ export const ENEMY_TEMPLATES = {
         baseAtk: 30,
         baseDef: 10,
         baseExp: 42,
-        baseZel: 65
+        baseGold: 65
     },
     zone4_shield_maiden: {
         name: 'Vierge Bouclière',
@@ -233,7 +233,7 @@ export const ENEMY_TEMPLATES = {
         baseAtk: 24,
         baseDef: 14,
         baseExp: 40,
-        baseZel: 62
+        baseGold: 62
     },
     zone4_berserker: {
         name: 'Berserker Fantôme',
@@ -241,7 +241,7 @@ export const ENEMY_TEMPLATES = {
         baseAtk: 32,
         baseDef: 8,
         baseExp: 44,
-        baseZel: 68
+        baseGold: 68
     },
     zone4_einherjar_lancer: {
         name: 'Lancier Einherjar',
@@ -249,7 +249,7 @@ export const ENEMY_TEMPLATES = {
         baseAtk: 28,
         baseDef: 11,
         baseExp: 41,
-        baseZel: 64
+        baseGold: 64
     },
     zone4_celestial_archer: {
         name: 'Archer Céleste',
@@ -257,7 +257,7 @@ export const ENEMY_TEMPLATES = {
         baseAtk: 31,
         baseDef: 9,
         baseExp: 43,
-        baseZel: 66
+        baseGold: 66
     },
     zone4_gate_guardian: {
         name: 'Gardien du Portail',
@@ -265,7 +265,7 @@ export const ENEMY_TEMPLATES = {
         baseAtk: 25,
         baseDef: 16,
         baseExp: 45,
-        baseZel: 70
+        baseGold: 70
     },
     zone4_boss: {
         name: 'Champion Einherjar',
@@ -273,7 +273,7 @@ export const ENEMY_TEMPLATES = {
         baseAtk: 42,
         baseDef: 22,
         baseExp: 450,
-        baseZel: 650,
+        baseGold: 650,
         isBoss: true
     },
 
@@ -284,7 +284,7 @@ export const ENEMY_TEMPLATES = {
         baseAtk: 35,
         baseDef: 10,
         baseExp: 50,
-        baseZel: 78
+        baseGold: 78
     },
     zone5_lava_elemental: {
         name: 'Élémentaire de Lave',
@@ -292,7 +292,7 @@ export const ENEMY_TEMPLATES = {
         baseAtk: 38,
         baseDef: 8,
         baseExp: 52,
-        baseZel: 82
+        baseGold: 82
     },
     zone5_flame_spirit: {
         name: 'Esprit des Flammes',
@@ -300,7 +300,7 @@ export const ENEMY_TEMPLATES = {
         baseAtk: 40,
         baseDef: 6,
         baseExp: 54,
-        baseZel: 85
+        baseGold: 85
     },
     zone5_salamander: {
         name: 'Salamandre Géante',
@@ -308,7 +308,7 @@ export const ENEMY_TEMPLATES = {
         baseAtk: 33,
         baseDef: 12,
         baseExp: 51,
-        baseZel: 80
+        baseGold: 80
     },
     zone5_magma_golem: {
         name: 'Golem de Magma',
@@ -316,7 +316,7 @@ export const ENEMY_TEMPLATES = {
         baseAtk: 30,
         baseDef: 18,
         baseExp: 53,
-        baseZel: 84
+        baseGold: 84
     },
     zone5_imp: {
         name: 'Diablotin Ardent',
@@ -324,7 +324,7 @@ export const ENEMY_TEMPLATES = {
         baseAtk: 42,
         baseDef: 5,
         baseExp: 55,
-        baseZel: 88
+        baseGold: 88
     },
     zone5_phoenix: {
         name: 'Phénix Mineur',
@@ -332,7 +332,7 @@ export const ENEMY_TEMPLATES = {
         baseAtk: 36,
         baseDef: 9,
         baseExp: 56,
-        baseZel: 90
+        baseGold: 90
     },
     zone5_boss: {
         name: 'Héraut de Surtr',
@@ -340,7 +340,7 @@ export const ENEMY_TEMPLATES = {
         baseAtk: 55,
         baseDef: 25,
         baseExp: 600,
-        baseZel: 850,
+        baseGold: 850,
         isBoss: true
     },
 
@@ -351,7 +351,7 @@ export const ENEMY_TEMPLATES = {
         baseAtk: 40,
         baseDef: 20,
         baseExp: 62,
-        baseZel: 95
+        baseGold: 95
     },
     zone6_shadow_wraith: {
         name: 'Spectre d\'Ombre',
@@ -359,7 +359,7 @@ export const ENEMY_TEMPLATES = {
         baseAtk: 45,
         baseDef: 12,
         baseExp: 65,
-        baseZel: 100
+        baseGold: 100
     },
     zone6_ice_revenant: {
         name: 'Revenant de Glace',
@@ -367,7 +367,7 @@ export const ENEMY_TEMPLATES = {
         baseAtk: 42,
         baseDef: 16,
         baseExp: 63,
-        baseZel: 98
+        baseGold: 98
     },
     zone6_lich: {
         name: 'Liche Mineure',
@@ -375,7 +375,7 @@ export const ENEMY_TEMPLATES = {
         baseAtk: 48,
         baseDef: 14,
         baseExp: 68,
-        baseZel: 105
+        baseGold: 105
     },
     zone6_lost_soul: {
         name: 'Âme Errante',
@@ -383,7 +383,7 @@ export const ENEMY_TEMPLATES = {
         baseAtk: 50,
         baseDef: 8,
         baseExp: 64,
-        baseZel: 99
+        baseGold: 99
     },
     zone6_draugr: {
         name: 'Draugr',
@@ -391,7 +391,7 @@ export const ENEMY_TEMPLATES = {
         baseAtk: 38,
         baseDef: 22,
         baseExp: 66,
-        baseZel: 102
+        baseGold: 102
     },
     zone6_banshee: {
         name: 'Banshee',
@@ -399,7 +399,7 @@ export const ENEMY_TEMPLATES = {
         baseAtk: 46,
         baseDef: 10,
         baseExp: 67,
-        baseZel: 104
+        baseGold: 104
     },
     zone6_boss: {
         name: 'Gardien de Hel',
@@ -407,7 +407,7 @@ export const ENEMY_TEMPLATES = {
         baseAtk: 65,
         baseDef: 30,
         baseExp: 780,
-        baseZel: 1100,
+        baseGold: 1100,
         isBoss: true
     },
 
@@ -418,7 +418,7 @@ export const ENEMY_TEMPLATES = {
         baseAtk: 50,
         baseDef: 25,
         baseExp: 75,
-        baseZel: 115
+        baseGold: 115
     },
     zone7_aesir_guard: {
         name: 'Garde Ase',
@@ -426,7 +426,7 @@ export const ENEMY_TEMPLATES = {
         baseAtk: 55,
         baseDef: 22,
         baseExp: 78,
-        baseZel: 120
+        baseGold: 120
     },
     zone7_celestial_warrior: {
         name: 'Guerrier Céleste',
@@ -434,7 +434,7 @@ export const ENEMY_TEMPLATES = {
         baseAtk: 58,
         baseDef: 20,
         baseExp: 80,
-        baseZel: 125
+        baseGold: 125
     },
     zone7_fallen_angel: {
         name: 'Ange Déchu',
@@ -442,7 +442,7 @@ export const ENEMY_TEMPLATES = {
         baseAtk: 60,
         baseDef: 18,
         baseExp: 82,
-        baseZel: 128
+        baseGold: 128
     },
     zone7_golden_sentinel: {
         name: 'Sentinelle d\'Or',
@@ -450,7 +450,7 @@ export const ENEMY_TEMPLATES = {
         baseAtk: 52,
         baseDef: 28,
         baseExp: 76,
-        baseZel: 118
+        baseGold: 118
     },
     zone7_runic_spirit: {
         name: 'Esprit Runique',
@@ -458,7 +458,7 @@ export const ENEMY_TEMPLATES = {
         baseAtk: 62,
         baseDef: 16,
         baseExp: 84,
-        baseZel: 132
+        baseGold: 132
     },
     zone7_minor_titan: {
         name: 'Titan Mineur',
@@ -466,7 +466,7 @@ export const ENEMY_TEMPLATES = {
         baseAtk: 48,
         baseDef: 30,
         baseExp: 85,
-        baseZel: 135
+        baseGold: 135
     },
     zone7_boss: {
         name: 'Ase Corrompu',
@@ -474,7 +474,7 @@ export const ENEMY_TEMPLATES = {
         baseAtk: 80,
         baseDef: 38,
         baseExp: 1000,
-        baseZel: 1500,
+        baseGold: 1500,
         isBoss: true
     }
 };
@@ -488,20 +488,20 @@ function calculateEnemyStats(template, zoneId, stageId) {
     const totalMultiplier = difficultyMultiplier * bossMultiplier;
 
     return {
-        name: template.name,
+        ...template,
         hp: Math.floor(template.baseHp * totalMultiplier),
+        maxHp: Math.floor(template.baseHp * totalMultiplier),
         atk: Math.floor(template.baseAtk * totalMultiplier),
         def: Math.floor(template.baseDef * totalMultiplier),
-        exp: Math.floor(template.baseExp * totalMultiplier),
-        zel: Math.floor(template.baseZel * totalMultiplier),
-        isBoss: template.isBoss || false
+        exp: Math.floor(template.baseExp * difficultyMultiplier),
+        gold: Math.floor(template.baseGold * difficultyMultiplier)
     };
 }
 
 /**
  * Génère une composition d'ennemis pour une étape
  */
-function generateStageEnemies(zoneId, stageId, enemyKeys) {
+export function generateStageEnemies(zoneId, stageId, enemyKeys) {
     // Mélanger les ennemis disponibles
     const shuffled = [...enemyKeys].sort(() => Math.random() - 0.5);
 
@@ -647,53 +647,6 @@ export const STORY_ZONES = [
 ];
 
 /**
- * Génère les 10 étapes + boss pour une zone
- */
-export function generateZoneStages(zoneId) {
-    const zone = STORY_ZONES.find(z => z.id === zoneId);
-    if (!zone) return null;
-
-    const stages = [];
-
-    // Générer les 10 étapes normales
-    for (let stageId = 1; stageId <= 10; stageId++) {
-        stages.push({
-            zoneId,
-            stageId,
-            name: `Étape ${stageId}`,
-            energyCost: zone.energyCost,
-            waves: [
-                generateStageEnemies(zoneId, stageId, zone.enemyPool)
-            ],
-            rewards: {
-                exp: Math.floor(50 * (1 + (zoneId - 1) * 0.5 + (stageId - 1) * 0.1)),
-                zel: Math.floor(100 * (1 + (zoneId - 1) * 0.5 + (stageId - 1) * 0.1))
-            },
-            isBoss: false,
-            unlocked: stageId === 1 // Première étape débloquée par défaut
-        });
-    }
-
-    // Ajouter le boss (étape 11)
-    const bossStats = calculateEnemyStats(ENEMY_TEMPLATES[zone.bossKey], zoneId, 11);
-    stages.push({
-        zoneId,
-        stageId: 11,
-        name: `Boss: ${bossStats.name}`,
-        energyCost: zone.energyCost * 2, // Boss coûte 2x l'énergie
-        waves: [[bossStats]],
-        rewards: {
-            exp: Math.floor(500 * (1 + (zoneId - 1) * 0.8)),
-            zel: Math.floor(800 * (1 + (zoneId - 1) * 0.8))
-        },
-        isBoss: true,
-        unlocked: false
-    });
-
-    return stages;
-}
-
-/**
  * Récupère les informations d'une zone
  */
 export function getZoneData(zoneId) {
@@ -705,4 +658,47 @@ export function getZoneData(zoneId) {
  */
 export function getAllZones() {
     return STORY_ZONES;
+}
+
+/**
+ * Génère les étapes pour une zone donnée
+ */
+export function generateZoneStages(zoneId) {
+    const zone = getZoneData(zoneId);
+    if (!zone) return null;
+
+    const stages = [];
+
+    // Générer 10 étapes normales
+    for (let i = 1; i <= 10; i++) {
+        stages.push({
+            stageId: i,
+            name: `${zone.name} - Étape ${i}`,
+            energyCost: zone.energyCost,
+            waves: [generateStageEnemies(zoneId, i, zone.enemyPool)], // Une seule vague pour l'instant
+            rewards: {
+                exp: 10 * zoneId * i,
+                gold: 20 * zoneId * i // Updated to use gold
+            },
+            isBoss: false
+        });
+    }
+
+    // Ajouter le boss (étape 11)
+    stages.push({
+        stageId: 11,
+        name: `${zone.name} - BOSS`,
+        energyCost: zone.energyCost * 2,
+        waves: [
+            generateStageEnemies(zoneId, 11, [zone.bossKey]) // Boss wave
+        ],
+        rewards: {
+            exp: 50 * zoneId * 10,
+            gold: 100 * zoneId * 10, // Updated to use gold
+            itemChance: 0.5 // 50% chance d'objet
+        },
+        isBoss: true
+    });
+
+    return stages;
 }

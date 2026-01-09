@@ -5,6 +5,7 @@ import {
     calculateRefinedStats,
     getRequiredForgeLevel
 } from '../data/CraftingRecipes.js';
+import EquipmentGenerator from '../items/EquipmentGenerator.js';
 
 export default class CraftingSystem {
     constructor(game) {
@@ -133,6 +134,121 @@ export default class CraftingSystem {
             currentStats: item.stats,
             newStats: newStats
         };
+    }
+
+    /**
+     * Crée un nouvel objet aléatoire
+     * @param {string} slot - Slot spécifique ou null
+     * @param {number} rarity - Rareté (1-7)
+     * @returns {Object|null} L'objet créé
+     */
+    craftNewItem(slot = null, rarity = 1) {
+        // Import dynamique pour éviter les dépendances circulaires si nécessaire, 
+        // mais ici on a importé EquipmentGenerator normalement dans le fichier (à ajouter).
+        // On va supposer que EquipmentGenerator est importé en haut.
+
+        // Coût de création (Placeholder)
+        const cost = { gold: 100 * rarity, crystals: 10 * rarity, essences: 0, fragments: 0 };
+
+        if (!this.hasEnoughResources(cost)) {
+            console.log("Pas assez de ressources pour crafter.");
+            return null;
+        }
+
+        // Dépenser
+        this.game.economySystem.resources.gold -= cost.gold;
+        this.game.economySystem.resources.crystals -= cost.crystals;
+
+        // Générer
+        // Note: EquipmentGenerator needs to be imported! I will add the import in a separate step or assume I added it.
+        // Wait, I need to add the import to the top of the file first!
+        // I will do that in the next step or valid replacement.
+
+        // For now, let's assume the method exists on `this.game` or similar if I registered it?
+        // No, best is to import it.
+
+        // Let's blindly add the import in the top replacement, and then this method.
+        return null; // Placeholder until import fixed
+    }
+
+    /**
+     * Améliore le niveau d'un objet (Level Up)
+     * @param {Object} item - L'objet
+     * @returns {boolean}
+     */
+    upgradeItemLevel(item) {
+        if (!item || item.level >= item.maxLevel) { // Max 10
+            console.log("Niveau max atteint ou item invalide");
+            return false;
+        }
+
+        const cost = this.getLevelUpCost(item);
+        if (this.game.economySystem.resources.gold < cost) {
+            if (this.game.uiManager) this.game.uiManager.showNotification("Or insuffisant !", "error");
+            return false;
+        }
+
+        // Pay
+        this.game.economySystem.resources.gold -= cost;
+
+        // Upgrade
+        item.level++;
+        item.stats = item.calculateStats();
+
+        if (this.game.uiManager) {
+            this.game.uiManager.showNotification(`${item.name} +${item.level} !`);
+            this.game.economySystem.updateUI();
+        }
+
+        return true;
+    }
+
+    getLevelUpCost(item) {
+        // Coût progressif : 100 * (Level + 1) * Rareté
+        return 100 * (item.level + 1) * item.stars;
+    }
+
+    /**
+     * Crée un nouvel objet aléatoire (Génération V2)
+     * @param {string} slot - Slot spécifique ou null
+     * @param {number} rarity - Rareté (1-7)
+     * @returns {Object|null} L'objet créé
+     */
+    craftNewItem(slot = null, rarity = 1) {
+        // Coût de création (100 Or, 10 Cristaux par niveau de rareté)
+        // C'est un coût de base pour le test, à équilibrer plus tard.
+        const cost = {
+            gold: 100 * rarity,
+            crystals: 10 * rarity,
+            essences: 0,
+            fragments: 0
+        };
+
+        if (!this.hasEnoughResources(cost)) {
+            console.log("Pas assez de ressources pour crafter.");
+            if (this.game.uiManager) {
+                this.game.uiManager.showNotification("Ressources insuffisantes !", "error");
+            }
+            return null;
+        }
+
+        // Dépenser
+        this.game.economySystem.resources.gold -= cost.gold;
+        this.game.economySystem.resources.crystals -= cost.crystals;
+        if (this.game.economySystem.updateUI) this.game.economySystem.updateUI();
+
+        // Générer l'objet
+        const newItem = EquipmentGenerator.generateRandomItem(slot, rarity);
+
+        // Ajouter à l'inventaire
+        this.game.economySystem.addItemToInventory(newItem);
+
+        console.log(`Nouvel objet crafté : ${newItem.name} (${newItem.stars}★)`);
+        if (this.game.uiManager) {
+            this.game.uiManager.showNotification(`Objet créé : ${newItem.name} !`);
+        }
+
+        return newItem;
     }
 
     /**

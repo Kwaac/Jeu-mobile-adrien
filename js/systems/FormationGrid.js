@@ -171,16 +171,21 @@ export default class FormationGrid {
      * @param {number} position - Position (0-5)
      * @param {number} baseX - X de base
      * @param {number} baseY - Y de base
-     * @param {number} spacing - Espacement
+     * @param {number} spacingX - Espacement Horizontal
+     * @param {number} spacingY - Espacement Vertical
+     * @param {number} stagger - Décalage pour la ligne du milieu (Row 1)
      * @returns {Object} - {x, y}
      */
-    getPositionCoordinates(position, baseX, baseY, spacing = 120) {
+    getPositionCoordinates(position, baseX, baseY, spacingX = 100, spacingY = 140, stagger = 0) {
         const row = position % 3; // 0, 1, 2
         const col = Math.floor(position / 3); // 0 (Front) ou 1 (Back)
 
+        // Stagger effect: Offset row 1 (middle)
+        const rowOffset = (row === 1) ? stagger : 0;
+
         return {
-            x: baseX + (col * spacing * 2),
-            y: baseY + (row * spacing)
+            x: baseX + (col * spacingX) + rowOffset,
+            y: baseY + (row * spacingY)
         };
     }
 

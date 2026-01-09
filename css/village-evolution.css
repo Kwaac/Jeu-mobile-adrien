@@ -1,0 +1,133 @@
+/* Village Evolution Styles - Grimdark Divine */
+
+/* Base Container Transition */
+#village-screen {
+    transition: background-image 1s ease-in-out;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    /* Default fallback */
+    background-color: #1a1a1a;
+}
+
+/* --- TIER 1: CAMP DE LA MISÈRE (Atmosphère Pluvieuse, Boueuse) --- */
+.tier-1 {
+    /* Background managed by JS */
+    background-size: cover;
+    background-position: center;
+    border-top: 5px solid #5d4037;
+    /* Boue / Bois */
+}
+
+.tier-1 .village-header h2 {
+    color: #a0a0a0;
+    text-shadow: 2px 2px 4px #000;
+    font-family: 'Raleway', sans-serif;
+    /* Plus brut */
+}
+
+.tier-1 .building-card {
+    background: rgba(30, 30, 30, 0.9);
+    border: 1px solid #5d4037;
+    /* Common Properties for images */
+    background-size: cover;
+    background-position: center;
+    position: relative;
+}
+
+/* Tier 1 Specific Buildings */
+.tier-1 .building-card[data-id="sanctuary"] {
+    background-image: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.7)), url('../assets/buildings/tier1/sanctuary.png');
+}
+
+.tier-1 .building-card[data-id="forgeron"] {
+    background-image: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.7)), url('../assets/buildings/tier1/forgeron.png');
+}
+
+/* Text visibility on top of images */
+.tier-1 .building-name,
+.tier-1 .building-level,
+.tier-1 .building-production {
+    text-shadow: 2px 2px 4px #000, -1px -1px 2px #000;
+    z-index: 1;
+    position: relative;
+}
+
+/* --- TIER 2: BASTION FORTIFIÉ (Pierre, Fer, Ordre) --- */
+.tier-2 {
+    /* Background managed by JS */
+    background-size: cover;
+    background-position: center;
+    border-top: 5px solid #7f8c8d;
+    /* Pierre / Acier */
+}
+
+.tier-2 .village-header h2 {
+    color: #ecf0f1;
+    text-shadow: 2px 2px 4px #000;
+    font-family: 'Cinzel', serif;
+    /* Plus noble */
+}
+
+.tier-2 .building-card {
+    background: rgba(44, 62, 80, 0.9);
+    border: 1px solid #7f8c8d;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+/* --- TIER 3: SANCTUAIRE DES DEMI-DIEUX (Or, Lumière, Divin) --- */
+.tier-3 {
+    /* Background managed by JS */
+    background-size: cover;
+    background-position: center;
+    border-top: 5px solid #f1c40f;
+    /* Or Divin */
+}
+
+.tier-3 .village-header h2 {
+    color: #f1c40f;
+    /* Or */
+    text-shadow: 0 0 10px #f39c12;
+    font-family: 'Cinzel Decorative', serif;
+    /* Divin */
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.tier-3 .building-card {
+    background: rgba(20, 20, 20, 0.95);
+    border: 2px solid #f1c40f;
+    /* Cadre Doré */
+    box-shadow: 0 0 15px rgba(241, 196, 15, 0.3);
+}
+
+.tier-3 .building-card:hover {
+    box-shadow: 0 0 25px rgba(241, 196, 15, 0.6);
+    transform: translateY(-5px);
+}
+
+/* Upgrade Overlay Button */
+.upgrade-overlay-btn {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 30px;
+    height: 30px;
+    background: rgba(0, 0, 0, 0.7);
+    border: 1px solid #aaa;
+    border-radius: 50%;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 16px;
+    cursor: pointer;
+    z-index: 10;
+    transition: all 0.2s;
+}
+
+.upgrade-overlay-btn:hover {
+    background: #fff;
+    color: #000;
+    transform: scale(1.1);
+}
